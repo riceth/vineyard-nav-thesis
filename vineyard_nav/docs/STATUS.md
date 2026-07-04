@@ -170,6 +170,7 @@ Full rationale and history in `DECISIONS.md`. Headline items:
 - `DECISIONS.md` — running decisions log with rationale (feeds A2 Methodology chapter directly)
 - `PHASE_A_SPEC.md` — U-Net binary implementation contract
 - `PHASE_B_SPEC.md` — YOLO binary implementation contract
+- `FINDINGS.md` — empirical observations from implementation and evaluation (feeds A2 Results and Discussion chapters)
 - `PHASE_C_SPEC.md` — YOLO multiclass implementation contract
 - `Masters_Dissertation_Proposal.pdf` — A1 proposal (submitted; source of truth for research question)
 
@@ -178,9 +179,11 @@ Full rationale and history in `DECISIONS.md`. Headline items:
 ## Continuation protocol (for new chats)
 
 When starting a new chat:
+When starting a new chat:
 1. Share this STATUS.md file
 2. Share `DECISIONS.md` if the new work touches a locked decision
-3. Share the specific PHASE_X_SPEC.md for the phase being worked on
-4. State the immediate task
+3. Share `FINDINGS.md` if the new work references empirical results (Results chapter, Discussion, or new findings likely to arise)
+4. Share the specific PHASE_X_SPEC.md for the phase being worked on
+5. State the immediate task
 
 Do not re-open locked decisions unless there's new evidence. If a locked decision needs revisiting, add a new decision entry to `DECISIONS.md` that supersedes the old one — do not overwrite history.
