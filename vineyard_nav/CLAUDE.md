@@ -48,3 +48,13 @@ Read these before making design decisions:
 - Working directory: /workspaces/dissertation/vineyard_nav/
 - Dataset: /workspaces/dissertation/SemanticBLT.v1-2024-june.coco-segmentation/
 - Ignore harmless warnings: conan PyYAML, Axes3D import, grpcio-tools protobuf
+
+## Git operations
+
+Do not run any git operations. Edosa handles all commits and pushes manually.
+
+Never run: `git add`, `git commit`, `git push`, `git checkout`, `git reset`, `git rebase`, `git merge`, `git stash`, `git branch`, `git tag`, or any other command that modifies the working tree or repository state.
+
+You may run read-only git commands when they help diagnose something: `git status`, `git log`, `git diff`, `git show`, `git branch --show-current`, `git remote -v`.
+
+When you complete a substantial unit of work — a working module, a passing test suite, a locked decision — mention it in your response so Edosa can decide whether to commit. Do not propose a commit message unless asked.

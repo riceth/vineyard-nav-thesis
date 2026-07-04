@@ -81,7 +81,7 @@ Three model arms, all feeding the same downstream (per-side clustering → RANSA
 - [x] `evaluate.py` + `visualize.py` built (impl order step 6) — **dry-run on VALIDATION passed**: reproduces best.pt val mIoU 0.8456 exactly; canopy-stratified; 46 GT-vs-pred panels rendered; `valid_metrics.json` (§9.1 schema). Test set untouched.
 - [x] Test evaluation (once) — **DONE 4 Jul 2026, not to be re-run (rule 5)**. Overall test mIoU **0.8561**, fg IoU 0.7195 (23 scenes). Bare-vine 0.8414 / canopy 0.8858. `test_metrics.json` + 23 panels in `predictions_test/`.
 - [x] Metrics recorded in DECISIONS.md (O003)
-- [ ] Follow-up: per-frame metric export + bootstrap CIs on the 23 test scenes (D020/O006) — non-blocking
+- [x] Bootstrap CIs on the 23 test scenes (D020/O006) — `evaluate.py` now emits `test_per_frame_metrics.csv` (additive; test_metrics.json byte-identical, md5 verified); `evaluation/bootstrap.py` (D020 utility, 10k resamples, seed 42) → `test_bootstrap_ci.json`. Overall fg IoU 0.7119 [0.6572, 0.7659]; canopy−bare-vine gap +0.072 **[−0.034, +0.174] (includes 0)**. F001/F002/F003 + D028 updated.
 
 ### Phase B — YOLO binary
 - [ ] YOLO data.yaml configured

@@ -20,7 +20,7 @@ Every finding here should be citable in the A2 dissertation. Most will feed the 
 ### F001 — Canopy detection is easier than bare-vine detection for U-Net binary
 **Date recorded:** 4 July 2026
 **Phase:** A (U-Net binary, SMP + ImageNet-pretrained ResNet-34 encoder)
-**Status:** Replicated across validation and test — confirmed real, not sample noise.
+**Status:** Direction replicated in point estimate across validation and test; per-split bootstrap CI for the gap includes zero (n=11/12), so treated as consistent-and-suggestive, not single-split-significant. See "Statistical qualification" below.
 
 **Observation.** The U-Net binary model achieved consistently higher segmentation performance on canopy frames (May, June — foliage-covered vines) than on bare-vine frames (March, April — pre-foliage vines) across every measured metric on both independent splits.
 
@@ -33,7 +33,18 @@ Every finding here should be citable in the A2 dissertation. Most will feed the 
 | Test | Bare-vine | 11 | 0.8414 | 0.6945 | 0.8470 | 0.7941 | 0.8197 |
 | Test | Canopy    | 12 | 0.8858 | 0.7751 | 0.8926 | 0.8548 | 0.8733 |
 
-The foreground-IoU gap (canopy minus bare-vine) is +0.077 on validation and +0.081 on test — nearly identical magnitudes across two independent samples. This magnitude of consistent gap is not attributable to small-sample noise: for it to be sampling variance, the underlying true gap would have to be near zero and two independent 22-24 frame samples would have to produce the same +0.08 gap by coincidence, which is implausible.
+The foreground-IoU gap (canopy minus bare-vine, pooled IoU) is +0.077 on validation and +0.081 on test — nearly identical magnitudes across two independent samples.
+
+**Statistical qualification (bootstrap, D020; test split, 10,000 resamples, seed 42, per-frame estimand).** Per-frame mean foreground IoU with 95% percentile CIs on the 23 test scenes:
+
+| Stratum | n | fg IoU (per-frame mean) | 95% CI |
+|---|---|---|---|
+| Overall | 23 | 0.7119 | [0.6572, 0.7659] |
+| Bare-vine | 11 | 0.6743 | [0.6072, 0.7368] |
+| Canopy | 12 | 0.7463 | [0.6629, 0.8234] |
+| **Canopy − bare-vine (gap)** | — | **+0.0719** | **[−0.0336, +0.1744]** |
+
+The gap's 95% CI on the test split **includes zero**, so the effect is *not* individually significant on the 23-scene test set — expected, given n=11 vs 12 and the deliberately wide CIs the dataset ceiling produces (O006). The precision/recall/F1 gaps likewise cross zero on test (only the trivial background-IoU gap, +0.0082 [+0.0057, +0.0109], excludes it). The case for the effect therefore rests on **replication of the point-estimate direction and magnitude across two independent splits** (+0.077 val, +0.081 test), not on single-split significance. A properly powered test would pool the val and test per-frame data (or await Phases B/C); that combined analysis is deferred. Note the per-frame mean (0.7119) differs slightly from the pooled overall fg IoU (0.7195, `test_metrics.json`) because IoU is a ratio of summed counts, not a mean of per-frame ratios.
 
 **Analysis.** Two candidate explanations, likely both contributing:
 
@@ -47,13 +58,14 @@ The foreground-IoU gap (canopy minus bare-vine) is +0.077 on validation and +0.0
 
 *Methodology:* The canopy-state stratification of results (planned in the proposal, implemented in the resplit per D024/D028) becomes even more important as an analytic tool: without stratification, the overall metric hides the substantial per-condition performance gap.
 
-*Results:* The stratified table should be presented prominently. The gap size (~0.08 in fg IoU) and its replication across two splits are both worth foregrounding.
+*Results:* The stratified table should be presented prominently, **with the bootstrap CIs**. State plainly that the single-split gap CI includes zero and that the claim rests on cross-split replication of the point estimate, not on single-split significance — pre-empting the obvious reviewer challenge.
 
 *Discussion:* This finding provides a mechanism-level insight that connects perception performance to visual scene complexity rather than to trunk visibility. The dissertation can discuss whether this pattern is likely to generalise to other vineyards, other crops, and other seasonal conditions. Note that "canopy is easier" applies to *this particular pipeline* (thin vertical objects against foliage backgrounds); it is not a general claim about canopy conditions across agricultural computer vision.
 
 **A1 candidate retraction.** The A1 proposal's justification for multiclass — "trunks become heavily occluded by foliage as the canopy fills in, while poles remain visible" — is doubly problematic given empirical results. First, both classes degrade in canopy (D018 retraction). Second, canopy detection is easier overall, not harder (this finding). Neither undermines the multiclass-vs-binary research question: the class-aware pipeline still tests whether trunk-vs-pole differentiation improves centreline detection, regardless of which condition is harder. But the *motivating framing* of "we need multiclass because canopy is where binary fails" needs to be replaced with a cleaner methodological framing ("we compare multiclass against binary as a controlled experiment isolating the class-structure variable").
 
 **What this finding does NOT claim.**
+- Does not claim the canopy-vs-bare-vine gap is statistically significant on any single split — the test-split 95% bootstrap CI for the gap is [−0.034, +0.174] and includes zero. The finding rests on cross-split replication of the point estimate.
 - Does not claim canopy is easier for *all* agricultural computer vision tasks — this is specific to thin-structure segmentation.
 - Does not claim the U-Net has "solved" canopy segmentation — foreground IoU 0.78 canopy still means ~22% of foreground pixels are misclassified.
 - Does not undermine the multiclass-vs-binary comparison, which operates at a different level.
@@ -64,7 +76,7 @@ The foreground-IoU gap (canopy minus bare-vine) is +0.077 on validation and +0.0
 ### F002 — Test performance slightly exceeds validation performance
 **Date recorded:** 4 July 2026
 **Phase:** A (U-Net binary)
-**Status:** Observed; likely explained by sample composition and augmentation-independence differences.
+**Status:** Observed; explained by sample composition and small-sample variance. Augmentation is NOT a factor — both splits are evaluated on representative frames only (D028 consumption rule). Bootstrap CI confirms val and test are statistically indistinguishable.
 
 **Observation.** Test-set overall mIoU (0.8561) is marginally higher than validation-set overall mIoU (0.8456), a difference of +0.011. The same pattern holds for foreground IoU (+0.020 test-over-val). This is unusual — typically test performance is slightly worse than validation because the model's checkpoint was selected to optimise validation metrics.
 
@@ -77,7 +89,9 @@ The foreground-IoU gap (canopy minus bare-vine) is +0.077 on validation and +0.0
 
 **Analysis.** Three factors likely combine to produce this pattern, none of which represents a methodological problem:
 
-1. **Different sample bases.** The validation set is 46 frames (23 representative scenes × 2 augmentation copies on average, per the D028 scene-honest resplit). The test set is 23 representative frames only. These are drawn from independent scene pools by design, but the compositions differ: val includes augmented variants (horizontal flips, rotations, brightness/contrast shifts) applied to representative frames, while test uses only the raw representative frame for each scene. Augmented val frames may be marginally harder on average because augmentation introduces variation the model has to generalise across.
+1. **Different sample sizes; both evaluated on representative frames only.** Per the D028 consumption rule, both splits are scored on one representative frame per scene, so augmentation plays *no* role in either metric. Validation is **46 representative scenes** (22 bare-vine + 24 canopy); test is **23 representative scenes** (11 + 12). [Verified against `data/splits/resplit_70_20_10.json`, `meta.counts.representative_by_split_canopy`.] The augmented copies that also exist in the manifest — validation totals 211 frames, test totals 103 (the balance beyond the representatives) — are intentionally unconsumed by perception evaluation (D028 "consumption pattern" clause). The val/test difference is therefore about *which independent scenes landed in each split*, not augmentation, and validation being the larger sample (46 vs 23) makes its estimate the tighter of the two.
+
+   Verification (one line): `python3 -c "import json,collections as c; m=json.load(open('data/splits/resplit_70_20_10.json')); r=m['images']; print({s:{'reps':sum(x['is_representative'] for x in r if x['split']==s),'total':sum(x['split']==s for x in r)} for s in ('valid','test')})"` → `{'valid': {'reps': 46, 'total': 211}, 'test': {'reps': 23, 'total': 103}}`.
 
 2. **Small-sample variance.** With only 23 test scenes stratified into 11 bare-vine and 12 canopy, a +0.02 fg IoU gap is within plausible sampling variance. Two independent draws from the same underlying distribution can differ by this amount by chance.
 
@@ -85,7 +99,7 @@ The foreground-IoU gap (canopy minus bare-vine) is +0.077 on validation and +0.0
 
 **Implications for the dissertation.**
 
-*Methodology:* Bootstrap confidence intervals over the 23 test frames (see O003 follow-up) will formalise the uncertainty range around the reported test metrics. When these are computed, the val and test point estimates are expected to sit inside each other's CIs, confirming statistical equivalence.
+*Methodology:* Bootstrap CIs (D020, 10,000 resamples, seed 42) over the 23 test frames are now computed: overall foreground IoU per-frame mean **0.7119, 95% CI [0.6572, 0.7659]**. The validation foreground IoU (0.6991, pooled) sits well inside this interval, confirming val and test are **statistically indistinguishable** — the +0.020 test-over-val gap is sampling variation, as anticipated. (Bootstrap point estimate is the per-frame mean; it differs slightly from the pooled 0.7195 because IoU is a ratio of sums.)
 
 *Results:* The test-slightly-above-val pattern should be reported factually without over-interpretation. A reader familiar with typical train-val-test dynamics may be confused if the finding is not addressed. One-sentence acknowledgement plus a pointer to the CI-based analysis is sufficient.
 
@@ -101,7 +115,9 @@ The foreground-IoU gap (canopy minus bare-vine) is +0.077 on validation and +0.0
 **Phase:** A (U-Net binary)
 **Status:** Locked. This is the number Phases B and C are calibrated against.
 
-**Observation.** Phase A U-Net binary achieved foreground IoU of 0.6991 on validation and 0.7195 on test. These become the reference point for evaluating whether Phase B (YOLOv11-seg binary, modernised architecture) meaningfully changes binary-mask performance, and whether Phase C (YOLOv11-seg multiclass) provides additional gain via class-aware downstream logic.
+**Observation.** Phase A U-Net binary achieved foreground IoU of 0.6991 on validation and 0.7195 on test (pooled). On the 23-scene test split the bootstrap point estimate is a per-frame mean of **0.7119 with a 95% CI of [0.6572, 0.7659]** (D020, 10,000 resamples, seed 42). These become the reference point for evaluating whether Phase B (YOLOv11-seg binary, modernised architecture) meaningfully changes binary-mask performance, and whether Phase C (YOLOv11-seg multiclass) provides additional gain via class-aware downstream logic.
+
+**Statistical anchor, honestly bounded.** The "~0.72" anchor carries a wide interval — roughly [0.66, 0.77] at 95% — the direct consequence of the 23-scene test ceiling (O006). Phase B/C comparisons against this anchor must be read against that width: only differences comfortably outside it are interpretable as real at the perception level, which is a further reason the headline cross-arm comparison lives at the geometric/command strands (D014), not here.
 
 **Analysis.** Foreground IoU is the appropriate primary metric for the perception strand of evaluation for two reasons:
 

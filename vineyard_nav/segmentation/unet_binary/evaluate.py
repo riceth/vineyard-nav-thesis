@@ -18,10 +18,12 @@ which the dataset enforces by default for those splits.
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import os
+import re
 from collections import defaultdict
-from typing import Dict
+from typing import Dict, List
 
 import torch
 import yaml
@@ -34,6 +36,28 @@ from .visualize import denormalize_to_uint8, save_gt_pred_panel
 
 CLASS_NAMES = ["background", "foreground"]
 CANOPY_STATES = ("bare_vine", "canopy")
+
+# Roboflow suffix strip -> scene id (same rule as scripts/resplit_dataset.py / D028).
+_RF_SUFFIX = re.compile(r"\.rf\.[0-9a-fA-F]+\.[A-Za-z0-9]+$")
+PER_FRAME_COLUMNS = ["filename", "scene_id", "canopy_state", "iou_foreground",
+                     "iou_background", "precision_foreground", "recall_foreground",
+                     "f1_foreground"]
+
+
+def _per_frame_metrics(pred_1hw: torch.Tensor, mask_1hw: torch.Tensor) -> Dict[str, float]:
+    """Metrics for a single frame, using the same confusion-matrix formulas as
+    the aggregate (SegmentationMetrics) so per-frame and pooled numbers are
+    computed identically. Absent classes yield NaN (test frames all have fg)."""
+    m = SegmentationMetrics(num_classes=2, class_names=CLASS_NAMES)
+    m.update(pred_1hw, mask_1hw)
+    r = m.compute()
+    return {
+        "iou_foreground": r["iou"]["foreground"],
+        "iou_background": r["iou"]["background"],
+        "precision_foreground": r["precision"]["foreground"],
+        "recall_foreground": r["recall"]["foreground"],
+        "f1_foreground": r["f1"]["foreground"],
+    }
 
 
 def _spec_block(metrics: SegmentationMetrics) -> Dict[str, float]:
@@ -74,6 +98,7 @@ def evaluate(run_dir: str, split: str, checkpoint: str = "best.pt",
     per_canopy = {c: SegmentationMetrics(num_classes=2, class_names=CLASS_NAMES)
                   for c in CANOPY_STATES}
     n_frames = defaultdict(int)
+    per_frame_rows: List[dict] = []          # additive: per-frame CSV (D020 bootstrap input)
 
     pred_dir = os.path.join(run_dir, f"predictions_{split}")
     if save_predictions:
@@ -100,6 +125,14 @@ def evaluate(run_dir: str, split: str, checkpoint: str = "best.pt",
                                           masks.index_select(0, sel))
                 n_frames[cstate] += len(idx)
 
+        # Per-frame metrics (additive; does not affect the aggregation above).
+        for i, fn in enumerate(filenames):
+            row = {"filename": fn,
+                   "scene_id": _RF_SUFFIX.sub("", fn),
+                   "canopy_state": canopy[i]}
+            row.update(_per_frame_metrics(preds[i:i + 1], masks[i:i + 1]))
+            per_frame_rows.append(row)
+
         if save_predictions:
             preds_cpu = preds.cpu().numpy()
             masks_cpu = masks.cpu().numpy()
@@ -107,6 +140,14 @@ def evaluate(run_dir: str, split: str, checkpoint: str = "best.pt",
                 rgb = denormalize_to_uint8(images[i])
                 out = os.path.join(pred_dir, f"{os.path.splitext(fn)[0]}.png")
                 save_gt_pred_panel(out, rgb, masks_cpu[i], preds_cpu[i], alpha)
+
+    # Write the per-frame CSV (sorted by filename for a stable, diffable order).
+    per_frame_rows.sort(key=lambda r: r["filename"])
+    per_frame_path = os.path.join(run_dir, f"{split}_per_frame_metrics.csv")
+    with open(per_frame_path, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=PER_FRAME_COLUMNS)
+        w.writeheader()
+        w.writerows(per_frame_rows)
 
     result = {
         "overall": _spec_block(overall),
@@ -128,6 +169,7 @@ def evaluate(run_dir: str, split: str, checkpoint: str = "best.pt",
     with open(out_path, "w") as f:
         json.dump(result, f, indent=2)
     result["_meta"]["metrics_path"] = out_path
+    result["_meta"]["per_frame_csv"] = per_frame_path
     result["_meta"]["predictions_dir"] = pred_dir if save_predictions else None
     return result
 
@@ -145,6 +187,7 @@ def _print_summary(result: dict) -> None:
               f"{b['precision_foreground']:>9.4f}{b['recall_foreground']:>9.4f}"
               f"{b['f1_foreground']:>9.4f}")
     print(f"  -> {result['_meta']['metrics_path']}")
+    print(f"  -> {result['_meta']['per_frame_csv']}  (per-frame, {result['n_frames']['overall']} rows)")
 
 
 def main() -> None:
