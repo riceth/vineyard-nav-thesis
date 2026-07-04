@@ -1,0 +1,43 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
+{
+	"name": "L-CAS Humble CUDA-OpenGL Teaching Devcontainer",
+	"image": "lcas.lincoln.ac.uk/lcas/cmp9767:1.0",
+	
+	"features": {
+    "ghcr.io/devcontainers/features/node:1": {},
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
+}
+
+	"forwardPorts": [5801],
+	"portsAttributes": {
+		"5801": {
+			"label": "desktop",
+			"onAutoForward": "openBrowser"
+		}
+	},
+
+	"postStartCommand": "/opt/entrypoint.sh /bin/true; .devcontainer/post-create.sh",
+
+	"remoteUser": "ros",
+	"updateRemoteUserUID": true, // ensure internal user has the same UID as the host user and update file permissions
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"anthropic.claude-code",
+				"GitHub.vscode-pull-request-github",
+				"ms-vscode.cpptools",
+				"JaehyunShim.vscode-ros2",
+				"nonanonno.vscode-ros2",
+				"deitry.colcon-helper",
+				"github.vscode-github-actions"
+			]
+		}
+	},
+	"hostRequirements": {
+		"gpu": "optional",
+		"cpus": 2,
+		"memory": "8gb"
+	}
+}

@@ -1,0 +1,56 @@
+# Phase A — U-Net binary baseline. Hyperparameters LOCKED (PHASE_A_SPEC section 8.1).
+# See docs/DECISIONS.md D009 (loss), D011 (optimiser/schedule), D016 (reproducibility),
+# D022 (SMP + ImageNet encoder). NOTE: epochs/t_max/patience follow PHASE_A_SPEC 8.1
+# (60 epochs, reduced from 100 because the pretrained encoder converges faster); this
+# refines the pre-pretraining figures in D011 (100 epochs / patience 15).
+experiment_name: phase_a_unet_binary
+seed: 42
+
+data:
+  root: /workspaces/dissertation/vineyard_nav/data/semanticblt
+  split_manifest: /workspaces/dissertation/vineyard_nav/data/splits/resplit_70_20_10.json
+  image_size: 640
+  num_workers: 0   # was 4 (PHASE_A_SPEC 8.1); forced to 0 — the devcontainer's
+                   # 64 MB /dev/shm cannot back DataLoader worker IPC, and 0 also
+                   # removes a potential nondeterminism source (rule 7). Raise the
+                   # container's shm_size to re-enable workers for speed.
+
+model:
+  arch: unet
+  encoder: resnet34
+  encoder_weights: imagenet
+  num_classes: 2
+
+loss:
+  ce_weight: 0.5
+  dice_weight: 0.5
+
+optim:
+  optimizer: adam
+  lr: 1.0e-4
+  weight_decay: 1.0e-5
+
+schedule:
+  type: cosine_annealing
+  t_max: 60
+  eta_min: 1.0e-6
+
+train:
+  epochs: 60                     # reduced from 100 because pretrained converges faster
+  batch_size: 8
+  grad_accumulation_steps: 1     # bump to 2 (batch_size to 4) if OOM
+  amp: true
+  early_stopping:
+    metric: val_miou
+    mode: max
+    patience: 10
+
+logging:
+  tensorboard: true
+  csv: true
+  log_predictions_every_n_epochs: 5
+  prediction_subset_size: 8
+
+reproducibility:
+  deterministic: true
+  benchmark: false

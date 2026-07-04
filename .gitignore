@@ -1,0 +1,87 @@
+# ============================================
+# Personal / quarantined
+# ============================================
+.personal/
+*Record of Tutorial*
+plan.docx
+
+# ============================================
+# Large external artefacts — required at runtime, NOT tracked
+# ============================================
+SemanticBLT.v1-2024-june.coco-segmentation/
+kg_march_23.bag
+kg_march_23_ros2/
+*.bag
+*.mcap
+*.db3
+
+# ============================================
+# Claude Code local state (machine-specific)
+# ============================================
+.claude/
+
+# ============================================
+# Python
+# ============================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.pytest_cache/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+
+# ============================================
+# Environments
+# ============================================
+venv/
+.venv/
+env/
+
+# ============================================
+# ML / model artefacts (regenerate from configs + commit hash)
+# ============================================
+*.pt
+*.pth
+*.onnx
+*.pkl
+
+# ============================================
+# Experiment outputs (regenerated from training)
+# ============================================
+**/results/runs/
+**/tensorboard/
+**/wandb/
+**/output/
+
+# ============================================
+# Split manifests ARE tracked (small JSON, essential for reproducibility)
+# ============================================
+!vineyard_nav/data/splits/
+
+# ============================================
+# Editor / IDE
+# ============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ============================================
+# OS
+# ============================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ============================================
+# Jupyter
+# ============================================
+.ipynb_checkpoints/
+
+# Data symlinks (host-specific paths, recreated per environment)
+vineyard_nav/data/semanticblt
+vineyard_nav/data/yolo_binary/
+vineyard_nav/data/yolo_multiclass/

@@ -1,0 +1,183 @@
+# STATUS.md — Current Pipeline & Progress Tracker
+
+**Purpose:** Quick orientation for the current state of the project. Use this as the primary handover document when starting a new chat. Point to `DECISIONS.md` for rationale on any specific decision.
+
+---
+
+## Project
+
+**Title:** Multiclass Semantic Segmentation for In-Row Vineyard Navigation: A Comparative Study Against the Binary-Mask Baseline
+**Student:** Edosa Ebohon (30436293), MSc Robotics and Artificial Intelligence
+**Institution:** University of Lincoln
+**Module:** CMP9140 Research Project
+**Timeline:** 13 June 2026 → 26 August 2026 (A2 submission)
+**Working directory:** `/workspaces/dissertation/vineyard_nav/`
+
+---
+
+## Current state (as of 28 June 2026)
+
+**Planning phase — post supervisor feedback design refinement. Implementation not yet started.**
+
+Recent events:
+1. A1 proposal submitted (1 July 2026 deadline; submitted early)
+2. Supervisor instruction: reproduce baseline first, then novel development
+3. Supervisor feedback rounds resulted in three-arm design (U-Net binary + YOLO binary + YOLO multiclass) with Config A/B/C downstream sweep on Phase C
+4. Data split changed from Roboflow default (95/5/2) to 70/20/10 stratified resplit
+5. Roboflow-trained model verified as `roboflow-3-n-seg` (instance seg, mAP@50 74.1%) — reference only, not reused
+
+---
+
+## Pipeline architecture
+
+Three model arms, all feeding the same downstream (per-side clustering → RANSAC → offline PID) and evaluated by the same three-strand framework (perception, geometric, command-level).
+
+| Arm | Phase | Model | Class structure | Purpose |
+|---|---|---|---|---|
+| 1 | A | U-Net (SMP + ImageNet pretrained encoder) | Binary (trunk+pole → foreground) | Official baseline — reproduces de Silva 2024 paradigm |
+| 2 | B | YOLOv11-seg (COCO pretrained) | Binary (trunk+pole → 1 class) | Modernised binary baseline |
+| 3 | C | YOLOv11-seg (COCO pretrained) | Multiclass (trunk, pole distinct) | The contribution — tests class-aware downstream |
+
+**Isolated comparisons:**
+- A ↔ B → **architecture effect** at fixed binary labelling
+- B ↔ C → **class-structure effect** at fixed YOLO architecture
+
+**Phase C downstream sweep:**
+- Config A: trunk primary, pole fallback below threshold T
+- Config B: pole primary, trunk fallback below threshold T
+- Config C: class-agnostic (trunk + pole treated as one pool)
+- Sweep 3 configs × 6 T values on validation; test at locked (config*, T*)
+
+---
+
+## Progress tracker
+
+### Environment ✅
+- [x] Devcontainer working (L-CAS ROS2 Humble, PyTorch 2.11+cu128, sm_120 verified)
+- [x] SemanticBLT dataset at `/workspaces/dissertation/SemanticBLT.v1-2024-june.coco-segmentation/`
+- [x] Data structure verified: COCO polygon format, 26,280 train annotations across 6 classes
+- [x] `vineyard_nav/` folder scaffolded
+
+### Design ✅
+- [x] Research question and contribution locked
+- [x] Three-arm design locked
+- [x] Phase C downstream sweep methodology locked
+- [x] Reproducibility framework locked
+- [x] Working rules locked (including "no directional framing before Results")
+
+### Data preparation (in progress)
+- [x] 70/20/10 stratified resplit with augmentation-leakage guard — **scene-level** (D028, supersedes D024). `scripts/resplit_dataset.py` → `data/splits/resplit_70_20_10.json`. 230 scenes → 161/46/23; leakage-verified; deterministic (seed 42). Test = **23 independent scenes** (11 bare-vine + 12 canopy) — honest bootstrap units; see O006 (raise with supervisor).
+- [ ] Binary labels for U-Net (Phase A)
+- [ ] YOLO binary label files (Phase B)
+- [ ] YOLO multiclass label files (Phase C — trunk + pole only)
+
+### Phase A — U-Net binary
+- [x] Dataset class + spot-check visualisation — `segmentation/unet_binary/dataset.py`; spot-check gate **passed** (labels verified: red covers trunk+pole, excludes pipes/robot, both canopy states)
+- [x] SMP U-Net wrapper (ResNet-34 encoder, ImageNet pretrained) — `segmentation/unet_binary/model.py`; smoke test passes (24.44M params, [B,2,640,640] logits); CUDA+AMP forward verified on sm_120
+- [x] Loss (0.5·CE + 0.5·Dice) + metrics (mIoU, per-class IoU/P/R/F1) — `losses.py`, `metrics.py`; unit tests pass. mIoU from accumulated confusion-matrix counts (verified size-1-batch = analytic 1/3, batching-invariant). Dice = equal-weighted multiclass soft Dice (see note below).
+- [~] Training loop (AMP, TensorBoard + CSV logging, checkpoint schema) — `train.py` + `configs/phase_a_unet_binary.yaml` written; **2-epoch smoke gate PASSED** (50/10 subset, no OOM, all §8.3 artifacts, complete checkpoint schema). AMP healthy on sm_120 (float16, GradScaler stable, no NaN). **Bitwise reproducibility verified** (two runs → identical metrics.csv) after fixes recorded in D016. Peak VRAM batch=8: 3.33 GB / 8 GB. **HELD before full 60-epoch run pending confirmation.**
+- [ ] Validation evaluation
+- [ ] Test evaluation (once)
+- [ ] Metrics recorded in DECISIONS.md
+
+### Phase B — YOLO binary
+- [ ] YOLO data.yaml configured
+- [ ] Training via ultralytics
+- [ ] Validation evaluation
+- [ ] Test evaluation (once)
+- [ ] Metrics recorded
+
+### Phase C — YOLO multiclass
+- [ ] YOLO data.yaml configured (2 classes: trunk, pole)
+- [ ] Training via ultralytics
+- [ ] Downstream sweep on val: 3 configs × 6 T values
+- [ ] Locked (config*, T*) recorded
+- [ ] Test evaluation at locked config
+- [ ] Sensitivity analysis figure produced
+
+### Downstream + evaluation
+- [ ] Per-side clustering module (works on pixel masks AND instance centroids)
+- [ ] RANSAC line fitting module
+- [ ] Offline PID controller (hand-tuned, kinematic sanity check)
+- [ ] Three-strand evaluation framework
+- [ ] Bootstrap CI + effect size utilities
+- [ ] Canopy-state stratification
+
+### Dissertation writing
+- [ ] Introduction (refined from A1)
+- [ ] Literature Review (extend beyond 6 references — supervisor flag)
+- [ ] Methodology (documents all refinements from A1)
+- [ ] Implementation
+- [ ] Results & Discussion
+- [ ] Conclusion
+
+---
+
+## Immediate next action
+
+**Data preparation, in this order:**
+1. ~~Script the 70/20/10 stratified resplit~~ ✅ done — scene-level resplit (D028), manifest at `data/splits/resplit_70_20_10.json`
+2. ~~Verify no augmented duplicates leak across splits~~ ✅ done — leakage guard passes; determinism confirmed
+3. Prepare binary mask generation for Phase A U-Net  ← **next**
+4. Convert COCO annotations to YOLO format for Phases B and C
+
+**⚠ Before Phase A training:** raise O006 with supervisor — honest test set is 23 scenes (dataset ceiling of 230 unique scenes). D024's ~100-frame target was augmentation-inflated; D028 makes evaluation honest but revives the 23-frame thinness the supervisor flagged.
+
+---
+
+## Key locked decisions (short list)
+
+Full rationale and history in `DECISIONS.md`. Headline items:
+
+- **Three-arm design.** U-Net binary + YOLO binary + YOLO multiclass. No separate robustness check — U-Net-vs-YOLO comparison built into primary design.
+- **U-Net binary:** SMP with ResNet-34 encoder, ImageNet pretrained. Not scratch (superseded).
+- **YOLO:** YOLOv11-seg, COCO pretrained, via ultralytics.
+- **Multiclass classes:** trunk + pole only, not all 6. All-6 kept as optional supplementary experiment.
+- **Phase C downstream sweep:** 3 configs × 6 T values (T ∈ {1, 2, 3, 5, 8, 12} instance counts). Selected on val; test evaluated once.
+- **Data split:** 70/20/10 stratified by canopy state; all augmentations of a base image stay in same split.
+- **Resolution:** native 640×640, no downsampling.
+- **Reproducibility:** seed = 42; git commit hash in every checkpoint; versions pinned in `requirements.txt`.
+- **Statistics:** bootstrap CIs + effect sizes over per-frame metric differences. No p-values.
+- **Framing:** no directional claim about which arm wins before Results chapter.
+
+---
+
+## Environment quirks (must-know)
+
+- Devcontainer has system Python + venv overlay. When installing new packages, always use `pip install --upgrade <pkg>` so it lands in the venv, not the system layer.
+- If imports fail with `_ARRAY_API not found`, the overlay is biting — upgrade the failing package into the venv.
+- PyTorch is 2.11.0+cu128 (recent) — matters because sm_120 (Blackwell 5050) support only appeared mid-2026.
+- Ignore harmless conflicts: `conan PyYAML`, `Axes3D import warning`, `grpcio-tools protobuf`.
+
+---
+
+## Open items
+
+- **O001 (existed):** Threshold T range — currently {1, 2, 3, 5, 8, 12} instance counts for Phase C. May re-anchor after seeing YOLO multiclass detection densities.
+- **O002 (existed):** All-6-classes supplementary experiment — only if Phases A/B/C complete on time.
+- **O003 (existed):** Phase A + B + C test metrics — appended to DECISIONS.md as each phase completes.
+- **O004 (new):** Literature review extension — supervisor flagged 6 references as thin. Must reach ~12–15 for A2.
+- **O005 (new):** "Poles remain visible" retraction from A1 — must be openly acknowledged in A2 Methodology or Discussion.
+
+---
+
+## Related documents
+
+- `PROJECT_PLAN.md` — full project scope, phase design, evaluation framework
+- `DECISIONS.md` — running decisions log with rationale (feeds A2 Methodology chapter directly)
+- `PHASE_A_SPEC.md` — U-Net binary implementation contract
+- `PHASE_B_SPEC.md` — YOLO binary implementation contract
+- `PHASE_C_SPEC.md` — YOLO multiclass implementation contract
+- `Masters_Dissertation_Proposal.pdf` — A1 proposal (submitted; source of truth for research question)
+
+---
+
+## Continuation protocol (for new chats)
+
+When starting a new chat:
+1. Share this STATUS.md file
+2. Share `DECISIONS.md` if the new work touches a locked decision
+3. Share the specific PHASE_X_SPEC.md for the phase being worked on
+4. State the immediate task
+
+Do not re-open locked decisions unless there's new evidence. If a locked decision needs revisiting, add a new decision entry to `DECISIONS.md` that supersedes the old one — do not overwrite history.
