@@ -75,9 +75,11 @@ Three model arms, all feeding the same downstream (per-side clustering → RANSA
 - [x] Dataset class + spot-check visualisation — `segmentation/unet_binary/dataset.py`; spot-check gate **passed** (labels verified: red covers trunk+pole, excludes pipes/robot, both canopy states)
 - [x] SMP U-Net wrapper (ResNet-34 encoder, ImageNet pretrained) — `segmentation/unet_binary/model.py`; smoke test passes (24.44M params, [B,2,640,640] logits); CUDA+AMP forward verified on sm_120
 - [x] Loss (0.5·CE + 0.5·Dice) + metrics (mIoU, per-class IoU/P/R/F1) — `losses.py`, `metrics.py`; unit tests pass. mIoU from accumulated confusion-matrix counts (verified size-1-batch = analytic 1/3, batching-invariant). Dice = equal-weighted multiclass soft Dice (see note below).
-- [~] Training loop (AMP, TensorBoard + CSV logging, checkpoint schema) — `train.py` + `configs/phase_a_unet_binary.yaml` written; **2-epoch smoke gate PASSED** (50/10 subset, no OOM, all §8.3 artifacts, complete checkpoint schema). AMP healthy on sm_120 (float16, GradScaler stable, no NaN). **Bitwise reproducibility verified** (two runs → identical metrics.csv) after fixes recorded in D016. Peak VRAM batch=8: 3.33 GB / 8 GB. **HELD before full 60-epoch run pending confirmation.**
-- [ ] Validation evaluation
-- [ ] Test evaluation (once)
+- [x] Training loop (AMP, TensorBoard + CSV logging, checkpoint schema) — `train.py` + `configs/phase_a_unet_binary.yaml`. Smoke gate passed; bitwise reproducibility verified (D016). AMP healthy on sm_120. Peak VRAM batch=8: 3.33 GB / 8 GB.
+- [x] Full training done — run `results/runs/phase_a_unet_binary_20260704_004105/` (git 5b4f1c05). Early-stopped @ epoch 52 (patience 10). **Best val mIoU 0.8456 @ epoch 42** (fg IoU 0.6991, val_loss 0.0647). ~41 min. Curves: `training_curves.png` (healthy; mild train/val loss gap, val loss flat — no worsening overfit).
+- [x] Validation evaluation — per-epoch during training; `best.pt` locked @ epoch 42.
+- [x] `evaluate.py` + `visualize.py` built (impl order step 6) — **dry-run on VALIDATION passed**: reproduces best.pt val mIoU 0.8456 exactly; canopy-stratified; 46 GT-vs-pred panels rendered; `valid_metrics.json` (§9.1 schema). Test set untouched.
+- [ ] Test evaluation (once) — **PENDING user approval (rule 5)**. Command ready: `python -m segmentation.unet_binary.evaluate --run-dir results/runs/phase_a_unet_binary_20260704_004105 --split test`
 - [ ] Metrics recorded in DECISIONS.md
 
 ### Phase B — YOLO binary
