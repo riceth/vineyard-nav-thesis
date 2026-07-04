@@ -16,6 +16,13 @@ kg_march_23_ros2/
 *.db3
 
 # ============================================
+# Data symlinks (host-specific paths, recreated per environment)
+# ============================================
+vineyard_nav/data/semanticblt
+vineyard_nav/data/yolo_binary/
+vineyard_nav/data/yolo_multiclass/
+
+# ============================================
 # Claude Code local state (machine-specific)
 # ============================================
 .claude/
@@ -54,7 +61,11 @@ env/
 **/results/runs/
 **/tensorboard/
 **/wandb/
-**/output/
+
+# ============================================
+# Analysis outputs (regenerated from scripts)
+# ============================================
+vineyard_nav/analysis/output/
 
 # ============================================
 # Split manifests ARE tracked (small JSON, essential for reproducibility)
@@ -80,8 +91,3 @@ desktop.ini
 # Jupyter
 # ============================================
 .ipynb_checkpoints/
-
-# Data symlinks (host-specific paths, recreated per environment)
-vineyard_nav/data/semanticblt
-vineyard_nav/data/yolo_binary/
-vineyard_nav/data/yolo_multiclass/

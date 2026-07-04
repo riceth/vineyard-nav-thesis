@@ -79,8 +79,9 @@ Three model arms, all feeding the same downstream (per-side clustering → RANSA
 - [x] Full training done — run `results/runs/phase_a_unet_binary_20260704_004105/` (git 5b4f1c05). Early-stopped @ epoch 52 (patience 10). **Best val mIoU 0.8456 @ epoch 42** (fg IoU 0.6991, val_loss 0.0647). ~41 min. Curves: `training_curves.png` (healthy; mild train/val loss gap, val loss flat — no worsening overfit).
 - [x] Validation evaluation — per-epoch during training; `best.pt` locked @ epoch 42.
 - [x] `evaluate.py` + `visualize.py` built (impl order step 6) — **dry-run on VALIDATION passed**: reproduces best.pt val mIoU 0.8456 exactly; canopy-stratified; 46 GT-vs-pred panels rendered; `valid_metrics.json` (§9.1 schema). Test set untouched.
-- [ ] Test evaluation (once) — **PENDING user approval (rule 5)**. Command ready: `python -m segmentation.unet_binary.evaluate --run-dir results/runs/phase_a_unet_binary_20260704_004105 --split test`
-- [ ] Metrics recorded in DECISIONS.md
+- [x] Test evaluation (once) — **DONE 4 Jul 2026, not to be re-run (rule 5)**. Overall test mIoU **0.8561**, fg IoU 0.7195 (23 scenes). Bare-vine 0.8414 / canopy 0.8858. `test_metrics.json` + 23 panels in `predictions_test/`.
+- [x] Metrics recorded in DECISIONS.md (O003)
+- [ ] Follow-up: per-frame metric export + bootstrap CIs on the 23 test scenes (D020/O006) — non-blocking
 
 ### Phase B — YOLO binary
 - [ ] YOLO data.yaml configured

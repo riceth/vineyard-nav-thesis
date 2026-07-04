@@ -336,6 +336,21 @@ Only if Phases A, B, C complete on time. Would test whether richer supervision t
 ### O003 — Phase A + B + C test metrics
 Appended to this file as each phase completes. Empirical basis for A2 Results.
 
+**Phase A — U-Net binary (SMP + ImageNet ResNet-34). Test evaluated once, 4 July 2026.**
+- Run: `results/runs/phase_a_unet_binary_20260704_004105/`; checkpoint `best.pt` @ epoch 42; git `5b4f1c05`; seed 42.
+- Selection: best val mIoU 0.8456 @ epoch 42 (early-stopped @ 52, patience 10).
+- Test split: 23 representative scenes (11 bare-vine + 12 canopy), one frame per scene (D028).
+
+| Stratum | n | mIoU | IoU fg | Precision fg | Recall fg | F1 fg |
+|---|---|---|---|---|---|---|
+| Overall | 23 | 0.8561 | 0.7195 | 0.8618 | 0.8134 | 0.8369 |
+| Bare-vine | 11 | 0.8414 | 0.6945 | 0.8470 | 0.7941 | 0.8197 |
+| Canopy | 12 | 0.8858 | 0.7751 | 0.8926 | 0.8548 | 0.8733 |
+
+- Test overall mIoU (0.8561) sits slightly above validation (0.8456) — no negative generalisation surprise.
+- Reported factually, no cross-arm framing (D027). Point estimates only; per-frame bootstrap CIs over the 23 scenes are a follow-up (D020/O006) — evaluate.py must first export per-frame metrics. Not blocking Phase A closure.
+- Test evaluated exactly once; not to be re-run (rule 5).
+
 ### O004 — Literature review extension
 Supervisor flagged A1's 6 references as thin. Must reach ~12–15 for A2. Extension planned during dissertation writing phase.
 
