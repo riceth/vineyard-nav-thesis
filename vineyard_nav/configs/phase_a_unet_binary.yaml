@@ -10,10 +10,14 @@ data:
   root: /workspaces/dissertation/vineyard_nav/data/semanticblt
   split_manifest: /workspaces/dissertation/vineyard_nav/data/splits/resplit_70_20_10.json
   image_size: 640
-  num_workers: 0   # was 4 (PHASE_A_SPEC 8.1); forced to 0 — the devcontainer's
-                   # 64 MB /dev/shm cannot back DataLoader worker IPC, and 0 also
-                   # removes a potential nondeterminism source (rule 7). Raise the
-                   # container's shm_size to re-enable workers for speed.
+  num_workers: 0   # was 4 (PHASE_A_SPEC 8.1); forced to 0 for two reasons:
+                   # (1) the devcontainer's /dev/shm is only 64 MB (Docker default),
+                   #     too small to back DataLoader worker IPC — workers crash with
+                   #     "unable to allocate shared memory";
+                   # (2) it removes worker ordering as a nondeterminism source, aiding
+                   #     bitwise reproducibility (rule 7 / D016; see D016 clarification).
+                   # Raise the container's shm_size (e.g. --shm-size=2g) to re-enable
+                   # workers for speed once reproducibility is otherwise locked.
 
 model:
   arch: unet
