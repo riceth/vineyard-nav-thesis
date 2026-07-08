@@ -1,0 +1,50 @@
+# Phase B — YOLOv11-seg binary training. Hyperparameters LOCKED (PHASE_B_SPEC 6.2).
+# See DECISIONS.md D023 (YOLOv11-seg), D013 (augmentation parity with Phase A),
+# D016 (reproducibility), O005 (data prep). Data prep by scripts/coco_to_yolo.py.
+experiment_name: phase_b_yolo_binary
+seed: 42
+
+model: yolo11n-seg.pt
+
+data: configs/phase_b_yolo_binary_data.yaml
+
+train:
+  epochs: 100
+  imgsz: 640
+  batch: 16                # ultralytics default; reduce if OOM on 8 GB
+  device: 0
+  workers: 0               # was 4 (PHASE_B_SPEC 6.2); forced to 0 — 64 MB /dev/shm
+                           # cannot back DataLoader worker IPC in this container
+                           # (same constraint as Phase A). Raise shm_size to restore.
+  patience: 30             # ultralytics early stopping patience
+  save: true
+  save_period: 10
+  project: results/runs
+  name: phase_b_yolo_binary
+  exist_ok: false
+  pretrained: true
+  optimizer: SGD           # ultralytics default
+  lr0: 0.01
+  lrf: 0.01                # final lr = lr0 * lrf
+  momentum: 0.937
+  weight_decay: 0.0005
+  warmup_epochs: 3
+  amp: true
+
+augmentation:
+  # ultralytics defaults with vertical flip disabled and small rotations (D013 parity).
+  hsv_h: 0.015
+  hsv_s: 0.7
+  hsv_v: 0.4
+  degrees: 10.0            # small rotations to match Phase A
+  translate: 0.1
+  scale: 0.5
+  shear: 0.0
+  flipud: 0.0              # NO vertical flip (rows have orientation)
+  fliplr: 0.5              # horizontal flip
+  mosaic: 1.0
+  mixup: 0.0
+  copy_paste: 0.0
+
+reproducibility:
+  deterministic: true

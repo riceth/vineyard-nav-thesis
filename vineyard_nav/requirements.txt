@@ -5,7 +5,7 @@ torchvision==0.26.0+cu128
 triton==3.6.0
 
 # Computer vision and image processing
-opencv-python-headless==4.13.0.92
+opencv-python-headless==5.0.0.93   # bumped from 4.13.0.92 during opencv reconcile (O008)
 pillow==12.2.0
 albumentations==2.0.8
 
@@ -15,6 +15,12 @@ pycocotools==2.0.11
 # Segmentation model (Phase A U-Net, PHASE_A_SPEC section 5)
 segmentation-models-pytorch==0.5.0
 timm==1.0.27
+
+# YOLOv11-seg (Phases B & C, ultralytics). It depends on opencv-python
+# (non-headless); on install that pulled opencv-python 5.0.0.93 alongside the
+# headless build. Reconciled (O008): opencv-python removed, opencv-python-headless
+# upgraded to 5.0.0.93 so cv2 is single-sourced and headless.
+ultralytics==8.4.90
 
 # Scientific stack
 numpy==2.2.6

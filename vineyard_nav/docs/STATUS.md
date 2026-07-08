@@ -67,9 +67,9 @@ Three model arms, all feeding the same downstream (per-side clustering → RANSA
 
 ### Data preparation (in progress)
 - [x] 70/20/10 stratified resplit with augmentation-leakage guard — **scene-level** (D028, supersedes D024). `scripts/resplit_dataset.py` → `data/splits/resplit_70_20_10.json`. 230 scenes → 161/46/23; leakage-verified; deterministic (seed 42). Test = **23 independent scenes** (11 bare-vine + 12 canopy) — honest bootstrap units; see O006 (raise with supervisor).
-- [ ] Binary labels for U-Net (Phase A)
-- [ ] YOLO binary label files (Phase B)
-- [ ] YOLO multiclass label files (Phase C — trunk + pole only)
+- [x] Binary labels for U-Net (Phase A) — via `SemanticBLTBinaryDataset` (on-the-fly COCO→mask)
+- [x] YOLO binary label files (Phase B) — `scripts/coco_to_yolo.py` (O005, convert_coco + collapse + D028 routing) → `data/yolo_binary/` (721/46/23; 14,894 fg lines audited == COCO cat{3,5}; coords match source to 0.0003px). `data.yaml` + `canopy_state_map.json` written.
+- [ ] YOLO multiclass label files (Phase C — trunk + pole only) — same script, `--mode multiclass` (to add)
 
 ### Phase A — U-Net binary
 - [x] Dataset class + spot-check visualisation — `segmentation/unet_binary/dataset.py`; spot-check gate **passed** (labels verified: red covers trunk+pole, excludes pipes/robot, both canopy states)
@@ -84,8 +84,18 @@ Three model arms, all feeding the same downstream (per-side clustering → RANSA
 - [x] Bootstrap CIs on the 23 test scenes (D020/O006) — `evaluate.py` now emits `test_per_frame_metrics.csv` (additive; test_metrics.json byte-identical, md5 verified); `evaluation/bootstrap.py` (D020 utility, 10k resamples, seed 42) → `test_bootstrap_ci.json`. Overall fg IoU 0.7119 [0.6572, 0.7659]; canopy−bare-vine gap +0.072 **[−0.034, +0.174] (includes 0)**. F001/F002/F003 + D028 updated.
 
 ### Phase B — YOLO binary
-- [ ] YOLO data.yaml configured
-- [ ] Training via ultralytics
+- [x] Data prep — `scripts/coco_to_yolo.py` (O005 LOCKED); `data/yolo_binary/` built, numeric+visual spot-check passed. ultralytics 8.4.90 installed & pinned (torch unchanged; opencv note in requirements).
+- [x] YOLO data.yaml configured — `configs/phase_b_yolo_binary_data.yaml`
+- [x] opencv drift reconciled (O008 RESOLVED) — cv2 single-sourced headless 5.0.0.93; requirements pin updated
+- [x] Training config + entry point — `configs/phase_b_yolo_binary_train.yaml` (§6.2; workers 4→0 env-forced), `segmentation/yolo_binary/train.py`. **2-epoch smoke PASSED**: no OOM, no NaN, val losses ↓ (box 3.68→3.25, seg 4.32→3.97), GPU 3.77/8 GB @ batch 16, ~9s/epoch, deterministic (identical reruns). Path nesting fixed (absolute project).
+- [x] Full training via ultralytics — 100 epochs, 45.2 min, best.pt @ epoch 86. Val mask mAP@50 **0.629** (box 0.709), peak VRAM 4.23/8 GB. No NaN/collapse.
+- [x] `evaluate.py` built (§7) — overall + canopy-stratified via temp list-yamls; `half=True` (AMP-consistent, D004). **Val reproduction EXACT**: overall mask mAP@50 0.6291 == training epoch-86 0.6292. Canopy 0.686 > bare-vine 0.606 (replicates F001). `val_metrics.json` written.
+- [x] Test evaluation (once) — **DONE 8 Jul 2026, not to be re-run (rule 5)**. Overall mask mAP@50 **0.6161** (box 0.7219); bare-vine 0.6249 / canopy 0.6192. `test_metrics.json` + 23 GT|Pred panels in `predictions_test/`.
+- [x] `visualize.py` standalone (§2) — GT|Pred mask panels, parallel to Phase A.
+- [x] Bootstrap CIs (D020 reuse) — per-frame foreground **pixel** metrics (conf 0.25) → `test_per_frame_metrics.csv` + `test_bootstrap_ci.json`. Overall pixel IoU_fg 0.556 [0.466, 0.633]. (mAP has no per-frame CI; per-frame pixel metric parallels Phase A.)
+- [x] Metrics recorded in DECISIONS.md (O003 Phase B block)
+
+**Phase B complete** (§10): trained + best.pt locked · test once · results.csv preserved · predictions saved · DECISIONS O003 updated · STATUS updated. → Phase C (YOLO multiclass) can begin.
 - [ ] Validation evaluation
 - [ ] Test evaluation (once)
 - [ ] Metrics recorded

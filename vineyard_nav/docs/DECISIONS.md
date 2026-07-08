@@ -332,6 +332,20 @@ Isolated comparisons: A ↔ B (architecture effect, binary fixed); B ↔ C (clas
 
 ---
 
+## D029 — Test evaluation precision matches training precision
+**Date:** 8 July 2026
+**Status:** LOCKED
+
+For arms trained under AMP mixed precision (Phase B, Phase C), test-time inference and evaluation are performed with `half=True` (FP16) to match training. This ensures evaluation code reproduces training-time val metrics exactly.
+
+Rationale: mAP is a threshold-based metric sensitive to small numeric differences at prediction boundaries. Running training under FP16 and evaluation under FP32 introduced a systematic gap of ~0.024 in mask mAP@50 (0.6053 FP32 vs 0.6291 FP16, matching training's 0.6292). Same model, same weights — different precision, different metric. Matching precision resolves the discrepancy without changing the model.
+
+Phase A (U-Net) is unaffected — training and evaluation both used the same AMP settings via the training script.
+
+Cross-references: O003 (test metrics), F002 (Phase A reproducibility discipline established the precedent).
+
+---
+
 ## Open items
 
 ### O001 — Threshold T range (Phase C)
@@ -358,11 +372,89 @@ Appended to this file as each phase completes. Empirical basis for A2 Results.
 - Reported factually, no cross-arm framing (D027). Point estimates only; per-frame bootstrap CIs over the 23 scenes are a follow-up (D020/O006) — evaluate.py must first export per-frame metrics. Not blocking Phase A closure.
 - Test evaluated exactly once; not to be re-run (rule 5).
 
+**Phase B — YOLOv11-seg binary (yolo11n-seg, COCO-pretrained). Test evaluated once, 8 July 2026.**
+- Run: `results/runs/phase_b_yolo_binary/`; checkpoint `best.pt` @ epoch 86; git `7884bca`; seed 42.
+- Data: `data/yolo_binary/` from `scripts/coco_to_yolo.py` (O005); D028 routing (train 721 / val 46 / test 23 representative).
+- Training: 100 epochs, 45.2 min, peak VRAM 4.23/8 GB. Val mask mAP@50 0.629 reproduced exactly by `evaluate.py` (half=True, AMP-consistent — see methods note).
+- Perception metric is mAP (D014); computed under FP16/AMP to match training-time validation (D004) and Phase A's AMP eval regime.
+
+The two metric families below measure different things and are **not interchangeable** (F005): detection quality (native YOLO mAP) vs pixel coverage of the detected foreground union (rasterised fg IoU). Presented side by side, per stratum.
+
+**(a) Detection quality (mAP@50)** — native YOLO metric; a set-level PR-curve integral, so it has no per-frame decomposition and no bootstrap CI (point estimate only). Evaluated at `half=True` to match training precision (D029). Segmentation = mask; box shown for context.
+
+| Stratum | n | mask mAP@50 | mask mAP@50-95 | mask P | mask R | box mAP@50 |
+|---|---|---|---|---|---|---|
+| Overall | 23 | 0.6161 | 0.2891 | 0.6409 | 0.5995 | 0.7219 |
+| Bare-vine | 11 | 0.6249 | 0.2860 | 0.6750 | 0.6138 | 0.6895 |
+| Canopy | 12 | 0.6192 | 0.3139 | 0.5495 | 0.6701 | 0.8289 |
+
+**(b) Pixel coverage of foreground union (rasterised fg IoU)** — predicted instance masks (conf ≥ 0.25) rasterised to one binary foreground map per frame, compared to the GT binary mask. Per-frame, so it admits bootstrap 95% CIs (D020, 10,000 resamples, seed 42) and is the cross-arm-comparable perception layer with Phase A (F005). This is NOT the same quantity as mAP@50 above.
+
+| Stratum | n | pixel IoU_fg [95% CI] | precision_fg [95% CI] | recall_fg [95% CI] | F1_fg [95% CI] |
+|---|---|---|---|---|---|
+| Overall | 23 | 0.556 [0.466, 0.633] | 0.630 [0.534, 0.706] | 0.796 [0.706, 0.862] | 0.687 [0.589, 0.767] |
+| Bare-vine | 11 | 0.562 [0.507, 0.619] | 0.648 [0.591, 0.703] | 0.812 [0.750, 0.872] | 0.715 [0.669, 0.762] |
+| Canopy | 12 | 0.551 [0.390, 0.687] | 0.614 [0.437, 0.756] | 0.781 [0.619, 0.891] | 0.662 [0.475, 0.808] |
+
+- Canopy − bare-vine pixel-IoU_fg gap: −0.011 [−0.178, +0.140] (CI includes zero; canopy CI very wide, n=12, O006 ceiling). Unlike Phase A/val, the test canopy-vs-bare-vine pattern is not directional here — reported factually, no cross-arm framing (D027).
+- Artifacts: `test_metrics.json`, `test_per_frame_metrics.csv`, `test_bootstrap_ci.json`, `predictions_test/` (23 GT|Pred panels).
+- Test evaluated exactly once; not to be re-run (rule 5).
+
 ### O004 — Literature review extension
 Supervisor flagged A1's 6 references as thin. Must reach ~12–15 for A2. Extension planned during dissertation writing phase.
 
-### O005 — Roboflow re-export vs in-place COCO→YOLO conversion
-Two paths for preparing YOLO-format labels: (a) re-export from Roboflow in YOLOv11 segmentation format, (b) in-place conversion via ultralytics `convert_coco()` utility. Path (a) is faster; path (b) gives more control. Decision deferred until data prep step.
+### O005 — COCO→YOLO conversion: in-place script
+**Date:** 4 July 2026
+**Status:** LOCKED. Path B chosen (in-place COCO→YOLO conversion).
+
+Decision: convert COCO polygon annotations to YOLO segmentation format via an in-repo script (`vineyard_nav/scripts/coco_to_yolo.py`), parameterised by class-collapse rule. Do NOT re-download from Roboflow in YOLO format.
+
+Rationale:
+- Preserves single source of truth (COCO JSON is master, YOLO labels derived)
+- Applies D028 scene-honest split manifest directly (no override needed)
+- Reusable for Phase C multiclass (same script, different collapse rule)
+- Auditable, unit-testable, deterministic
+
+Script uses ultralytics `convert_coco()` utility for polygon-to-YOLO conversion; adds split-manifest routing and class-collapse logic on top.
+
+**Implementation note (4 July 2026):** `convert_coco()` writes `class = category_id − 1` (verified: pole cat 3 → 2, trunk cat 5 → 4) and normalised segments. The script runs it once over the three source COCO JSONs, then keeps only foreground classes (COCO cat ∈ {3,5}), rewrites them to the collapsed id, and routes frames per the D028 manifest. Frame routing honours the D028 consumption rule: **train = all 721 frames; val = 46 representative; test = 23 representative** (augmented copies of val/test scenes are not placed). Manifest split `valid` maps to the ultralytics `val/` directory.
+
+### O009 — Multi-seed evaluation planned post-Phase C
+**Date:** 8 July 2026
+**Status:** LOCKED. Committed for post-Phase-C robustness check.
+
+After Phase C completes with seed 42, re-run all three arms with seeds 43, 44, 45, 46 for a 5-seed robustness check. Report per-arm mean and SD across seeds alongside per-run bootstrap CIs.
+
+Rationale: single-seed studies characterise data variance (via bootstrap CIs) but not training-run variance. Multi-seed averaging is standard practice in ML methodology papers and strengthens conclusions from the three-arm comparison.
+
+Cost: ~25-30 GPU-hours total (5 seeds × 3 arms × ~1-2 hours per run). Accepted for dissertation quality.
+
+Constraints:
+- Data locked (same D028 manifest, same 23-scene test set)
+- Hyperparameters locked (same YAML configs)
+- Each specific model evaluated exactly once on the 23-scene test — rule 5 applied per seed. That means 5 test evaluations per arm across the multi-seed pass, but each is of a distinct trained model, not of the same model repeated. The test data is the same; the models being evaluated are different.
+- Bootstrap CIs computed per seed; means and SDs computed across seeds
+
+Reporting format: "fg IoU 0.72 ± 0.03 (mean across 5 seeds)" alongside per-seed CIs.
+
+Timeline: after Phase C closes, before A2 Results write-up.
+
+### O008 — opencv version drift from ultralytics install — RESOLVED
+**Date:** 4 July 2026
+**Status:** RESOLVED.
+Installing `ultralytics` pulled `opencv-python==5.0.0.93` (non-headless) alongside the pinned `opencv-python-headless==4.13.0.92`; both ship a `cv2` module, so cv2 resolved to the newer non-headless build (a GUI-dependent package in a headless container, and two conflicting installs). Fix: `pip uninstall -y opencv-python`, then `pip install --upgrade opencv-python-headless` (→ 5.0.0.93). Verified afterwards: cv2 5.0.0 imports, `imread`/`imwrite`/`fillPoly` work, and ultralytics/YOLO/smp/pycocotools/albumentations/torch all import (torch unchanged, 2.11.0+cu128). `requirements.txt` pin updated 4.13.0.92 → 5.0.0.93; cv2 is now single-sourced and headless.
 
 ### O006 — Test set is 23 independent scenes (dataset ceiling)
 The scene-honest resplit (D028) yields only 23 representative test scenes (11 bare-vine + 12 canopy), because the export contains just 230 unique scenes total. Augmentation cannot manufacture independent evaluation frames. Raise with supervisor: accept 23 scenes with strong bootstrap-CI caveats, or source additional raw frames. Must be acknowledged in A2 Limitations regardless.
+
+### O007 — Out-of-distribution evaluation set (supervisor-requested)
+**Date raised:** 4 July 2026 (supervisor feedback via Teams)
+**Status:** Open. Not blocking Phase B/C. To be scoped in supervisor meeting.
+
+Supervisor observation: test scenes are visually similar to train scenes (same vineyard, same season, same acquisition run). Even with scene-honest splitting, this is an in-distribution test, not a genuine held-out generalisation test.
+
+Proposed remediation: manually label images from a different part of the vineyard or a different season to form an OOD evaluation set. This would sit alongside the existing 23-scene in-distribution test, not replace it. Reported separately in A2 Results.
+
+Supervisor position: proceed with current pipeline setup (Phases B and C, downstream evaluation), then revisit dataset expansion once pipeline machinery is complete.
+
+Timing: post-Phase C pipeline completion, before final A2 Results write-up. Meeting required to scope: how many images, which season/site, annotation tool and protocol, class scheme (same 6 as SemanticBLT? just trunk + pole?).

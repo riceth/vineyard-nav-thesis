@@ -117,7 +117,7 @@ The gap's 95% CI on the test split **includes zero**, so the effect is *not* ind
 
 **Observation.** Phase A U-Net binary achieved foreground IoU of 0.6991 on validation and 0.7195 on test (pooled). On the 23-scene test split the bootstrap point estimate is a per-frame mean of **0.7119 with a 95% CI of [0.6572, 0.7659]** (D020, 10,000 resamples, seed 42). These become the reference point for evaluating whether Phase B (YOLOv11-seg binary, modernised architecture) meaningfully changes binary-mask performance, and whether Phase C (YOLOv11-seg multiclass) provides additional gain via class-aware downstream logic.
 
-**Statistical anchor, honestly bounded.** The "~0.72" anchor carries a wide interval — roughly [0.66, 0.77] at 95% — the direct consequence of the 23-scene test ceiling (O006). Phase B/C comparisons against this anchor must be read against that width: only differences comfortably outside it are interpretable as real at the perception level, which is a further reason the headline cross-arm comparison lives at the geometric/command strands (D014), not here.
+**Statistical anchor, honestly bounded.** The "~0.72" anchor carries a wide interval — roughly [0.66, 0.77] at 95% — the direct consequence of the 23-scene test ceiling (O006). Phase B and C perception comparisons against this anchor should compute the bootstrap CI on the paired difference (the same construction as F001's gap CI), not compare individual arm CIs — the paired-difference CI is the correct inference for cross-arm significance. This is a further reason the headline cross-arm comparison lives at the geometric/command strands (D014), not here.
 
 **Analysis.** Foreground IoU is the appropriate primary metric for the perception strand of evaluation for two reasons:
 
@@ -138,3 +138,53 @@ The gap's 95% CI on the test split **includes zero**, so the effect is *not* ind
 **What this finding does NOT claim.**
 - Does not claim Phase A performance is state-of-the-art. Modern instance-segmentation models (Phase B) may exceed it on the same task.
 - Does not claim the fg IoU numbers alone constitute "success" — that judgement depends on the downstream centreline-fitting quality (geometric strand of evaluation, still to come).
+
+### F004 — Current test set is in-distribution, not out-of-distribution
+**Date recorded:** 4 July 2026
+**Phase:** A (raised by supervisor)
+**Status:** Documented limitation. Remediation planned post-Phase C (see O007).
+
+**Observation.** The 23 test scenes and 721 training scenes were drawn from a single SemanticBLT release, all captured at the same vineyard site across the same growing season (March–June 2024, per the dataset's provenance). Even under scene-honest splitting (D028), test scenes share substantial visual context with training scenes: same trellis structure, same soil, same lighting geometry, same distant infrastructure, and largely the same trunk and pole population. This constitutes a within-distribution generalisation test — the model is evaluated on unseen scenes, but not on genuinely unseen vineyards, seasons, or acquisition conditions.
+
+**Implications for the dissertation.**
+
+*Methodology / Limitations:* The 23-scene test constitutes an in-distribution test set. Its results characterise how well the model generalises to unseen scenes within the same vineyard-and-season context, not how it would perform in truly novel conditions (different vineyard, different season, different camera setup, different growth stage).
+
+*Discussion:* This is a common limitation for research on single-site datasets and does not undermine the three-arm comparison — all three arms are evaluated on the same in-distribution test, so their relative ranking is defensible. What it does bound is the transferability claim: results demonstrate architecture × class-structure trade-offs for this vineyard type in this season, and are indicative rather than conclusive for other deployment conditions.
+
+*Remediation planned:* Supervisor has flagged and endorsed adding an out-of-distribution evaluation set via manual labelling of images from a different vineyard section or season, post-Phase C (O007). When that is available, the dissertation will report both in-distribution (three-arm comparison) and out-of-distribution (generalisation) results.
+
+**What this finding does NOT claim.**
+- Does not undermine the three-arm ranking itself — all arms are evaluated on the same test set.
+- Does not claim the model is guaranteed to fail out-of-distribution — that would be equally unfounded until measured.
+- Does not require re-doing Phase A. The 23-scene test is still the anchor for the within-distribution comparison.
+
+---
+
+### F005 — Cross-arm perception comparison relies on rasterised per-frame foreground IoU
+**Date recorded:** 8 July 2026
+**Phase:** B (established here, extends to Phase C)
+**Status:** Methodological choice, locked as the cross-arm perception metric.
+
+**Observation.** Phase A (U-Net semantic segmentation) natively reports per-pixel foreground IoU, which decomposes cleanly to per-frame values and admits bootstrap confidence intervals. Phase B (YOLO instance segmentation) natively reports mAP@50, a set-level metric that integrates a precision-recall curve across all predictions and does not decompose to per-frame values — it cannot be bootstrapped in the standard sense.
+
+**Choice made.** For cross-arm perception comparison, we compute a shared metric — per-frame foreground pixel IoU — on both arms. For Phase A, this is the native metric. For Phase B, we rasterise YOLO's instance masks into a single binary foreground/background mask per frame (any pixel covered by any detection at conf ≥ 0.25 = foreground), then compute foreground IoU against ground truth. This gives per-frame values that bootstrap directly and are directly comparable to Phase A.
+
+mAP@50 remains the headline detection-quality metric for Phase B (and will be for Phase C), reported as a point estimate without CI. Its value is different in kind: "how well does the model detect trunk/pole instances at IoU threshold 0.5?" versus rasterised foreground IoU's "how well does the union of detected masks cover the ground-truth foreground pixels?"
+
+**Implications for the dissertation.**
+
+*Methodology:* Explicit statement of cross-arm metric choice. Prevents the reviewer question "how do you compare mIoU/fg-IoU (Phase A) against mAP (Phase B)?" — the answer is we don't. We compute the same rasterised foreground IoU on both, and use that (with bootstrap CIs) as the cross-arm perception layer. mAP is reported per-arm as native detection quality.
+
+*Results:* Present both metrics side by side per arm with clear labels: "detection quality (mAP@50)" and "pixel coverage of foreground union (rasterised fg IoU)."
+
+*Discussion:* The two metrics may diverge — a model can detect objects well (high mAP) but miss pixel edges (low pixel IoU), or vice versa. This divergence itself is informative.
+
+**Cross-references.**
+- F003 (Phase A baseline anchor at fg IoU 0.72) — F005 makes this anchor cross-arm-comparable.
+- D027 (no directional framing before Results) — applies to numerical differences between arms.
+
+**What this finding does NOT claim.**
+- Does not claim rasterised fg IoU is a better metric than mAP for evaluating YOLO — it isn't; mAP is the community standard. Rasterised fg IoU is a cross-arm comparability tool.
+- Does not claim mAP is inappropriate for Phase B or Phase C — it's the headline detection metric per arm.
+- Does not resolve which arm is "better" — that judgement happens at the cross-arm comparison in Results, not in FINDINGS.
