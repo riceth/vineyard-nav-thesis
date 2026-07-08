@@ -346,6 +346,20 @@ Cross-references: O003 (test metrics), F002 (Phase A reproducibility discipline 
 
 ---
 
+## D030 — Phase B conf-threshold selected on validation
+**Date:** 8 July 2026
+**Status:** LOCKED
+
+The rasterised per-frame fg IoU used for Phase B's cross-arm perception comparison (F005) is measured at conf*, selected on the 46-scene validation set by argmax mean fg IoU across conf ∈ {0.10, 0.15, 0.20, 0.25, 0.30, 0.40}. Test evaluated once at locked conf*. mAP metrics (headline detection quality) are not affected by conf choice at this stage; they were reported at ultralytics defaults.
+
+Rationale: aligns Phase B methodology with Phase C's val-based T-sweep. Provides a principled operating point rather than reliance on the ultralytics default (0.25). Preserves rule 5: threshold selected on val, test evaluated once at locked value.
+
+Sweep result (val, n=46, half=True; `scripts/phase_b_conf_sweep.py`): mean fg IoU by conf = {0.10: 0.5655, 0.15: 0.5758, 0.20: 0.5793, 0.25: 0.5856, 0.30: 0.5852, 0.40: 0.5786}. **conf\* = 0.25** (argmax; 0.30 within 0.0004). Curve + data: `results/runs/phase_b_yolo_binary/val_conf_sweep.{png,json}`. Sensitivity discussed in F006.
+
+**Outcome:** conf\* = 0.25 coincides with the ultralytics default used for the already-committed test result (O003), so that result **stands unchanged** as the locked Phase B test evaluation — no supersede, no test re-run (rule 5 preserved). Had conf\* differed, test would have been re-evaluated once at conf\* and the conf=0.25 files retained as `*_conf025_preliminary.json`; that branch was not taken. The coincidence is recorded for provenance: the operating point was validated post-hoc as optimal on val, not merely inherited from a default.
+
+---
+
 ## Open items
 
 ### O001 — Threshold T range (Phase C)
@@ -388,7 +402,7 @@ The two metric families below measure different things and are **not interchange
 | Bare-vine | 11 | 0.6249 | 0.2860 | 0.6750 | 0.6138 | 0.6895 |
 | Canopy | 12 | 0.6192 | 0.3139 | 0.5495 | 0.6701 | 0.8289 |
 
-**(b) Pixel coverage of foreground union (rasterised fg IoU)** — predicted instance masks (conf ≥ 0.25) rasterised to one binary foreground map per frame, compared to the GT binary mask. Per-frame, so it admits bootstrap 95% CIs (D020, 10,000 resamples, seed 42) and is the cross-arm-comparable perception layer with Phase A (F005). This is NOT the same quantity as mAP@50 above.
+**(b) Pixel coverage of foreground union (rasterised fg IoU)** — predicted instance masks (conf ≥ conf\*) rasterised to one binary foreground map per frame, compared to the GT binary mask. Per-frame, so it admits bootstrap 95% CIs (D020, 10,000 resamples, seed 42) and is the cross-arm-comparable perception layer with Phase A (F005). This is NOT the same quantity as mAP@50 above. **conf\* = 0.25**, selected on the 46-scene validation set (D030; val sweep argmax, sensitivity in F006) — it coincides with the ultralytics default, so the numbers below (originally at 0.25) are already at the locked operating point and stand unchanged.
 
 | Stratum | n | pixel IoU_fg [95% CI] | precision_fg [95% CI] | recall_fg [95% CI] | F1_fg [95% CI] |
 |---|---|---|---|---|---|

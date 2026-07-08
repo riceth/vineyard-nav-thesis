@@ -92,7 +92,8 @@ Three model arms, all feeding the same downstream (per-side clustering → RANSA
 - [x] `evaluate.py` built (§7) — overall + canopy-stratified via temp list-yamls; `half=True` (AMP-consistent, D004). **Val reproduction EXACT**: overall mask mAP@50 0.6291 == training epoch-86 0.6292. Canopy 0.686 > bare-vine 0.606 (replicates F001). `val_metrics.json` written.
 - [x] Test evaluation (once) — **DONE 8 Jul 2026, not to be re-run (rule 5)**. Overall mask mAP@50 **0.6161** (box 0.7219); bare-vine 0.6249 / canopy 0.6192. `test_metrics.json` + 23 GT|Pred panels in `predictions_test/`.
 - [x] `visualize.py` standalone (§2) — GT|Pred mask panels, parallel to Phase A.
-- [x] Bootstrap CIs (D020 reuse) — per-frame foreground **pixel** metrics (conf 0.25) → `test_per_frame_metrics.csv` + `test_bootstrap_ci.json`. Overall pixel IoU_fg 0.556 [0.466, 0.633]. (mAP has no per-frame CI; per-frame pixel metric parallels Phase A.)
+- [x] Bootstrap CIs (D020 reuse) — per-frame foreground **pixel** metrics → `test_per_frame_metrics.csv` + `test_bootstrap_ci.json`. Overall pixel IoU_fg 0.556 [0.466, 0.633]. (mAP has no per-frame CI; per-frame pixel metric parallels Phase A.)
+- [x] conf-threshold sweep on val (D030) — `scripts/phase_b_conf_sweep.py`; **conf\* = 0.25** (val argmax, coincides with default → committed test stands). Curve `val_conf_sweep.png`; mildly sensitive (spread 0.020, F006).
 - [x] Metrics recorded in DECISIONS.md (O003 Phase B block)
 
 **Phase B complete** (§10): trained + best.pt locked · test once · results.csv preserved · predictions saved · DECISIONS O003 updated · STATUS updated. → Phase C (YOLO multiclass) can begin.

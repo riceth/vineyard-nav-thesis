@@ -48,3 +48,9 @@ augmentation:
 
 reproducibility:
   deterministic: true
+
+eval:
+  # Operating-point confidence for the rasterised per-frame fg IoU (cross-arm
+  # perception metric, F005). Read by segmentation/yolo_binary/evaluate.py.
+  predict_conf: 0.25  # locked per D030; val-selected as conf* from sweep {0.10-0.40}
+  half: true          # FP16 eval to match training AMP precision (D029)

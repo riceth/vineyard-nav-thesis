@@ -29,6 +29,7 @@ from typing import Dict, List
 import cv2
 import numpy as np
 import torch
+import yaml
 
 # 64 MB /dev/shm cannot back worker IPC in this container.
 torch.multiprocessing.set_sharing_strategy("file_system")
@@ -40,7 +41,8 @@ from .visualize import polygons_to_mask, yolo_lines_to_polygons, save_gt_pred_pa
 REPO = Path("/workspaces/dissertation/vineyard_nav")
 YOLO_DATA = REPO / "data/yolo_binary"
 CANOPY_STATES = ("bare_vine", "canopy")
-PREDICT_CONF = 0.25          # operating-point confidence for per-frame pixel metrics/overlays
+PREDICT_CONF = 0.25          # fallback operating-point conf; real value is config-driven
+                             # (eval.predict_conf, locked per D030 = val-selected conf*)
 _RF_SUFFIX = re.compile(r"\.rf\.[0-9a-fA-F]+\.[A-Za-z0-9]+$")
 PER_FRAME_COLUMNS = ["filename", "scene_id", "canopy_state", "iou_foreground",
                      "iou_background", "precision_foreground", "recall_foreground",
@@ -102,7 +104,8 @@ def image_list(images_dir: Path, filenames: List[str], out: Path) -> Path:
     return out
 
 
-def evaluate(run_dir: Path, split: str, weights: str, save_predictions: bool) -> dict:
+def evaluate(run_dir: Path, split: str, weights: str, save_predictions: bool,
+             predict_conf: float = PREDICT_CONF) -> dict:
     split_key = "val" if split in ("val", "valid") else "test"   # ultralytics split name
     images_dir = YOLO_DATA / "images" / split_key
     all_images = sorted(p.name for p in images_dir.iterdir() if p.suffix == ".jpg")
@@ -148,7 +151,7 @@ def evaluate(run_dir: Path, split: str, weights: str, save_predictions: bool) ->
         rows: List[dict] = []
         # One deterministic predict pass at the operating-point confidence. Rasterise
         # predicted instance masks -> binary foreground; compare to GT binary mask.
-        for r in model.predict(source=str(images_dir), conf=PREDICT_CONF, half=True,
+        for r in model.predict(source=str(images_dir), conf=predict_conf, half=True,
                                device=device, verbose=False, stream=True):
             fn = Path(r.path).name
             stem = Path(fn).stem
@@ -172,7 +175,7 @@ def evaluate(run_dir: Path, split: str, weights: str, save_predictions: bool) ->
             w_.writeheader(); w_.writerows(rows)
         result["_meta"]["predictions_dir"] = str(pred_dir)
         result["_meta"]["per_frame_csv"] = str(per_frame_path)
-        result["_meta"]["predict_conf"] = PREDICT_CONF
+        result["_meta"]["predict_conf"] = predict_conf
 
     return result
 
@@ -195,15 +198,26 @@ def main() -> None:
     ap.add_argument("--split", default="test", choices=["train", "val", "valid", "test"],
                     help="Split to evaluate. Test is the ONE locked evaluation (rule 5).")
     ap.add_argument("--weights", default="best.pt")
+    ap.add_argument("--config", default=str(REPO / "configs/phase_b_yolo_binary_train.yaml"),
+                    help="Source of eval.predict_conf (operating point, locked per D030).")
     ap.add_argument("--no-predictions", action="store_true")
     args = ap.parse_args()
+
+    # Operating-point confidence: config-driven for traceability (D030), fallback constant.
+    predict_conf = PREDICT_CONF
+    try:
+        cfg = yaml.safe_load(Path(args.config).read_text())
+        predict_conf = float(cfg.get("eval", {}).get("predict_conf", PREDICT_CONF))
+    except (OSError, ValueError, TypeError):
+        pass
+    print(f"[operating point] predict_conf = {predict_conf} (D030; from {args.config})")
 
     if args.split == "test":
         print("[GUARDRAIL] Evaluating the TEST split — single locked Phase B "
               "evaluation (rule 5). Do not re-tune and re-run.")
 
     result = evaluate(Path(args.run_dir), args.split, args.weights,
-                      save_predictions=not args.no_predictions)
+                      save_predictions=not args.no_predictions, predict_conf=predict_conf)
     print_summary(result)
 
 

@@ -188,3 +188,36 @@ mAP@50 remains the headline detection-quality metric for Phase B (and will be fo
 - Does not claim rasterised fg IoU is a better metric than mAP for evaluating YOLO — it isn't; mAP is the community standard. Rasterised fg IoU is a cross-arm comparability tool.
 - Does not claim mAP is inappropriate for Phase B or Phase C — it's the headline detection metric per arm.
 - Does not resolve which arm is "better" — that judgement happens at the cross-arm comparison in Results, not in FINDINGS.
+
+---
+
+### F006 — Phase B rasterised fg IoU is only mildly sensitive to the confidence threshold
+**Date recorded:** 8 July 2026
+**Phase:** B
+**Status:** Empirical; supports the D030 operating-point selection.
+
+**Observation.** Sweeping the detection confidence threshold and computing mean per-frame rasterised foreground IoU over the 46 validation scenes (half=True) yields a shallow, flat-topped inverted-U peaking at conf* = 0.25.
+
+**Evidence.**
+
+| conf | mean val fg IoU (n=46) |
+|---|---|
+| 0.10 | 0.5655 |
+| 0.15 | 0.5758 |
+| 0.20 | 0.5793 |
+| **0.25** | **0.5856  ← conf\*** |
+| 0.30 | 0.5852 |
+| 0.40 | 0.5786 |
+
+Total spread max−min = 0.0201; the 0.20–0.30 plateau varies by < 0.007. Curve: `results/runs/phase_b_yolo_binary/val_conf_sweep.png`.
+
+**Analysis.** The curve is broad and flat-topped (~0.02 total range), so rasterised fg IoU is only **mildly sensitive** to the confidence threshold — the operating point is not a fishing knob. Mechanistically: very low conf (0.10) admits low-confidence false-positive mask pixels that slightly depress IoU (over-prediction); high conf (0.40) drops marginal true detections (under-prediction); the optimum sits at the conventional 0.25 with 0.30 effectively tied. The plateau (spread 0.020 across the swept range, < 0.007 over 0.20–0.30) is itself a methodological finding: the reported rasterised fg IoU is robust to small perturbations in conf, so the headline number does not hinge on the precise threshold — which strengthens the reliability of the reported value and the cross-arm comparison built on it.
+
+**Implications for the dissertation.**
+*Methodology:* conf* is selected on val (D030); the flatness means the exact value is not critical, which strengthens the robustness of the operating-point choice and pre-empts a "threshold-tuned" critique.
+*Results:* report conf* = 0.25 with the sensitivity curve; note the insensitivity explicitly.
+
+**What this finding does NOT claim.**
+- Does not claim conf affects mAP@50 — mAP integrates over confidence; this sweep is only for the rasterised-fg-IoU operating point (F005).
+- Does not claim 0.25 is optimal on the test set — it is the val argmax; test was evaluated once at locked conf* (rule 5).
+- Cross-references: F005 (rasterised fg IoU as the cross-arm metric), D030 (selection procedure).
