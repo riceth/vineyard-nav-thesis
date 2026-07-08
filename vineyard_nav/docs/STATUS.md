@@ -102,6 +102,7 @@ Three model arms, all feeding the same downstream (per-side clustering → RANSA
 - [ ] Metrics recorded
 
 ### Phase C — YOLO multiclass
+- **⚠ 6799 check (F007):** when evaluating Phase C on test, explicitly inspect `color_image_6799` for whether the same large false-positive canopy mask recurs. Phase B's failure was **checkpoint-specific** (best.pt yes, last.pt no), so: recurrence → repeatable pattern across model families/checkpoint selection; absence → class-aware supervision may constrain it, or Phase C's checkpoint simply differs. O009 multi-seed (seeds 43–46) is the decisive test of whether it's systematic or a best.pt outlier.
 - [ ] YOLO data.yaml configured (2 classes: trunk, pole)
 - [ ] Training via ultralytics
 - [ ] Downstream sweep on val: 3 configs × 6 T values

@@ -358,6 +358,8 @@ Sweep result (val, n=46, half=True; `scripts/phase_b_conf_sweep.py`): mean fg Io
 
 **Outcome:** conf\* = 0.25 coincides with the ultralytics default used for the already-committed test result (O003), so that result **stands unchanged** as the locked Phase B test evaluation — no supersede, no test re-run (rule 5 preserved). Had conf\* differed, test would have been re-evaluated once at conf\* and the conf=0.25 files retained as `*_conf025_preliminary.json`; that branch was not taken. The coincidence is recorded for provenance: the operating point was validated post-hoc as optimal on val, not merely inherited from a default.
 
+**Supplementary median-based analysis (8 July 2026, not a supersede):** `scripts/median_conf_sweep.py` computed both mean and median per-frame fg IoU across the 46 val frames at each grid conf, plus catastrophic-frame count (fg IoU < 0.1). **Median-based conf\* = 0.25, identical to the mean-based conf\*** — the two selection criteria coincide, so no mean-vs-median tradeoff arises. Catastrophic frames = 0 at every conf on val (the 6799-type failure appears on no val frame). Primary mean-based conf\* = 0.25 is unchanged; result discussed in F007. Data: `results/runs/phase_b_yolo_binary/val_conf_sweep_median.{json,png}`.
+
 ---
 
 ## Open items

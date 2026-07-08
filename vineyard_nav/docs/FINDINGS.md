@@ -178,7 +178,7 @@ mAP@50 remains the headline detection-quality metric for Phase B (and will be fo
 
 *Results:* Present both metrics side by side per arm with clear labels: "detection quality (mAP@50)" and "pixel coverage of foreground union (rasterised fg IoU)."
 
-*Discussion:* The two metrics may diverge — a model can detect objects well (high mAP) but miss pixel edges (low pixel IoU), or vice versa. This divergence itself is informative.
+*Discussion:* The two metrics may diverge — a model can detect objects well (high mAP) but miss pixel edges (low pixel IoU), or vice versa. This divergence itself is informative. **See F007 for the concrete instance:** on test scene 6799 a single large false-positive mask collapses rasterised fg IoU to ~0.04 while barely denting aggregate mAP@50.
 
 **Cross-references.**
 - F003 (Phase A baseline anchor at fg IoU 0.72) — F005 makes this anchor cross-arm-comparable.
@@ -221,3 +221,68 @@ Total spread max−min = 0.0201; the 0.20–0.30 plateau varies by < 0.007. Curv
 - Does not claim conf affects mAP@50 — mAP integrates over confidence; this sweep is only for the rasterised-fg-IoU operating point (F005).
 - Does not claim 0.25 is optimal on the test set — it is the val argmax; test was evaluated once at locked conf* (rule 5).
 - Cross-references: F005 (rasterised fg IoU as the cross-arm metric), D030 (selection procedure).
+
+---
+
+### F007 — Phase B best.pt exhibits a large false-positive canopy mask on 6799 not present in last.pt
+**Date recorded:** 8 July 2026
+**Phase:** B
+**Status:** Failure mechanism observed and characterised on one scene. Rate and generality not established.
+
+**Observation.** On test scene color_image_6799, Phase B's YOLOv11-seg model produces 13 instance detections at conf ≥ 0.25. Twelve are correct trunk-and-pole masks distributed across the scene (bounding boxes, mask areas 159–953 px, confidences 0.287–0.890). One (#0, conf 0.406, mask 76,837 px, 21.6× total ground-truth foreground area) is a false-positive mask covering the right-side canopy foliage. The correct trunk detections on the same right side coexist with the false-positive mask.
+
+**Evidence (uncommitted, results/runs/phase_b_yolo_binary/diagnostic/6799_visualisation/):**
+
+- Raw scene shows no visual anomaly compared to other canopy test frames. Path structure, foliage density, camera geometry, and lighting are typical for the class.
+- Ground truth: 3,564 pixels of trunk + pole foreground (thin vertical structures on both sides). Canopy foliage is unlabelled in SemanticBLT and treated as background per our binary collapse rule.
+- YOLO union at conf ≥ 0.25: 81,365 pixels. Of these, 76,837 come from detection #0 alone; the remaining 4,528 come from detections #1–#12 (arithmetic verified: 76,837 + 4,528 = 81,365).
+- Detection #0's mask follows the actual canopy boundary reasonably well — it is not a numerical glitch but a shaped mask covering a specific scene region.
+- Detections #1–#12 correctly identify individual trunks and poles with sensible masks (mean size 377 px).
+- Raising conf to ≥ 0.41 removes detection #0 (the blob) but also removes detection #8 (conf 0.287); 11 detections remain and single-frame fg IoU improves from 0.04 to 0.598. Alternatively, a mask-area filter that removes only detection #0 while retaining all 12 correct detections yields the same single-frame fg IoU of 0.598. A residual gap versus U-Net's 0.687 on the same frame remains — YOLO's correct detections cover the ground truth well but do not fully match U-Net's per-pixel foreground coverage, even after blob removal.
+- On the locked best.pt, reproduces deterministically and identically under FP16 and FP32. Does NOT reproduce on last.pt (final epoch of the same run): last.pt yields 12 detections, max mask 963 px, no blob, single-frame fg IoU 0.604. The failure is checkpoint-specific — not stable even across the last two saved checkpoints of the same training run. best.pt was selected by ultralytics' val fitness metric; last.pt is the final epoch's weights.
+
+**Analysis.** The mask boundary follows canopy structure — this is a shaped prediction, not a numerical artifact. But the failure is not a stable learned property of the model: fourteen epochs later in the same training run (last.pt), the same architecture with slightly different weights does not produce the failure at all. This checkpoint-specificity substantially bounds the interpretation.
+
+Possible mechanisms include: (a) the detector at best.pt's epoch firing on an occluded pole or trunk within the canopy region, with the mask over-drawing onto surrounding foliage — the same detection may not have fired at the last.pt epoch; (b) a transient training instability at the val-optimal epoch that produces this specific mask via prototype coefficient predictions that drift by last.pt; (c) an artefact of the mask head's coefficient predictions at a specific parameter configuration that fitness-based checkpoint selection happened to lock. Distinguishing these would require inspection of detection #0's bounding box against ground-truth annotations, prototype activation analysis, and comparison of mask head weights between best.pt and last.pt — none currently done.
+
+Note on labelling choice: our binary collapse (trunk + pole → foreground) reflects three considerations. First, the downstream RANSAC line-fit for centreline detection requires geometrically aligned foreground pixels — canopy pixels vary in position across frames and would fit lines through canopy rather than crop rows. Second, this matches the labelling used by de Silva et al. 2024, our binary baseline reference. Third, SemanticBLT labels only structural elements (buildings, pipes, poles, robots, trunks, vehicles); canopy is not a labelled category. The failure is "wrong" specifically relative to this labelling scheme; under an alternative labelling that includes canopy in foreground, detection #0 would be classified differently. But the current labelling remains appropriate for centreline detection.
+
+**Architectural asymmetry.** The failure mode is architecturally *possible* for YOLOv11-seg because instance masks are computed per-detection via prototype coefficients, so a single detection can produce a large mask regardless of what other detections are producing. The mode is architecturally *impossible* for U-Net because each pixel is classified independently — a coherent shaped mask spanning a canopy region cannot be produced by per-pixel classification. This asymmetry is a real feature of the two architectures.
+
+This architectural asymmetry describes what is possible — U-Net cannot produce shaped canopy masks; YOLO can. It does not describe what is reliable: best.pt producing this failure while last.pt does not indicates that the mode's manifestation is checkpoint-specific rather than a stable output of this architecture on this data.
+
+**Bounded claims.** One instance of this failure on 23 test frames does not establish a base rate. The observation may reflect training-data characteristics (F004: current test set is in-distribution to training set; the confusion may be an in-distribution training coverage artifact that resolves with OOD data). Class-aware multiclass supervision (Phase C) may or may not constrain coefficient predictions differently — verification pending Phase C evaluation. Multi-seed evaluation (O009) will establish whether the same failure recurs across different training seeds.
+
+**Why the two metrics diverge.** mAP@50 counts detection #0 as one wrong prediction: at 76,837 px versus 3,564 px ground truth, it will not match any ground-truth mask and is scored as a single false positive. Aggregate mAP@50 absorbs this as a small precision penalty across all 23 test frames. Rasterised fg IoU, computed as union-mask overlap with ground truth, is dominated by detection #0's mask area — on this frame, IoU collapses to ~0.04, and the mean across 23 frames cannot recover. F005 (metric parity via rasterised fg IoU) anticipated this divergence; F007 is the concrete illustration on a specific frame.
+
+**Implications for the dissertation.**
+
+*Methodology:* Report both metrics with clear labels. Explain the labelling-scheme framing when describing the metric divergence — 6799's failure is precisely defined against the binary trunk + pole labelling and would be classified differently under alternative labellings.
+
+*Results:* Present aggregate metrics with CIs and per-frame variance. Include 6799 as a documented outlier with visualisation. The 0.04–0.69 fg IoU range for Phase B is a real characterisation, not an artifact.
+
+*Discussion:* Frame the Phase A vs Phase B comparison as: "U-Net produces consistent per-pixel coverage across the test set with limited variance. YOLO produces precise instance masks on most scenes but exhibited one catastrophic false-positive mask on 6799, driving much of the aggregate rasterised fg IoU gap. The failure mode is architecturally available to YOLO and unavailable to U-Net; whether it occurs at 1-of-23 rate or would occur at meaningfully different rates on different training seeds or different data is not established from this single instance."
+
+*Discussion (remediation options — none adopted):* Preliminary calculation: if a mask-area filter (e.g. max_area > 3,000 px on 640×640 images) removed detection #0's 76,837 px mask while retaining all 12 correct detections on 6799, the aggregate Phase B test rasterised fg IoU would rise from 0.556 [0.466, 0.633] to approximately 0.581, narrowing but not closing the gap against Phase A's 0.72 [0.66, 0.77]. The remaining gap reflects consistent under-coverage of thin structures across most test scenes — an architectural effect distinct from the catastrophic false-positive on 6799. Neither remediation is adopted here. A mask-area filter would be principled but hides the failure mode from Phase B's reported numbers; the downstream RANSAC line-fit stage is a more natural location for spurious-input handling if needed. Higher input resolution (e.g. 1280×1280) would reduce mask-head downsampling of thin structures and likely improve under-coverage, but was not explored — it would compromise the controlled A vs B architectural comparison at fixed 640×640 input. Both options are noted for possible future work.
+
+*Discussion (mean-vs-median conf selection):* Supplementary median-based analysis on val (46 frames, 8-value sweep grid). Median-based conf* coincides with mean-based (both = 0.25); catastrophic frames (fg IoU < 0.1) occur on zero val frames at any threshold in the sweep range. The 6799-type failure did not appear on val at any conf, which is why neither mean- nor median-based selection could anticipate it. This has three implications: first, it suggests the 6799 failure is out-of-distribution relative to the val set — F004's in-distribution concern applies here directly. Second, it demonstrates a limit of val-based hyperparameter selection: robustness to failure modes that don't appear on val cannot be validated against val. Third, the failure being checkpoint-specific (present on best.pt, absent on last.pt) suggests that even with a broader val set, checkpoint selection by val fitness might select checkpoints that exhibit the failure while adjacent checkpoints do not. For this project, the primary conf* = 0.25 is documented as val-selected; F007 characterises the specific test failure that val-based selection did not anticipate.
+
+*Note for Phase C:* Verify whether Phase C's multiclass YOLO's val-selected checkpoint produces a similar or different result on 6799. Given the failure is checkpoint-specific in Phase B, Phase C's failure or absence-of-failure on 6799 tells us: if the failure recurs, it's a repeatable pattern across model families and checkpoint selection procedures; if it doesn't recur, it may reflect class-aware supervision constraining coefficient predictions, or simply the specific checkpoint Phase C selected. Multi-seed evaluation (O009) is the more decisive test — if seeds 43–46 all show 6799-type failures at their locked best.pt, the effect is a systematic property of val-fitness checkpoint selection for this architecture on this data. If none do, best.pt was an outlier.
+
+*Note for downstream RANSAC:* On 6799, detection #0's mask covers the right-side vine row region. If this mask is passed to the geometry stage, it may contribute foreground pixels or centroids that inject spurious inliers into the right-side line fit. The RANSAC step's outlier tolerance will need to accommodate this. If failures of this type recur in Phase C, this becomes a design consideration for the downstream pipeline that was not scoped in the original proposal.
+
+**Cross-references.**
+- F004 (current test set is in-distribution). The observation may partly reflect training data coverage; F004's planned OOD remediation would help establish whether the failure generalises or is training-specific.
+- F005 (cross-arm metric parity via rasterised fg IoU). F007 is the concrete illustration of "the two metrics may diverge."
+- D030 (conf* = 0.25 selected on val by mean fg IoU). Supplementary median-based analysis (val only) reports what median-based selection would have chosen; documented in this finding's Discussion as an available methodological alternative.
+- Phase C observation of 6799 planned per STATUS.md.
+- O009 (multi-seed evaluation post-Phase-C). Will address rate/generality of this failure across training seeds.
+
+**What this finding does NOT claim.**
+- Does not claim YOLO is universally worse than U-Net for vineyard perception. Per-scene performance is mixed.
+- Does not claim the false-positive mask on 6799 will reproduce with different training seeds. Multi-seed evaluation (O009) will address this partially.
+- Does not claim a base rate for such failures — 1 in 23 test frames is insufficient sample.
+- Does not resolve which architecture is "preferred" for downstream navigation.
+- Does not attribute the failure to prototype coefficient pathology as a numerical event — the visualisation shows the mask boundary follows canopy structure, consistent with learned confusion within the model's training distribution rather than numerical artifact.
+- Does not claim the failure is stable across checkpoints — last.pt of the same training run does not exhibit it, indicating a checkpoint-specific manifestation rather than a robust learned behaviour. This bounds the "architectural failure mode" interpretation: the mode is available, not inevitable, and not even reliably reproduced within a single training run's checkpoint history.
+- Does not claim the mask would be "wrong" under all reasonable labellings. It is wrong specifically relative to our binary trunk + pole labelling. Under a labelling that includes canopy in the foreground (not adopted here for reasons documented in the Analysis section), the same mask would be classified differently.
