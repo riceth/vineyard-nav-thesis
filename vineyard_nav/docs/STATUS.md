@@ -111,6 +111,15 @@ Three model arms, all feeding the same downstream (per-side clustering → RANSA
 
 **Phase C perception complete.** Remaining before dissertation-writing consumes results: geometry pipeline → downstream sweep (O010) → 3-way attribution (spec §10); multi-seed robustness (O009).
 
+### Multi-seed robustness (O009) — Phase A & B complete, Phase C in progress
+- [x] Phase A U-Net — 3 seeds (42/43/44). Test fg IoU **0.716 ± 0.008**, mIoU 0.858 ± 0.003, canopy>bare gap +0.076 ± 0.004. Highly stable; no blob mode (U-Net per-pixel).
+- [x] Phase B YOLO binary — 3 seeds. Test mask mAP@50 **0.632 ± 0.016**, fg IoU 0.585 ± 0.027. **6799 blob 2/3 seeds** (42,43 blob; 44 clean); when present, same region (cross-seed mask IoU 0.93). Phase B fg-IoU variance ~3.4× Phase A's, blob-driven (F009).
+- [ ] Phase C YOLO multiclass — seeds 43/44 in progress (seed 42 done: no blob). Decisive test of whether class-aware supervision prevents the blob.
+- Config-copy recipe (seed-specific YAMLs); distinct seed-tagged run dirs; seed-42 artefacts untouched. Rule 5: each seed's best.pt test-evaluated once.
+
+### Cross-arm perception methodology (D031 LOCKED, F005 REVISED)
+Perception uses **native metrics per arm** (U-Net: mIoU/IoU; YOLO: mAP@50/per-class). Rasterised fg IoU retained **per-arm only** as internal characterisation (canopy stratification, blob detection, per-arm CIs) — NOT cross-arm ranking. Primary cross-arm comparison DEFERRED to the geometric strand (RMS lateral error, O010 pipeline). Doc changes: F005 revised, D031 locked, F007 refined (multi-seed), F001 strengthened, F009 added.
+
 ### Downstream + evaluation
 - [ ] Per-side clustering module (works on pixel masks AND instance centroids)
 - [ ] RANSAC line fitting module

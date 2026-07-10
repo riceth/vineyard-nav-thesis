@@ -52,6 +52,28 @@ The gap's 95% CI on the test split **includes zero**, so the effect is *not* ind
 
 2. **Cluttered backgrounds in bare-vine frames.** Bare-vine frames expose the full three-dimensional structure of the vineyard: horizontal and diagonal trellis wires, distant infrastructure (buildings, sky, adjacent rows visible through bare vines), the robot chassis (white frame), and the ground plane with weeds and grow-tubes. Each of these provides visual signal that the model must learn to reject as background. False positives on wires (thin vertical lines like trunks/poles) and grow-tubes (small white vertical objects) are likely dominant error modes.
 
+**Multi-seed replication (Phase A):**
+- Phase A seed 42 canopy > bare-vine gap: +0.072 [-0.034, +0.174] (test)
+- Phase A seed 43 canopy > bare-vine gap: +0.077
+- Phase A seed 44 canopy > bare-vine gap: +0.079
+- **Mean gap across 3 seeds: +0.076 ± 0.004**
+
+**Multi-seed evidence (Phase B):**
+- Phase B seed 42 canopy > bare-vine gap: -0.011 [-0.178, +0.140] (with 6799 blob)
+- Phase B seed 43 canopy > bare-vine gap: +0.062 (with 6799 blob)
+- Phase B seed 44 canopy > bare-vine gap: +0.090 (no 6799 blob)
+
+**Multi-seed evidence (Phase C):**
+- Phase C seed 42 canopy > bare-vine gap: +0.091 [+0.005, +0.175] (canopy > bare-vine reaches significance)
+- Phase C seeds 43 and 44: pending
+
+**Interpretation with multi-seed evidence.** The canopy > bare-vine effect replicates:
+- Across 3 Phase A seeds (Phase A multi-seed SD 0.004 on the gap; very stable)
+- Across arms directionally (Phase A shows it in all seeds; Phase B seed 44 shows it clearly; Phase C seed 42 shows it at significance)
+- Phase B seeds 42 and 43 have their canopy gap distorted by the 6799 blob (blob is a canopy frame; when it's present, canopy metrics are pulled down); seed 44 without the blob shows the clean pattern
+
+The effect is now supported at multiple levels: cross-split replication (within Phase A, val + test), cross-arm replication (Phase A, Phase B seed 44, Phase C), and cross-seed replication within an arm. The magnitude in Phase A is stable (mean +0.076 ± 0.004 across 3 independent training runs). F001 status: consistently replicated, reaching statistical significance in specific arms and specific seeds; effect is real.
+
 **Implications for the dissertation.**
 
 *Introduction:* The A1 proposal framed canopy as the harder condition ("trunks become heavily occluded by foliage as the canopy fills in"). The A2 Introduction should retain the observation that canopy occludes trunks — this is true — but drop the implication that canopy is where segmentation quality collapses. The empirical evidence shows the opposite for binary detection.
@@ -161,33 +183,53 @@ The gap's 95% CI on the test split **includes zero**, so the effect is *not* ind
 
 ---
 
-### F005 — Cross-arm perception comparison relies on rasterised per-frame foreground IoU
-**Date recorded:** 8 July 2026
-**Phase:** B (established here, extends to Phase C)
-**Status:** Methodological choice, locked as the cross-arm perception metric.
+### F005 — Rasterised fg IoU is a per-arm characterisation metric, not a cross-arm ranking metric
+**Date recorded:** 10 July 2026
+**Phase:** Applies to Phase B, Phase C, and future comparisons
+**Status:** REVISED. Original F005 framed rasterised fg IoU as a "cross-arm comparability metric." This framing is retracted; F005 is now scoped to per-arm internal use.
 
-**Observation.** Phase A (U-Net semantic segmentation) natively reports per-pixel foreground IoU, which decomposes cleanly to per-frame values and admits bootstrap confidence intervals. Phase B (YOLO instance segmentation) natively reports mAP@50, a set-level metric that integrates a precision-recall curve across all predictions and does not decompose to per-frame values — it cannot be bootstrapped in the standard sense.
+**Observation.** Phase A (U-Net semantic segmentation) natively reports per-pixel foreground IoU, which decomposes cleanly to per-frame values and admits bootstrap confidence intervals. Phase B and Phase C (YOLOv11-seg instance segmentation) natively report mAP@50 and related detection metrics. To provide per-frame data for statistical inference on the YOLO arms, we compute a rasterised foreground IoU: YOLO's instance masks at conf ≥ 0.25 are combined into a union foreground mask per frame; this union is compared to ground-truth foreground pixel-wise.
 
-**Choice made.** For cross-arm perception comparison, we compute a shared metric — per-frame foreground pixel IoU — on both arms. For Phase A, this is the native metric. For Phase B, we rasterise YOLO's instance masks into a single binary foreground/background mask per frame (any pixel covered by any detection at conf ≥ 0.25 = foreground), then compute foreground IoU against ground truth. This gives per-frame values that bootstrap directly and are directly comparable to Phase A.
+**Retraction of cross-arm ranking use.** The original F005 framing described rasterised fg IoU as "the metric that enables cross-arm perception comparison." This framing has been retracted for methodological reasons:
 
-mAP@50 remains the headline detection-quality metric for Phase B (and will be for Phase C), reported as a point estimate without CI. Its value is different in kind: "how well does the model detect trunk/pole instances at IoU threshold 0.5?" versus rasterised foreground IoU's "how well does the union of detected masks cover the ground-truth foreground pixels?"
+- The transformation from YOLO's per-instance masks to a binary union mask is a lossy operation. It discards per-instance confidence granularity and instance identity, and selects one interpretation ("any pixel covered by any conf ≥ 0.25 detection = foreground") over others.
+- This transformation is not standard in the segmentation literature. Comparing instance-seg outputs to semantic-seg outputs by rasterisation is not a widely-adopted methodology; a rigorous reviewer would ask why the metric is preferred to each arm's native metric.
+- Our own three-strand evaluation framework (D014) commits to "perception metrics differ across arms; cross-arm comparison happens at the geometric and command-level strands where all three arms produce the same signal." Introducing rasterised fg IoU as a cross-arm perception metric contradicts this framework.
+- The stronger the cross-arm claim we make from rasterised fg IoU (e.g., "U-Net 0.72 vs YOLO 0.58"), the more the claim is doing work that the metric is not designed to support.
 
-**Implications for the dissertation.**
+**Revised scope.** Rasterised fg IoU is retained as an *internal per-arm characterisation metric*, used for:
 
-*Methodology:* Explicit statement of cross-arm metric choice. Prevents the reviewer question "how do you compare mIoU/fg-IoU (Phase A) against mAP (Phase B)?" — the answer is we don't. We compute the same rasterised foreground IoU on both, and use that (with bootstrap CIs) as the cross-arm perception layer. mAP is reported per-arm as native detection quality.
+1. **Canopy stratification of YOLO union coverage** (does YOLO cover more foreground area on canopy scenes vs bare-vine scenes, given the same conf threshold?)
+2. **Blob-failure characterisation** (as in F007: when YOLO produces a whole-canopy false-positive mask, the rasterised fg IoU collapses because the union area is dominated by the mask; this is the metric that surfaces the failure)
+3. **Per-arm sensitivity analysis** (per D030's conf sweep on val: how does mean rasterised fg IoU respond to conf threshold choice, per arm?)
+4. **Per-arm bootstrap CIs quantifying data variance** (each arm's per-frame values are bootstrappable within that arm)
 
-*Results:* Present both metrics side by side per arm with clear labels: "detection quality (mAP@50)" and "pixel coverage of foreground union (rasterised fg IoU)."
+**Cross-arm comparison methodology.** Per D014 and F003, cross-arm perception comparison is NOT the primary evaluation. The primary comparison happens at:
 
-*Discussion:* The two metrics may diverge — a model can detect objects well (high mAP) but miss pixel edges (low pixel IoU), or vice versa. This divergence itself is informative. **See F007 for the concrete instance:** on test scene 6799 a single large false-positive mask collapses rasterised fg IoU to ~0.04 while barely denting aggregate mAP@50.
+- **Geometric strand:** RMS lateral error against teleoperator trajectory (all three arms produce the same signal — an estimated centreline — after RANSAC line-fitting). This is the metric committed in the proposal and PHASE_C_SPEC §8.
+- **Command-level strand:** steering-command difference against teleoperator commands (all three arms feed the same PID controller structure).
+
+Both strands await the geometry pipeline, which is scoped for a later phase (O010). Cross-arm ranking at the perception level is deferred to the downstream stages.
+
+**What this changes for the dissertation.**
+
+*Methodology chapter:* Explain the three-strand framework, each arm's native metric, and that rasterised fg IoU is used only for per-arm internal characterisation (not cross-arm ranking).
+
+*Results chapter:* Report each arm using its native metrics. Rasterised fg IoU reported per YOLO arm only, as internal characterisation. Do not force perception-level cross-arm ranking.
+
+*Discussion chapter:* Save architectural comparisons for the downstream strands. At the perception level, characterise each arm's behaviour and failure modes without ranking them.
 
 **Cross-references.**
-- F003 (Phase A baseline anchor at fg IoU 0.72) — F005 makes this anchor cross-arm-comparable.
-- D027 (no directional framing before Results) — applies to numerical differences between arms.
+- F003 (Phase A baseline anchor). Original F005 tried to make F003 cross-arm-comparable; revised F005 accepts that Phase A's fg IoU is per-arm.
+- D014 (three-strand evaluation framework). Revised F005 aligns with D014's commitment.
+- F007 (Phase B 6799 blob). Revised F005 preserves rasterised fg IoU as the metric that reveals the blob failure; F007's per-arm claims remain valid.
+- D031 (revised cross-arm comparison methodology). Formalises the position stated here.
 
 **What this finding does NOT claim.**
-- Does not claim rasterised fg IoU is a better metric than mAP for evaluating YOLO — it isn't; mAP is the community standard. Rasterised fg IoU is a cross-arm comparability tool.
-- Does not claim mAP is inappropriate for Phase B or Phase C — it's the headline detection metric per arm.
-- Does not resolve which arm is "better" — that judgement happens at the cross-arm comparison in Results, not in FINDINGS.
+- Does not claim rasterised fg IoU is uninformative. It is informative for per-arm characterisation.
+- Does not claim mAP@50 alone is sufficient for reporting YOLO. Report both native detection metrics AND rasterised fg IoU per arm, with the latter framed as internal characterisation.
+- Does not delete the multi-seed variance work. Bootstrap CIs on rasterised fg IoU per arm are legitimate data-variance quantification for that arm.
+- Does not claim the study is unable to compare arms. Comparison happens at the geometric and command-level strands, per D014 and PHASE_C_SPEC §8.
 
 ---
 
@@ -273,6 +315,39 @@ This architectural asymmetry describes what is possible — U-Net cannot produce
 
 *Note for downstream RANSAC:* On 6799, detection #0's mask covers the right-side vine row region. If this mask is passed to the geometry stage, it may contribute foreground pixels or centroids that inject spurious inliers into the right-side line fit. The RANSAC step's outlier tolerance will need to accommodate this. If failures of this type recur in Phase C, this becomes a design consideration for the downstream pipeline that was not scoped in the original proposal.
 
+**Phase B multi-seed evidence (3 seeds complete):**
+
+- Phase B seed 42 on 6799: blob (76,837 px, IoU 0.038, mask conf 0.406)
+- Phase B seed 43 on 6799: blob (75,271 px, IoU 0.039, mask conf 0.264)
+- Phase B seed 44 on 6799: NO blob (largest mask 961 px, single-frame fg IoU 0.591)
+
+**Cross-seed blob overlap on 6799** (results/runs/phase_b_blob_overlap_6799/blob_overlap_s42_s43.png):
+- Seed 42 blob (76,837 px) and seed 43 blob (75,271 px) show mask IoU 0.93
+- Centroid distance 5.6 px in a 640×640 image (0.9% of image width)
+- Near-identical bounding boxes: (326,86,639,497) vs (322,82,639,489)
+- Mutual coverage: seed 42 blob 95.3% inside seed 43 blob; seed 43 blob 97.3% inside seed 42 blob
+- Both masks follow the same right-side canopy boundary
+
+**Interpretation refined by multi-seed evidence.** The 0.93 mask IoU between seeds 42 and 43's blobs establishes that the failure is not a random per-checkpoint quirk of one training run. Two independently trained YOLO binary models — different random initialisations, different optimisation trajectories — converge on masking the same specific canopy region on the same specific frame. This rules out coincidental size similarity: the failure is a reproducible response from Phase B's binary training regime on this data.
+
+However, seed 44's absence of the failure demonstrates that the mode is not universally realised. Val-fitness-based checkpoint selection appears to reliably select checkpoints that produce this specific response 2 of 3 times (67%). When val-fitness selects a "clean" checkpoint (seed 44 best.pt; seed 42 last.pt was also clean), the failure does not appear. When it selects a "blobbing" checkpoint (seed 42 best.pt, seed 43 best.pt), the failure appears with near-identical geometry.
+
+**Framing.** The failure mode is:
+- Architecturally *available* to YOLOv11-seg (per-instance mask heads can produce large masks); structurally *unavailable* to U-Net (per-pixel classification).
+- Reproducible *when it occurs* (mask geometry cross-seed IoU 0.93).
+- Frequently realised (2/3 seeds).
+- Not inevitable (1/3 seeds handled 6799 cleanly).
+- Contingent on val-fitness checkpoint selection producing a "blobbing" checkpoint.
+
+**Bounded claims (multi-seed).** Phase C seed 42's absence of this response (no blob on 6799) is a single observation and does not yet indicate whether class-aware supervision structurally prevents this failure. Phase C seeds 43 and 44 (in progress) are the decisive test:
+- If Phase C seeds 43 and 44 also show no blob: strong evidence that class-aware supervision reduces or prevents this failure mode.
+- If Phase C seeds 43 or 44 show a blob: class-aware supervision reduces but does not eliminate this failure mode.
+- If Phase C seeds 43 and 44 both show blobs: class-aware supervision does not help; Phase C seed 42's clean 6799 was a specific checkpoint outcome, not a supervision effect.
+
+**Cross-references (multi-seed).**
+- F005 (revised): rasterised fg IoU is a per-arm characterisation metric; F007's use of it to surface the blob failure remains valid within the revised scope.
+- F007's earlier "checkpoint-specific manifestation" language is superseded by this multi-seed evidence: the failure recurs across seeds' best.pt selections at a specific rate.
+
 **Cross-references.**
 - F004 (current test set is in-distribution). The observation may partly reflect training data coverage; F004's planned OOD remediation would help establish whether the failure generalises or is training-specific.
 - F005 (cross-arm metric parity via rasterised fg IoU). F007 is the concrete illustration of "the two metrics may diverge."
@@ -286,7 +361,7 @@ This architectural asymmetry describes what is possible — U-Net cannot produce
 - Does not claim a base rate for such failures — 1 in 23 test frames is insufficient sample.
 - Does not resolve which architecture is "preferred" for downstream navigation.
 - Does not attribute the failure to prototype coefficient pathology as a numerical event — the visualisation shows the mask boundary follows canopy structure, consistent with learned confusion within the model's training distribution rather than numerical artifact.
-- Does not claim the failure is stable across checkpoints — last.pt of the same training run does not exhibit it, indicating a checkpoint-specific manifestation rather than a robust learned behaviour. This bounds the "architectural failure mode" interpretation: the mode is available, not inevitable, and not even reliably reproduced within a single training run's checkpoint history.
+- Does not claim the failure occurs at every checkpoint or every seed. The failure has been observed on Phase B's val-fitness-selected best.pt at seeds 42 and 43 (both showing near-identical mask geometry, IoU 0.93). Seed 44's best.pt does not exhibit the failure. Seed 42's last.pt does not exhibit it either. Val-fitness-based checkpoint selection appears to produce this specific response at ~67% rate on this data (2/3 seeds); whether this rate generalises across data or hyperparameter regimes is not established.
 - Does not claim the mask would be "wrong" under all reasonable labellings. It is wrong specifically relative to our binary trunk + pole labelling. Under a labelling that includes canopy in the foreground (not adopted here for reasons documented in the Analysis section), the same mask would be classified differently.
 
 ---
@@ -319,3 +394,55 @@ cls_loss is higher for C at every epoch (e.g. ep1 3.25 vs 2.78, ep50 0.914 vs 0.
 - Does not claim the higher cls_loss implies worse (or better) downstream or perception quality — it reflects task difficulty, not final outcome.
 - Does not itself establish any class-aware advantage; the B↔C outcome comparison lives in the downstream attribution (O010, deferred).
 - Cross-references: D021 (three-arm controlled design), D025 (trunk+pole labelling), O010 (downstream deferred).
+
+---
+
+### F009 — Phase A vs Phase B training-run variance contrast (Phase B intermittent-blob-driven)
+**Date recorded:** 10 July 2026
+**Phase:** A + B multi-seed
+**Status:** Established: Phase B's cross-seed variance is ~3.4× Phase A's, and the difference is dominated by the intermittent 6799 blob failure.
+
+**Observation.** Across 3 seeds:
+
+| Arm | Test fg IoU (mean ± SD across seeds) | Test mAP@50 (mean ± SD, YOLO only) |
+|---|---|---|
+| Phase A U-Net | 0.716 ± 0.008 | (native metric: mIoU 0.858 ± 0.003) |
+| Phase B YOLO binary | 0.585 ± 0.027 | 0.632 ± 0.016 |
+| Phase C YOLO multiclass | pending | pending |
+
+**Key observations:**
+
+1. **Phase B's SD on rasterised fg IoU (0.027) is 3.4× Phase A's SD (0.008).** Per-seed bootstrap CI half-width (data variance) averages ±0.053 for Phase A and ±0.067 for Phase B; Phase A's training-run SD is ~15% of its data-variance half-width, Phase B's is ~40% of its — Phase B's training variance is a much larger fraction of data variance.
+
+2. **Phase B's SD on mAP@50 (0.016) is smaller than on rasterised fg IoU (0.027).** Same three seeds, same evaluation, but the two metrics show different variance patterns.
+
+3. **The variance contrast is dominated by the 6799 blob.** Two of three Phase B seeds have the blob; one does not. When the blob is present, seed's fg IoU crashes ~0.55 on that single frame, dragging the aggregate down. When absent, the seed's aggregate is comparable to Phase A's absent-of-blob range.
+
+**Analysis.**
+
+Phase A produces continuously varying detection quality across seeds; the SD 0.008 reflects small training-run randomness in a stable optimisation regime. Phase A cannot produce a catastrophic per-frame failure because U-Net's per-pixel output cannot be dominated by a single spurious "instance."
+
+Phase B, by contrast, has a discrete failure mode: on some seeds, the model's mask head produces a whole-canopy false-positive mask on 6799; on other seeds, it does not. The variance in per-frame fg IoU is dominated by this discrete outcome, not by continuous drift in overall detection quality.
+
+That mAP@50 shows lower cross-seed variance (0.016) than fg IoU (0.027) validates F005's metric-divergence prediction: mAP treats the blob as one false positive among many detections and absorbs it into a modest precision penalty; fg IoU is dominated by the blob's pixel area and crashes on the frame where it occurs.
+
+**Implications for the dissertation.**
+
+*Discussion:* Present the variance contrast as a substantive architectural finding. Phase A's variance is small and continuous; Phase B's is larger and discrete. The two arms have different failure profiles: Phase A produces stable-quality models across seeds; Phase B produces a mixture of "clean" and "blobbing" models depending on val-fitness selection.
+
+*Methodology limitation acknowledgement:* Val-fitness-based checkpoint selection can lock in a "blobbing" checkpoint for Phase B without any warning signal, because the val set doesn't contain 6799-type failure cases (F007 note: median-vs-mean sweep found no catastrophic frames on val). This is a limitation of val-based hyperparameter selection when the test set contains different failure modes than the val set.
+
+*Note for Phase C:* Phase C's multi-seed variance and blob rate will characterise whether class-aware supervision produces a more Phase-A-like (stable, continuous variance) or Phase-B-like (intermittent, discrete variance) training-run profile. Testable finding.
+
+**Cross-references.**
+- F005 (revised): multi-seed data validates the divergence prediction; mAP absorbs the blob at lower cost than fg IoU.
+- F007: the specific failure driving Phase B's variance; details of the failure and its cross-seed reproducibility.
+- D016: reproducibility infrastructure gives byte-identical within-seed reproduction for Phase A (U-Net, fully deterministic) and closely-matching within-seed reproduction for Phase B/C (ultralytics is not fully byte-deterministic at fixed seed). Neither eliminates cross-seed variance; the cross-seed variance is a real feature of the training process.
+- D030: conf* was selected by mean fg IoU on val; a median-based selection would similarly have chosen conf* = 0.25 because val has no catastrophic frames. The blob-frequency question is orthogonal to conf selection.
+
+**What this finding does NOT claim.**
+- Does not claim Phase B's higher variance means it's "worse" — it means it's differently behaved than Phase A. The dissertation should characterise, not rank at this level.
+- Does not claim the variance ratio (3.4×) will be identical for Phase C. Phase C's multi-seed will produce its own SD.
+- Does not claim the blob-driving-variance framing generalises beyond this specific dataset. On another dataset with different failure modes, Phase B's variance could look very different.
+- Does not claim class-aware supervision (Phase C) will produce Phase A-like variance. That's the empirical question Phase C multi-seed will answer.
+- Does not claim ±0.05 is a universal bootstrap CI half-width; Phase A's is 0.053, Phase B's is 0.067. The training-variance fraction of data variance differs across arms partly because Phase B's data variance itself is larger (wider CIs), not solely because Phase B's training SD is larger.

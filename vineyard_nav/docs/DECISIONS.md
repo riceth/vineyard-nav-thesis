@@ -362,6 +362,47 @@ Sweep result (val, n=46, half=True; `scripts/phase_b_conf_sweep.py`): mean fg Io
 
 ---
 
+## D031 — Cross-arm perception comparison methodology: native metrics per arm, ranking deferred to geometric strand
+**Date:** 10 July 2026
+**Status:** LOCKED
+
+Cross-arm perception-level comparison uses each arm's native metric:
+- U-Net (semantic segmentation): mIoU + per-class IoU + precision/recall/F1 for foreground class
+- YOLO (instance segmentation): mAP@50 + mAP@50-95 + per-class mAP + precision/recall
+
+Direct arm-to-arm perception ranking is NOT performed at this stage. Rasterised foreground IoU (previously used as a cross-arm comparison metric in F005) is retained per YOLO arm only as an internal characterisation metric — useful for canopy stratification, blob-failure detection, and per-arm bootstrap CIs — but is not used to rank arms against each other.
+
+Primary cross-arm comparison happens at:
+- Geometric strand: RMS lateral error against teleoperator trajectory (all three arms produce a centreline estimate via RANSAC line-fitting after their per-arm perception outputs)
+- Command-level strand: steering-command difference against teleoperator commands (all three arms feed the same PID controller structure)
+
+Both strands await the geometry pipeline, which is scoped for O010 (post-multi-seed phase). Cross-arm ranking at the perception level is DEFERRED to the downstream stages.
+
+**Rationale for retirement of rasterised fg IoU as cross-arm ranking metric:**
+
+1. Not standard in the segmentation literature. Comparing instance-seg outputs to semantic-seg outputs by rasterisation is not a widely-adopted methodology; a reviewer would question the choice.
+
+2. Rasterisation is a lossy transformation. Converting per-instance masks with per-instance confidence into a binary union mask discards granularity and selects one interpretation over others.
+
+3. Contradicts our own D014 framework. D014 committed to "perception metrics differ across arms; cross-arm comparison happens at the geometric strand." The rasterised fg IoU cross-arm metric was introduced later as an implicit contradiction to D014 without acknowledging it.
+
+4. F005's original framing has been retracted. F005 (revised) now describes rasterised fg IoU as a per-arm characterisation metric only.
+
+**Cross-references.**
+- D014: three-strand evaluation framework — this D031 aligns with D014.
+- F005 (revised): describes the per-arm role of rasterised fg IoU.
+- F003: Phase A baseline anchor at fg IoU 0.72; anchor is per-arm, not cross-arm.
+- F007: uses rasterised fg IoU per arm as blob-failure characterisation; no cross-arm claim.
+- O010: downstream sweep deferred to geometric-pipeline phase; will implement the cross-arm comparison via RMS lateral error.
+
+**What this decision does NOT claim.**
+- Does not delete the perception metrics from reporting. Report each arm's native metric fully with CIs.
+- Does not claim perception is uninteresting; it characterises each arm's behaviour, and per-arm findings (F001, F007, F009) remain valid.
+- Does not force removing comparisons that were legitimate. Where per-arm sensitivity analyses (D030 conf sweep, canopy stratification) benefit from rasterised fg IoU as an internal metric, they are retained.
+- Does not commit to the geometric strand producing a "winner" — that's the empirical question the downstream strand will answer.
+
+---
+
 ## Open items
 
 ### O001 — Threshold T range (Phase C)
@@ -388,33 +429,58 @@ Appended to this file as each phase completes. Empirical basis for A2 Results.
 - Reported factually, no cross-arm framing (D027). Point estimates only; per-frame bootstrap CIs over the 23 scenes are a follow-up (D020/O006) — evaluate.py must first export per-frame metrics. Not blocking Phase A closure.
 - Test evaluated exactly once; not to be re-run (rule 5).
 
+**Phase A multi-seed evaluation** (D016 verified reproducibility + O009 methodology):
+
+| Seed | Test mIoU | Test fg IoU per-frame [95% CI] | Canopy > bare-vine gap |
+|---|---|---|---|
+| 42 | 0.856 | 0.712 [0.657, 0.766] | +0.072 |
+| 43 | 0.861 | 0.725 [0.676, 0.775] | +0.077 |
+| 44 | 0.857 | 0.712 [0.657, 0.765] | +0.079 |
+| **Mean ± SD** | 0.858 ± 0.003 | 0.716 ± 0.008 | +0.076 ± 0.004 |
+
+Per-seed 95% bootstrap CIs on test per-frame fg IoU average ±0.053 half-width (data variance). Training-run SD 0.008 is ~15% of data variance CI half-width, indicating training variance is small relative to data variance.
+
+Canopy > bare-vine gap replicates directionally across all 3 seeds (all positive, mean +0.076 ± 0.004). See F001 for cross-arm and cross-split replication.
+
 **Phase B — YOLOv11-seg binary (yolo11n-seg, COCO-pretrained). Test evaluated once, 8 July 2026.**
 - Run: `results/runs/phase_b_yolo_binary/`; checkpoint `best.pt` @ epoch 86; git `7884bca`; seed 42.
 - Data: `data/yolo_binary/` from `scripts/coco_to_yolo.py` (O005); D028 routing (train 721 / val 46 / test 23 representative).
 - Training: 100 epochs, 45.2 min, peak VRAM 4.23/8 GB. Val mask mAP@50 0.629 reproduced exactly by `evaluate.py` (half=True, AMP-consistent — see methods note).
 - Perception metric is mAP (D014); computed under FP16/AMP to match training-time validation (D004) and Phase A's AMP eval regime.
 
-The two metric families below measure different things and are **not interchangeable** (F005): detection quality (native YOLO mAP) vs pixel coverage of the detected foreground union (rasterised fg IoU). Presented side by side, per stratum.
+Phase B YOLOv11-seg binary (single-seed baseline: seed 42):
+- Test mask mAP@50: 0.616
+- Test box mAP@50: 0.722
+- Test mask mAP@50-95: 0.289
 
-**(a) Detection quality (mAP@50)** — native YOLO metric; a set-level PR-curve integral, so it has no per-frame decomposition and no bootstrap CI (point estimate only). Evaluated at `half=True` to match training precision (D029). Segmentation = mask; box shown for context.
+Per-class (single class = crop):
+- Overall: 0.616 mask, 0.722 box
 
-| Stratum | n | mask mAP@50 | mask mAP@50-95 | mask P | mask R | box mAP@50 |
-|---|---|---|---|---|---|---|
-| Overall | 23 | 0.6161 | 0.2891 | 0.6409 | 0.5995 | 0.7219 |
-| Bare-vine | 11 | 0.6249 | 0.2860 | 0.6750 | 0.6138 | 0.6895 |
-| Canopy | 12 | 0.6192 | 0.3139 | 0.5495 | 0.6701 | 0.8289 |
+Per canopy state:
+- Bare-vine (n=11): 0.625 mask, 0.689 box
+- Canopy (n=12): 0.619 mask, 0.829 box
 
-**(b) Pixel coverage of foreground union (rasterised fg IoU)** — predicted instance masks (conf ≥ conf\*) rasterised to one binary foreground map per frame, compared to the GT binary mask. Per-frame, so it admits bootstrap 95% CIs (D020, 10,000 resamples, seed 42) and is the cross-arm-comparable perception layer with Phase A (F005). This is NOT the same quantity as mAP@50 above. **conf\* = 0.25**, selected on the 46-scene validation set (D030; val sweep argmax, sensitivity in F006) — it coincides with the ultralytics default, so the numbers below (originally at 0.25) are already at the locked operating point and stand unchanged.
+Internal characterisation via rasterised fg IoU (per-arm; F005 revised):
+- Overall: 0.556 [0.466, 0.633]
+- Bare-vine: 0.562 [0.507, 0.619]
+- Canopy: 0.551 [0.390, 0.687]
+- Canopy > bare-vine gap: -0.011 [-0.178, +0.140]
 
-| Stratum | n | pixel IoU_fg [95% CI] | precision_fg [95% CI] | recall_fg [95% CI] | F1_fg [95% CI] |
-|---|---|---|---|---|---|
-| Overall | 23 | 0.556 [0.466, 0.633] | 0.630 [0.534, 0.706] | 0.796 [0.706, 0.862] | 0.687 [0.589, 0.767] |
-| Bare-vine | 11 | 0.562 [0.507, 0.619] | 0.648 [0.591, 0.703] | 0.812 [0.750, 0.872] | 0.715 [0.669, 0.762] |
-| Canopy | 12 | 0.551 [0.390, 0.687] | 0.614 [0.437, 0.756] | 0.781 [0.619, 0.891] | 0.662 [0.475, 0.808] |
+conf* = 0.25 (val-selected per D030; sweep methodology also validated by median analysis; no catastrophic val frames at any threshold in sweep range).
 
-- Canopy − bare-vine pixel-IoU_fg gap: −0.011 [−0.178, +0.140] (CI includes zero; canopy CI very wide, n=12, O006 ceiling). Unlike Phase A/val, the test canopy-vs-bare-vine pattern is not directional here — reported factually, no cross-arm framing (D027).
-- Artifacts: `test_metrics.json`, `test_per_frame_metrics.csv`, `test_bootstrap_ci.json`, `predictions_test/` (23 GT|Pred panels).
-- Test evaluated exactly once; not to be re-run (rule 5).
+**Phase B multi-seed evaluation** (D016 verified reproducibility + O009 methodology):
+
+| Seed | Test mask mAP@50 | Test rasterised fg IoU [95% CI] | 6799 result |
+|---|---|---|---|
+| 42 | 0.616 | 0.556 [0.466, 0.633] | Blob (76,837 px, IoU 0.038, conf 0.406) |
+| 43 | 0.648 | 0.589 [0.513, 0.655] | Blob (75,271 px, IoU 0.039, conf 0.264) |
+| 44 | 0.633 | 0.609 [0.561, 0.656] | NO blob (largest mask 961 px, IoU 0.591) |
+| **Mean ± SD** | 0.632 ± 0.016 | 0.585 ± 0.027 | Blob rate 2/3 |
+
+Cross-seed blob overlap on 6799 (results/runs/phase_b_blob_overlap_6799/blob_overlap_s42_s43.png): seed 42 vs seed 43 mask IoU 0.93, centroid distance 5.6 px in a 640×640 image; near-identical geometry establishes the failure is not coincidental. See F007 for full analysis.
+
+Training-run SD on mAP@50 (0.016) is smaller than SD on rasterised fg IoU (0.027) — the intermittent blob dominates fg IoU variance while affecting mAP@50 more mildly. See F009 for the metric-divergence analysis.
+- Each seed's best.pt test-evaluated once at conf 0.25; not to be re-run (rule 5).
 
 **Phase C — YOLOv11-seg multiclass (yolo11n-seg, trunk=0 / pole=1). Test evaluated once, 10 July 2026.**
 - Run: `results/runs/phase_c_yolo_multiclass/`; checkpoint `best.pt` @ epoch 94; git `30a6225`; seed 42.
@@ -445,6 +511,8 @@ Per-class trunk > pole (mask 0.678 vs 0.598 overall) — noted, **not establishe
 - Cross-arm (factual, no directional claim — D027; interpretation deferred to attribution): overall fg IoU 0.619 (C) vs 0.556 (B); much of the raw gap is the single 6799 frame (B 0.038 vs C 0.627); residual difference deferred.
 - Artifacts: `test_metrics.json`, `test_per_frame_metrics.csv`, `test_bootstrap_ci.json`, `predictions_test/` (23 panels), `diagnostic/6799_visualisation/`.
 - Test evaluated exactly once at conf 0.25; not to be re-run (rule 5).
+
+Phase C multi-seed evaluation IN PROGRESS. Seed 42 numbers as reported above. Seeds 43 and 44 are the decisive test of whether class-aware supervision structurally prevents the Phase B 6799 blob failure. Results pending.
 
 ### O004 — Literature review extension
 Supervisor flagged A1's 6 references as thin. Must reach ~12–15 for A2. Extension planned during dissertation writing phase.

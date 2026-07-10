@@ -38,6 +38,12 @@ CONF = 0.25
 
 
 def main():
+    global RUN, OUT
+    import argparse
+    ap = argparse.ArgumentParser(description="6799 viz for a Phase B run (default seed 42).")
+    ap.add_argument("--run-dir", default=str(RUN), help="results/runs/<phase_b run dir>")
+    RUN = Path(ap.parse_args().run_dir)
+    OUT = RUN / "diagnostic/6799_visualisation"
     OUT.mkdir(parents=True, exist_ok=True)
     img_path = (YD / "images/test" / FN).resolve()
     rgb = cv2.cvtColor(cv2.imread(str(img_path)), cv2.COLOR_BGR2RGB)
