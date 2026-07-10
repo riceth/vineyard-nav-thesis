@@ -416,6 +416,36 @@ The two metric families below measure different things and are **not interchange
 - Artifacts: `test_metrics.json`, `test_per_frame_metrics.csv`, `test_bootstrap_ci.json`, `predictions_test/` (23 GT|Pred panels).
 - Test evaluated exactly once; not to be re-run (rule 5).
 
+**Phase C — YOLOv11-seg multiclass (yolo11n-seg, trunk=0 / pole=1). Test evaluated once, 10 July 2026.**
+- Run: `results/runs/phase_c_yolo_multiclass/`; checkpoint `best.pt` @ epoch 94; git `30a6225`; seed 42.
+- Data: `data/yolo_multiclass/` from `scripts/coco_to_yolo.py --mode multiclass` (O005 / D025); D028 routing (train 721 / val 46 / test 23 representative). Training regime **identical to Phase B** (100 epochs, patience 30, batch 16, workers 0, imgsz 640, SGD schedule, augmentation) — only `nc` and the data path differ (verified: B↔C non-cls training losses match to <0.01, F008).
+- Training: 100 epochs (no early stop), 49.3 min, peak VRAM 4.25/8 GB. Val mask mAP@50 0.613 reproduced by `evaluate.py` (0.6126, half=True, D029).
+- **Downstream sweep + test-at-locked-config: DEFERRED (O010).** Phase C closes at **perception only**.
+
+**(a) Detection quality (mAP@50)** — `half=True` (D029); overall = trunk+pole class-mean.
+
+| Stratum | n | mask mAP@50 | mask mAP@50-95 | box mAP@50 | trunk mask@50 | pole mask@50 |
+|---|---|---|---|---|---|---|
+| Overall | 23 | 0.6378 | 0.3100 | 0.7268 | 0.6778 | 0.5978 |
+| Bare-vine | 11 | 0.6355 | 0.2971 | 0.6914 | 0.6708 | 0.6001 |
+| Canopy | 12 | 0.6572 | 0.3582 | 0.8359 | 0.7101 | 0.6043 |
+
+Per-class trunk > pole (mask 0.678 vs 0.598 overall) — noted, **not established as significant** (no per-class bootstrap CI at n=23; O009 multi-seed to confirm).
+
+**(b) Pixel coverage of foreground union (rasterised fg IoU)** — class-agnostic trunk+pole union at conf 0.25; per-frame, bootstrap 95% CIs (D020); cross-arm-comparable (F005). NOT the same quantity as mAP@50 above.
+
+| Stratum | n | fg IoU [95% CI] |
+|---|---|---|
+| Overall | 23 | 0.6185 [0.5724, 0.6662] |
+| Bare-vine | 11 | 0.5708 [0.5207, 0.6244] |
+| Canopy | 12 | 0.6623 [0.5946, 0.7275] |
+
+- Canopy − bare-vine gap: +0.0914 [+0.0050, +0.1753] (excludes zero).
+- **6799 (F007 informant): NO blob** — 14 detections (10 trunk, 4 pole), largest mask 989 px, fg IoU 0.627 (vs Phase B best.pt 0.038). Bounded interpretation in F007 (class-aware supervision vs clean-checkpoint; n=1, O009 decisive).
+- Cross-arm (factual, no directional claim — D027; interpretation deferred to attribution): overall fg IoU 0.619 (C) vs 0.556 (B); much of the raw gap is the single 6799 frame (B 0.038 vs C 0.627); residual difference deferred.
+- Artifacts: `test_metrics.json`, `test_per_frame_metrics.csv`, `test_bootstrap_ci.json`, `predictions_test/` (23 panels), `diagnostic/6799_visualisation/`.
+- Test evaluated exactly once at conf 0.25; not to be re-run (rule 5).
+
 ### O004 — Literature review extension
 Supervisor flagged A1's 6 references as thin. Must reach ~12–15 for A2. Extension planned during dissertation writing phase.
 
@@ -434,6 +464,16 @@ Rationale:
 Script uses ultralytics `convert_coco()` utility for polygon-to-YOLO conversion; adds split-manifest routing and class-collapse logic on top.
 
 **Implementation note (4 July 2026):** `convert_coco()` writes `class = category_id − 1` (verified: pole cat 3 → 2, trunk cat 5 → 4) and normalised segments. The script runs it once over the three source COCO JSONs, then keeps only foreground classes (COCO cat ∈ {3,5}), rewrites them to the collapsed id, and routes frames per the D028 manifest. Frame routing honours the D028 consumption rule: **train = all 721 frames; val = 46 representative; test = 23 representative** (augmented copies of val/test scenes are not placed). Manifest split `valid` maps to the ultralytics `val/` directory.
+
+### O010 — Phase C downstream sweep deferred to geometry-pipeline phase
+**Date:** 10 July 2026
+**Status:** DEFERRED. Not blocking Phase C closure or multi-seed pass.
+
+The downstream sweep (3 configs × 6 T values on val, selection by RMS lateral error) requires a geometry pipeline that is scoped for a later phase of the dissertation (RANSAC + centreline + trajectory extraction from the ROS bag). Rather than build a proxy sweep now or a rushed geometry pipeline mid-Phase-C, the sweep is deferred to when the geometry pipeline is built as scoped.
+
+The Phase C best.pt is locked and deterministic. Sweep can be run at any later point in the project without model retraining.
+
+Preserves scope and stays faithful to the A1 proposal and PHASE_C_SPEC §8 commitment to RMS lateral error as the selection metric.
 
 ### O009 — Multi-seed evaluation planned post-Phase C
 **Date:** 8 July 2026

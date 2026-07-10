@@ -101,14 +101,15 @@ Three model arms, all feeding the same downstream (per-side clustering → RANSA
 - [ ] Test evaluation (once)
 - [ ] Metrics recorded
 
-### Phase C — YOLO multiclass
-- **⚠ 6799 check (F007):** when evaluating Phase C on test, explicitly inspect `color_image_6799` for whether the same large false-positive canopy mask recurs. Phase B's failure was **checkpoint-specific** (best.pt yes, last.pt no), so: recurrence → repeatable pattern across model families/checkpoint selection; absence → class-aware supervision may constrain it, or Phase C's checkpoint simply differs. O009 multi-seed (seeds 43–46) is the decisive test of whether it's systematic or a best.pt outlier.
-- [ ] YOLO data.yaml configured (2 classes: trunk, pole)
-- [ ] Training via ultralytics
-- [ ] Downstream sweep on val: 3 configs × 6 T values
-- [ ] Locked (config*, T*) recorded
-- [ ] Test evaluation at locked config
-- [ ] Sensitivity analysis figure produced
+### Phase C — YOLO multiclass — **PERCEPTION COMPLETE (downstream deferred, O010)**
+- [x] Data prep — `coco_to_yolo.py --mode multiclass` (D025); `data/yolo_multiclass/` (721/46/23; 14,894 fg lines == Phase B; collapse verified numeric + class-coloured spot-check). `configs/phase_c_yolo_multiclass_data.yaml` (nc:2, trunk/pole).
+- [x] Training via ultralytics — `segmentation/yolo_multiclass/` (train copy of Phase B's). Smoke passed; full 100 epochs, 49.3 min, best.pt @ ep 94, peak 4.25 GB. Regime identical to Phase B (F008: non-cls losses match <0.01; cls diverges — controlled comparison confirmed).
+- [x] Val reproduction — `evaluate.py --split val`: overall mask mAP@50 0.6126 == training 0.613 (half=True, D029).
+- [x] Test evaluation (once, conf 0.25) — **DONE 10 Jul 2026, not to be re-run (rule 5)**. Overall mask mAP@50 **0.6378** (box 0.7268); per-class trunk 0.678 / pole 0.598. Rasterised fg IoU 0.619 [0.572, 0.666]. **6799: no blob, fg IoU 0.627** (F007 informant).
+- [x] Metrics recorded in DECISIONS.md (O003 Phase C block); F007 updated; F008 added.
+- [~] Downstream sweep + test-at-locked-config — **DEFERRED to geometry-pipeline phase (O010)**; needs RANSAC/centreline/trajectory (not built). Phase C best.pt locked & deterministic; sweep runnable later without retraining.
+
+**Phase C perception complete.** Remaining before dissertation-writing consumes results: geometry pipeline → downstream sweep (O010) → 3-way attribution (spec §10); multi-seed robustness (O009).
 
 ### Downstream + evaluation
 - [ ] Per-side clustering module (works on pixel masks AND instance centroids)

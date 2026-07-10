@@ -45,7 +45,12 @@ MODES: Dict[str, dict] = {
         "out_subdir": "data/yolo_binary",
         "data_yaml": "configs/phase_b_yolo_binary_data.yaml",
     },
-    # Phase C multiclass will add: {"collapse": {5: 0, 3: 1}, "names": {0: "trunk", 1: "pole"}, ...}
+    "multiclass": {
+        "collapse": {5: 0, 3: 1},                   # trunk -> 0, pole -> 1 (D025 / PHASE_C_SPEC 4.1)
+        "names": {0: "trunk", 1: "pole"},
+        "out_subdir": "data/yolo_multiclass",
+        "data_yaml": "configs/phase_c_yolo_multiclass_data.yaml",
+    },
 }
 
 

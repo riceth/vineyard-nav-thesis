@@ -269,6 +269,8 @@ This architectural asymmetry describes what is possible — U-Net cannot produce
 
 *Note for Phase C:* Verify whether Phase C's multiclass YOLO's val-selected checkpoint produces a similar or different result on 6799. Given the failure is checkpoint-specific in Phase B, Phase C's failure or absence-of-failure on 6799 tells us: if the failure recurs, it's a repeatable pattern across model families and checkpoint selection procedures; if it doesn't recur, it may reflect class-aware supervision constraining coefficient predictions, or simply the specific checkpoint Phase C selected. Multi-seed evaluation (O009) is the more decisive test — if seeds 43–46 all show 6799-type failures at their locked best.pt, the effect is a systematic property of val-fitness checkpoint selection for this architecture on this data. If none do, best.pt was an outlier.
 
+*Phase C result (10 July 2026):* **The 6799 blob does NOT recur in Phase C.** Phase C's val-selected best.pt at conf 0.25 produces 14 clean per-instance detections (10 trunk, 4 pole), largest mask **989 px** (no blob), rasterised fg IoU **0.627** — versus Phase B best.pt's 76,837 px blob and fg IoU 0.038. Per the pre-registered interpretation above, absence-of-recurrence is consistent with **either** class-aware supervision constraining the mask coefficients **or** Phase C simply selecting a "clean" checkpoint (the Phase B failure was itself checkpoint-specific — best.pt yes, last.pt no). **n=1 cannot distinguish these; this does NOT establish that multiclass supervision fixes the failure mode.** O009 multi-seed remains the decisive test. Visualisation (same format as Phase B): `results/runs/phase_c_yolo_multiclass/diagnostic/6799_visualisation/`.
+
 *Note for downstream RANSAC:* On 6799, detection #0's mask covers the right-side vine row region. If this mask is passed to the geometry stage, it may contribute foreground pixels or centroids that inject spurious inliers into the right-side line fit. The RANSAC step's outlier tolerance will need to accommodate this. If failures of this type recur in Phase C, this becomes a design consideration for the downstream pipeline that was not scoped in the original proposal.
 
 **Cross-references.**
@@ -286,3 +288,34 @@ This architectural asymmetry describes what is possible — U-Net cannot produce
 - Does not attribute the failure to prototype coefficient pathology as a numerical event — the visualisation shows the mask boundary follows canopy structure, consistent with learned confusion within the model's training distribution rather than numerical artifact.
 - Does not claim the failure is stable across checkpoints — last.pt of the same training run does not exhibit it, indicating a checkpoint-specific manifestation rather than a robust learned behaviour. This bounds the "architectural failure mode" interpretation: the mode is available, not inevitable, and not even reliably reproduced within a single training run's checkpoint history.
 - Does not claim the mask would be "wrong" under all reasonable labellings. It is wrong specifically relative to our binary trunk + pole labelling. Under a labelling that includes canopy in the foreground (not adopted here for reasons documented in the Analysis section), the same mask would be classified differently.
+
+---
+
+### F008 — B↔C training-loss decomposition confirms the comparison is controlled at fixed architecture
+**Date recorded:** 10 July 2026
+**Phase:** B ↔ C (observed during Phase C training)
+**Status:** Observed across the full 100-epoch runs; quantified.
+
+**Observation.** Across the full 100-epoch runs, Phase C (multiclass) and Phase B (binary) training losses are near-identical for box, seg, and dfl, while **cls_loss is consistently higher for Phase C**. The B↔C training difference is isolated to the classification head — exactly where the class-structure change (1 class → 2) should manifest, and nowhere else.
+
+**Evidence.** Mean absolute per-epoch difference over all 100 matched epochs:
+
+| loss term | mean \|C − B\| | interpretation |
+|---|---|---|
+| box_loss | 0.0088 | matched (noise) |
+| seg_loss | 0.0079 | matched (noise) |
+| dfl_loss | 0.0047 | matched (noise) |
+| **cls_loss** | **0.0519** | **diverged (~6–11×)** |
+
+cls_loss is higher for C at every epoch (e.g. ep1 3.25 vs 2.78, ep50 0.914 vs 0.882, ep100 0.713 vs 0.685); box/seg/dfl track within <0.01. The smoke run showed the same signature (cls C 4.07 vs B 3.69).
+
+**Analysis.** box_loss (localisation), seg_loss (mask quality), and dfl_loss (distribution focal) are class-count-agnostic — they depend on the same geometry and the same 14,894 foreground annotations (identical frames per D028; identical polygons, only re-labelled trunk=0/pole=1). cls_loss depends on the classification task, which is genuinely harder for two classes (trunk vs pole) than one ("crop"). The matched non-cls losses show identical optimisation dynamics except for classification.
+
+**Implications for the dissertation.**
+*Methodology:* direct evidence that the B↔C comparison isolates the **class-structure** variable at fixed architecture, training regime, data, and augmentation — the controlled-experiment premise of D021/D025. Any downstream B↔C difference (when the sweep runs, O010) is attributable to class structure, not differential training effort.
+*Results:* report as a one-line controlled-comparison validity check.
+
+**What this finding does NOT claim.**
+- Does not claim the higher cls_loss implies worse (or better) downstream or perception quality — it reflects task difficulty, not final outcome.
+- Does not itself establish any class-aware advantage; the B↔C outcome comparison lives in the downstream attribution (O010, deferred).
+- Cross-references: D021 (three-arm controlled design), D025 (trunk+pole labelling), O010 (downstream deferred).
