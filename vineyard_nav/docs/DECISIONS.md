@@ -500,7 +500,7 @@ Training-run SD on mAP@50 (0.016) is smaller than SD on rasterised fg IoU (0.027
 - Each seed's best.pt test-evaluated once at conf 0.25; not to be re-run (rule 5).
 
 **Phase C — YOLOv11-seg multiclass (yolo11n-seg, trunk=0 / pole=1). Test evaluated once, 10 July 2026.**
-- Run: `results/runs/phase_c_yolo_multiclass/`; checkpoint `best.pt` @ epoch 94; git `30a6225`; seed 42.
+- Run: `results/runs/phase_c_yolo_multiclass/`; checkpoint `best.pt` @ epoch 94; git `2a69c95`; seed 42.
 - Data: `data/yolo_multiclass/` from `scripts/coco_to_yolo.py --mode multiclass` (O005 / D025); D028 routing (train 721 / val 46 / test 23 representative). Training regime **identical to Phase B** (100 epochs, patience 30, batch 16, workers 0, imgsz 640, SGD schedule, augmentation) — only `nc` and the data path differ (verified: B↔C non-cls training losses match to <0.01, F008).
 - Training: 100 epochs (no early stop), 49.3 min, peak VRAM 4.25/8 GB. Val mask mAP@50 0.613 reproduced by `evaluate.py` (0.6126, half=True, D029).
 - **Downstream sweep + test-at-locked-config: DEFERRED (O010).** Phase C closes at **perception only**.
@@ -545,7 +545,7 @@ Per-class mask mAP@50 (mean across seeds):
 
 Cross-arm blob overlap on 6799 (results/runs/phase_c_blob_overlap_6799/): Phase C seed 43 blob shows mask IoU ~0.93 with Phase B seed 42 blob and Phase B seed 43 blob. All four blobbing runs (Phase B seeds 42, 43; Phase C seeds 43, 44) produce blob masks in the same right-side canopy region with near-identical geometry.
 
-**Regeneration recipe** (the overlap PNGs live under `results/runs/` and are gitignored like every other run artefact; they are reproducible on demand, not merely held locally): `python scripts/blob_overlap_6799.py` — default runs are the four blobbing runs (Phase B seeds 42, 43; Phase C seeds 43, 44); predicts 6799 with each run's locked `weights/best.pt` at conf 0.25 (half=True, D029), takes the largest-area mask per run, and writes `overlap_<a>_<b>.png` + `overlap_summary.json`. Provenance: analysis script committed with this multi-seed pass; Phase B seed configs committed at c4fb2a4, Phase C seed configs at 78d74aa. Measured 4-way result: largest-mask areas 75,256–76,837 px; pairwise mask IoU mean 0.929 (range 0.924–0.937 across 6 pairs); centroids within ~6 px.
+**Regeneration recipe** (the overlap PNGs live under `results/runs/` and are gitignored like every other run artefact; they are reproducible on demand, not merely held locally): `python scripts/blob_overlap_6799.py` — default runs are the four blobbing runs (Phase B seeds 42, 43; Phase C seeds 43, 44); predicts 6799 with each run's locked `weights/best.pt` at conf 0.25 (half=True, D029), takes the largest-area mask per run, and writes `overlap_<a>_<b>.png` + `overlap_summary.json`. Provenance: analysis script committed with this multi-seed pass; Phase B seed configs committed at 4044395, Phase C seed configs at d44cccf. Measured 4-way result: largest-mask areas 75,256–76,837 px; pairwise mask IoU mean 0.929 (range 0.924–0.937 across 6 pairs); centroids within ~6 px.
 
 Blob rate across arms: Phase B 2/3, Phase C 2/3. Class-aware supervision does not affect the failure rate. See F007 for full analysis.
 
