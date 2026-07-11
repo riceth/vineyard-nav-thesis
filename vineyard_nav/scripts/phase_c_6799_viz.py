@@ -27,6 +27,12 @@ NAMES = {0: "trunk", 1: "pole"}
 
 
 def main():
+    global RUN, OUT
+    import argparse
+    ap = argparse.ArgumentParser(description="Phase C 6799 viz for a run (default seed 42).")
+    ap.add_argument("--run-dir", default=str(RUN), help="results/runs/<phase_c run dir>")
+    RUN = Path(ap.parse_args().run_dir)
+    OUT = RUN / "diagnostic/6799_visualisation"
     OUT.mkdir(parents=True, exist_ok=True)
     p = (YD / "images/test" / FN).resolve()
     rgb = cv2.cvtColor(cv2.imread(str(p)), cv2.COLOR_BGR2RGB); h, w = rgb.shape[:2]

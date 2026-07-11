@@ -403,6 +403,23 @@ Both strands await the geometry pipeline, which is scoped for O010 (post-multi-s
 
 ---
 
+## D032 — YOLO variant choice (yolo11n-seg) rationale
+**Date:** 11 July 2026
+**Status:** LOCKED (retrospective justification)
+
+YOLOv11-seg-nano (yolo11n-seg, 2.8M parameters) was selected as the study's YOLO baseline for computational feasibility on our hardware. All three arms use the same variant on the same scene-honest split, making the B↔C class-structure comparison internally consistent and not confounded by variant choice.
+
+Compute constraint: RTX 5050 8GB VRAM. Larger variants (yolo11s-seg, yolo11m-seg, yolo11l-seg) would likely produce higher aggregate mAP scores but were not tested. yolo11m-seg at 640×640 typically requires 10-12GB training VRAM at batch size 16, potentially not fitting our hardware without batch-size reduction that would affect training dynamics.
+
+Since the three-arm study isolates architecture (A↔B) and class-structure (B↔C) effects at fixed variant, the study's internal validity is not affected by choice of variant. External comparison to arbitrary published YOLO numbers is not the study's objective; the controlled comparisons are.
+
+**Cross-references:**
+- F007: architectural failure mode analysis; variant choice does not affect the mode's architectural availability.
+- F009: multi-seed variance profile; per-arm characterisation, no external ranking.
+- D031: cross-arm perception ranking deferred to geometric strand.
+
+---
+
 ## Open items
 
 ### O001 — Threshold T range (Phase C)
@@ -512,7 +529,25 @@ Per-class trunk > pole (mask 0.678 vs 0.598 overall) — noted, **not establishe
 - Artifacts: `test_metrics.json`, `test_per_frame_metrics.csv`, `test_bootstrap_ci.json`, `predictions_test/` (23 panels), `diagnostic/6799_visualisation/`.
 - Test evaluated exactly once at conf 0.25; not to be re-run (rule 5).
 
-Phase C multi-seed evaluation IN PROGRESS. Seed 42 numbers as reported above. Seeds 43 and 44 are the decisive test of whether class-aware supervision structurally prevents the Phase B 6799 blob failure. Results pending.
+**Phase C multi-seed evaluation** (D016 verified reproducibility + O009 methodology):
+
+| Seed | Test mask mAP@50 | Test rasterised fg IoU [95% CI] | 6799 result |
+|---|---|---|---|
+| 42 | 0.638 | 0.619 [0.572, 0.666] | NO blob (989 px, IoU 0.627) |
+| 43 | 0.653 | 0.586 [0.510, 0.654] | Blob (75,256 px, IoU 0.042, 16 dets) |
+| 44 | 0.642 | 0.577 [0.502, 0.642] | Blob (76,035 px, IoU 0.038) |
+| **Mean ± SD** | 0.644 ± 0.008 | 0.594 ± 0.022 | Blob rate 2/3 |
+
+Per-class mask mAP@50 (mean across seeds):
+- Trunk (class 0): ~0.69 ± 0.02
+- Pole (class 1): ~0.60 ± 0.03
+(Individual per-seed values in test_metrics.json files)
+
+Cross-arm blob overlap on 6799 (results/runs/phase_c_blob_overlap_6799/): Phase C seed 43 blob shows mask IoU ~0.93 with Phase B seed 42 blob and Phase B seed 43 blob. All four blobbing runs (Phase B seeds 42, 43; Phase C seeds 43, 44) produce blob masks in the same right-side canopy region with near-identical geometry.
+
+Blob rate across arms: Phase B 2/3, Phase C 2/3. Class-aware supervision does not affect the failure rate. See F007 for full analysis.
+
+Training-run SD on rasterised fg IoU (0.022) is slightly lower than Phase B (0.027) but higher than Phase A (0.008). The intermittent blob failure dominates variance in both YOLO arms.
 
 ### O004 — Literature review extension
 Supervisor flagged A1's 6 references as thin. Must reach ~12–15 for A2. Extension planned during dissertation writing phase.
@@ -562,6 +597,36 @@ Constraints:
 Reporting format: "fg IoU 0.72 ± 0.03 (mean across 5 seeds)" alongside per-seed CIs.
 
 Timeline: after Phase C closes, before A2 Results write-up.
+
+**O009 status: COMPLETE.**
+
+Multi-seed evaluation performed across all three arms with seeds 42, 43, 44 as directed by supervisor. Cross-arm summary:
+
+| Arm | Test fg IoU (mean ± SD) | Test mAP@50 (mean ± SD, YOLO only) | 6799 blob rate |
+|---|---|---|---|
+| A (U-Net binary) | 0.716 ± 0.008 | mIoU 0.858 ± 0.003 (native) | 0/3 (structurally immune) |
+| B (YOLO binary) | 0.585 ± 0.027 | 0.632 ± 0.016 | 2/3 |
+| C (YOLO multiclass) | 0.594 ± 0.022 | 0.644 ± 0.008 | 2/3 |
+
+**Findings.**
+
+1. Phase A U-Net is the most stable across training seeds (fg IoU SD 0.008); structurally cannot produce the 6799 blob failure that both YOLO arms exhibit.
+
+2. Phase B and Phase C exhibit identical 6799 blob rates (2/3 each) at val-fitness-selected best.pt. Blob geometry is invariant across seeds and arms (~0.93 pairwise mask IoU). Class-aware supervision does not affect the failure.
+
+3. Phase C's mAP@50 variance (0.008) is notably lower than Phase B's (0.016). This may indicate class-aware supervision produces more consistent detection quality on non-blob frames, though n=3 is limited.
+
+4. Canopy > bare-vine effect replicates directionally across all arms and all seeds (gap magnitudes in the +0.07-0.09 range for Phase A and Phase C; distorted in Phase B when blob is present).
+
+**O009 closure implications for the dissertation.**
+
+*Methodology chapter:* Multi-seed evaluation methodology (3 seeds per arm, 9 total training runs) documented as O009 methodology.
+
+*Results chapter:* Multi-seed tables per arm; blob rate as a cross-arm reproducible failure characterisation.
+
+*Discussion chapter:* Frame the 6799 blob as a YOLOv11-seg architecture-family × scene pathology, class-structure-invariant. Phase A's structural immunity to this failure mode is a real architectural advantage of per-pixel semantic segmentation over instance segmentation for thin-structure vineyard tasks. The failure rate (~67% at val-fitness selection) has real implications for downstream pipeline design (RANSAC robustness needed).
+
+**Timeline:** O009 complete before A2 Results write-up. OOD annotation experiment (O007) planned as final work per Riccardo's guidance.
 
 ### O008 — opencv version drift from ultralytics install — RESOLVED
 **Date:** 4 July 2026

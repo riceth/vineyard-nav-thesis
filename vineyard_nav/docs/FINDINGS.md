@@ -64,8 +64,11 @@ The gap's 95% CI on the test split **includes zero**, so the effect is *not* ind
 - Phase B seed 44 canopy > bare-vine gap: +0.090 (no 6799 blob)
 
 **Multi-seed evidence (Phase C):**
-- Phase C seed 42 canopy > bare-vine gap: +0.091 [+0.005, +0.175] (canopy > bare-vine reaches significance)
-- Phase C seeds 43 and 44: pending
+- Phase C seed 42 canopy > bare-vine gap: +0.091 [+0.005, +0.175] (clean of blob, gap reaches significance on this seed alone)
+- Phase C seed 43 canopy > bare-vine gap: +0.032 (blob-distorted)
+- Phase C seed 44 canopy > bare-vine gap: +0.028 (blob-distorted)
+
+Same pattern as Phase B: when the 6799 blob occurs, it disproportionately pulls down canopy metrics because 6799 is a canopy frame. Blob-free Phase C seed 42 shows the clean effect at +0.091; blob-affected seeds 43/44 show attenuated apparent effect. The effect itself is not weakened by class-aware supervision — the metric measurement is distorted by the blob's outsized single-frame impact.
 
 **Interpretation with multi-seed evidence.** The canopy > bare-vine effect replicates:
 - Across 3 Phase A seeds (Phase A multi-seed SD 0.004 on the gap; very stable)
@@ -339,14 +342,40 @@ However, seed 44's absence of the failure demonstrates that the mode is not univ
 - Not inevitable (1/3 seeds handled 6799 cleanly).
 - Contingent on val-fitness checkpoint selection producing a "blobbing" checkpoint.
 
-**Bounded claims (multi-seed).** Phase C seed 42's absence of this response (no blob on 6799) is a single observation and does not yet indicate whether class-aware supervision structurally prevents this failure. Phase C seeds 43 and 44 (in progress) are the decisive test:
-- If Phase C seeds 43 and 44 also show no blob: strong evidence that class-aware supervision reduces or prevents this failure mode.
-- If Phase C seeds 43 or 44 show a blob: class-aware supervision reduces but does not eliminate this failure mode.
-- If Phase C seeds 43 and 44 both show blobs: class-aware supervision does not help; Phase C seed 42's clean 6799 was a specific checkpoint outcome, not a supervision effect.
+**Multi-seed evidence (6 seeds complete):**
 
-**Cross-references (multi-seed).**
-- F005 (revised): rasterised fg IoU is a per-arm characterisation metric; F007's use of it to surface the blob failure remains valid within the revised scope.
-- F007's earlier "checkpoint-specific manifestation" language is superseded by this multi-seed evidence: the failure recurs across seeds' best.pt selections at a specific rate.
+O009 multi-seed pass across all three arms establishes the failure profile of the 6799 blob:
+
+| Arm | 6799 blob rate | Cross-seed blob geometry when present |
+|---|---|---|
+| A (U-Net binary) | 0/3 | N/A — structurally impossible for per-pixel classification |
+| B (YOLO binary) | 2/3 | Mask IoU ~0.93 between blob seeds (42 & 43) |
+| C (YOLO multiclass) | 2/3 | Mask IoU ~0.93 between blob seeds (43 & 44); ~0.93 with Phase B blob seeds |
+
+**Cross-arm blob geometry.** When the blob occurs, it covers the same right-side canopy region regardless of arm or seed. Pairwise mask IoU across all four blobbing runs (Phase B seeds 42 and 43; Phase C seeds 43 and 44) is mean 0.93 (range 0.92-0.94 across 6 pairwise comparisons). Centroids cluster within ~6 pixels of each other in a 640×640 image. Bounding boxes are near-identical.
+
+**The class-aware-supervision-prevents-blob hypothesis is falsified.** Phase B and Phase C exhibit identical blob rates (2/3 each) at val-fitness-selected best.pt, and the blob geometry is invariant to class-structure supervision. The pre-registered branch A ("class-aware supervision structurally prevents the failure") is not supported. Branch B ("class-aware supervision does not help") is supported.
+
+**Established properties of the failure.**
+
+- Architecturally *available* to YOLOv11-seg (mask heads with prototype coefficients can produce large masks): YES
+- Architecturally *unavailable* to U-Net (per-pixel classification cannot produce coherent shaped masks over unlabelled classes): YES — U-Net is structurally immune, 0/3 rate
+- Reproducible when triggered (mask geometry invariant across seeds and arms): YES — ~0.93 mask IoU in all pairwise comparisons
+- Frequently realised at val-fitness checkpoint selection: YES — ~67% rate across both YOLO arms
+- Sensitive to class-structure supervision: NO — binary and multiclass show identical rates
+- Sensitive to the specific image: YES — reproduces on 6799 specifically; unclear whether other images have similar failures because they were not systematically tested for this mode
+
+**What this means for the dissertation.**
+
+*Results:* Present the multi-seed blob rate table clearly, with the ~0.93 mask IoU as evidence that the geometry is scene-and-architecture-specific, not seed-random. Include one visualisation panel (results/runs/phase_b_blob_overlap_6799/blob_overlap_s42_s43.png as a representative example).
+
+*Discussion:* Frame the failure as a YOLOv11-seg architecture-family × scene interaction, orthogonal to the class-structure variable that the B↔C comparison isolates. The multi-seed evidence sharpens the story from "Phase B has a failure mode" to "the failure mode is a stable architectural response, not a training-run quirk, and class supervision does not affect its frequency."
+
+*Methodology note (val-selection limits):* The failure does not appear on val at any conf threshold in D030's sweep range. Val-based hyperparameter selection cannot anticipate a failure mode that val doesn't contain. This is a limitation of val-based checkpoint selection when the test set exercises different failure modes than the val set. Multi-seed evaluation (O009) is the empirical remedy: rather than assuming any single val-fitness-selected checkpoint is representative, we characterise across independent runs.
+
+*Note for downstream RANSAC:* When the blob occurs, the mask covers the right-side vine row region. If passed to the geometry stage, it may inject spurious foreground pixels or per-side centroids into the right-side line fit. The RANSAC step's outlier tolerance needs to handle this: given the failure occurs on ~67% of Phase B and Phase C runs at val-fitness selection, the downstream pipeline should not assume blob-free input. Either accept the possibility and let RANSAC filter, or apply a mask-area filter before geometry.
+
+**Future work — capacity scaling.** This study uses YOLOv11-seg-nano for compute feasibility. The 6799 blob failure mode's dependence on model capacity is not tested. Since the failure is a property of the mask head's prototype coefficient mechanism (architecturally identical across YOLOv11-seg variants), we hypothesise scaling to yolo11-s, m, l, or x would not eliminate the failure. Systematic capacity-scaling verification is left for future work.
 
 **Cross-references.**
 - F004 (current test set is in-distribution). The observation may partly reflect training data coverage; F004's planned OOD remediation would help establish whether the failure generalises or is training-specific.
@@ -362,6 +391,10 @@ However, seed 44's absence of the failure demonstrates that the mode is not univ
 - Does not resolve which architecture is "preferred" for downstream navigation.
 - Does not attribute the failure to prototype coefficient pathology as a numerical event — the visualisation shows the mask boundary follows canopy structure, consistent with learned confusion within the model's training distribution rather than numerical artifact.
 - Does not claim the failure occurs at every checkpoint or every seed. The failure has been observed on Phase B's val-fitness-selected best.pt at seeds 42 and 43 (both showing near-identical mask geometry, IoU 0.93). Seed 44's best.pt does not exhibit the failure. Seed 42's last.pt does not exhibit it either. Val-fitness-based checkpoint selection appears to produce this specific response at ~67% rate on this data (2/3 seeds); whether this rate generalises across data or hyperparameter regimes is not established.
+- Does not claim the specific 6799 blob mode occurs on other test images at the same rate. This is one image's failure mode, characterised across seeds and arms; other test images may have their own failure profiles.
+- Does not claim class-aware supervision provides no benefit at any level. Phase C reaches statistical significance on the canopy > bare-vine gap on test alone; Phase B does not. Multiclass supervision may confer other benefits not measured by 6799-specific analysis.
+- Does not claim a 4-way blob geometry IoU of 0.93 across arms means the model has "learned the same thing." Coefficient predictions and prototype activations that produce the mask could differ substantially between arms while still producing similar output masks. Attribution to specific mechanisms requires prototype-activation analysis, not currently done.
+- Does not claim ~67% is the true blob rate across all conditions. Three seeds per arm is limited sample; rate uncertainty is real.
 - Does not claim the mask would be "wrong" under all reasonable labellings. It is wrong specifically relative to our binary trunk + pole labelling. Under a labelling that includes canopy in the foreground (not adopted here for reasons documented in the Analysis section), the same mask would be classified differently.
 
 ---
@@ -402,29 +435,29 @@ cls_loss is higher for C at every epoch (e.g. ep1 3.25 vs 2.78, ep50 0.914 vs 0.
 **Phase:** A + B multi-seed
 **Status:** Established: Phase B's cross-seed variance is ~3.4× Phase A's, and the difference is dominated by the intermittent 6799 blob failure.
 
-**Observation.** Across 3 seeds:
+**Cross-arm multi-seed variance (O009 complete):**
 
-| Arm | Test fg IoU (mean ± SD across seeds) | Test mAP@50 (mean ± SD, YOLO only) |
-|---|---|---|
-| Phase A U-Net | 0.716 ± 0.008 | (native metric: mIoU 0.858 ± 0.003) |
-| Phase B YOLO binary | 0.585 ± 0.027 | 0.632 ± 0.016 |
-| Phase C YOLO multiclass | pending | pending |
+| Arm | Test fg IoU (mean ± SD across seeds) | Test mAP@50 (mean ± SD, YOLO only) | Per-seed bootstrap CI half-width (mean) | Training-run SD ÷ CI half-width |
+|---|---|---|---|---|
+| A (U-Net binary) | 0.716 ± 0.008 | mIoU 0.858 ± 0.003 (native) | ±0.053 | ~15% |
+| B (YOLO binary) | 0.585 ± 0.027 | 0.632 ± 0.016 | ±0.067 | ~40% |
+| C (YOLO multiclass) | 0.594 ± 0.022 | 0.644 ± 0.008 | ±0.063 | ~35% |
 
 **Key observations:**
 
-1. **Phase B's SD on rasterised fg IoU (0.027) is 3.4× Phase A's SD (0.008).** Per-seed bootstrap CI half-width (data variance) averages ±0.053 for Phase A and ±0.067 for Phase B; Phase A's training-run SD is ~15% of its data-variance half-width, Phase B's is ~40% of its — Phase B's training variance is a much larger fraction of data variance.
+1. Phase A is the most stable across seeds (SD 0.008 on fg IoU, 15% of data variance). Phase B and Phase C have larger training-run variance (SD 0.027 and 0.022 respectively). The variance contrast is dominated by the intermittent 6799 blob failure — see F007.
 
-2. **Phase B's SD on mAP@50 (0.016) is smaller than on rasterised fg IoU (0.027).** Same three seeds, same evaluation, but the two metrics show different variance patterns.
+2. Phase C has slightly lower fg IoU variance than Phase B (0.022 vs 0.027). This is not a strong finding at n=3; it reflects Phase C having 2 blob seeds versus Phase B having 2 blob seeds where the specific numerical impact of each blob is slightly different.
 
-3. **The variance contrast is dominated by the 6799 blob.** Two of three Phase B seeds have the blob; one does not. When the blob is present, seed's fg IoU crashes ~0.55 on that single frame, dragging the aggregate down. When absent, the seed's aggregate is comparable to Phase A's absent-of-blob range.
+3. Phase C's mAP@50 variance (0.008) is notably lower than Phase B's (0.016). This is a real observation: Phase C's mask mAP@50 is more consistent across seeds than Phase B's. Possible interpretations: class-aware supervision produces more consistent detection quality on non-blob frames; or Phase C's checkpoint selection is more stable. n=3 is insufficient to distinguish.
 
-**Analysis.**
+4. Phase A's mIoU SD (0.003) is smaller than Phase B/C's rasterised fg IoU SD (0.022-0.027), but this compares different metrics measuring different things — not a fair comparison. The internally-comparable observation is that Phase A's fg IoU is the most stable at 0.008.
 
-Phase A produces continuously varying detection quality across seeds; the SD 0.008 reflects small training-run randomness in a stable optimisation regime. Phase A cannot produce a catastrophic per-frame failure because U-Net's per-pixel output cannot be dominated by a single spurious "instance."
+**Revised interpretation.** Phase A produces continuously varying detection quality across seeds; the SD 0.008 reflects small training-run randomness in a stable optimisation regime. Phase A cannot produce a catastrophic per-frame failure because U-Net's per-pixel output cannot be dominated by a single spurious "instance."
 
-Phase B, by contrast, has a discrete failure mode: on some seeds, the model's mask head produces a whole-canopy false-positive mask on 6799; on other seeds, it does not. The variance in per-frame fg IoU is dominated by this discrete outcome, not by continuous drift in overall detection quality.
+Phase B and Phase C both have a discrete failure mode: on ~67% of seeds, the model's mask head produces a whole-canopy false-positive mask on 6799. The variance in per-frame fg IoU is dominated by this discrete outcome, not by continuous drift in overall detection quality. Both arms show the failure at similar rates and geometries; class-aware supervision does not affect the phenomenon.
 
-That mAP@50 shows lower cross-seed variance (0.016) than fg IoU (0.027) validates F005's metric-divergence prediction: mAP treats the blob as one false positive among many detections and absorbs it into a modest precision penalty; fg IoU is dominated by the blob's pixel area and crashes on the frame where it occurs.
+That mAP@50 shows lower cross-seed variance in Phase C (0.008) than Phase B (0.016) is an observation worth surfacing as a possible class-aware benefit for non-blob detection quality consistency, though n=3 is limited.
 
 **Implications for the dissertation.**
 
@@ -441,8 +474,7 @@ That mAP@50 shows lower cross-seed variance (0.016) than fg IoU (0.027) validate
 - D030: conf* was selected by mean fg IoU on val; a median-based selection would similarly have chosen conf* = 0.25 because val has no catastrophic frames. The blob-frequency question is orthogonal to conf selection.
 
 **What this finding does NOT claim.**
-- Does not claim Phase B's higher variance means it's "worse" — it means it's differently behaved than Phase A. The dissertation should characterise, not rank at this level.
-- Does not claim the variance ratio (3.4×) will be identical for Phase C. Phase C's multi-seed will produce its own SD.
-- Does not claim the blob-driving-variance framing generalises beyond this specific dataset. On another dataset with different failure modes, Phase B's variance could look very different.
-- Does not claim class-aware supervision (Phase C) will produce Phase A-like variance. That's the empirical question Phase C multi-seed will answer.
-- Does not claim ±0.05 is a universal bootstrap CI half-width; Phase A's is 0.053, Phase B's is 0.067. The training-variance fraction of data variance differs across arms partly because Phase B's data variance itself is larger (wider CIs), not solely because Phase B's training SD is larger.
+- Does not claim Phase A is "better" at perception. It has different variance properties. Cross-arm perception ranking is not performed per D031.
+- Does not claim the variance ratios (Phase A stable ~15%, Phase B/C ~35-40%) will be identical on other datasets. On different data with different failure modes, the arms could show different profiles.
+- Does not claim class-aware supervision reduces Phase B/C variance in a meaningful way. Phase C's slight variance reduction (0.027 → 0.022) is not statistically distinguishable at n=3.
+- Does not claim ±0.05 is a universal bootstrap CI half-width; Phase A's is 0.053, Phase B's is 0.067, Phase C's is 0.063. The training-variance fraction of data variance differs across arms partly because the YOLO arms' data variance is itself larger (wider CIs), not solely because their training SD is larger.

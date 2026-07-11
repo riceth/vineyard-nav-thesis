@@ -1,0 +1,57 @@
+# Phase C — YOLOv11-seg MULTICLASS (trunk=0, pole=1) training.
+# STRUCTURALLY IDENTICAL to configs/phase_b_yolo_binary_train.yaml (PHASE_C_SPEC 6):
+# same model, seed, 100 epochs, patience 30, imgsz 640, batch, SGD schedule,
+# augmentation, workers=0. ONLY the data path (-> multiclass data.yaml, nc:2) and
+# the experiment/run name differ. Identical training regime is what makes the
+# B <-> C comparison a controlled class-structure experiment (D021, D025).
+experiment_name: phase_c_yolo_multiclass_seed44
+seed: 44
+
+model: yolo11n-seg.pt
+
+data: configs/phase_c_yolo_multiclass_data.yaml   # nc: 2, names {0: trunk, 1: pole}
+
+train:
+  epochs: 100
+  imgsz: 640
+  batch: 16
+  device: 0
+  workers: 0               # 64 MB /dev/shm cannot back DataLoader worker IPC (same as B)
+  patience: 30
+  save: true
+  save_period: 10
+  project: results/runs
+  name: phase_c_yolo_multiclass_seed44
+  exist_ok: false
+  pretrained: true
+  optimizer: SGD
+  lr0: 0.01
+  lrf: 0.01
+  momentum: 0.937
+  weight_decay: 0.0005
+  warmup_epochs: 3
+  amp: true
+
+augmentation:
+  hsv_h: 0.015
+  hsv_s: 0.7
+  hsv_v: 0.4
+  degrees: 10.0
+  translate: 0.1
+  scale: 0.5
+  shear: 0.0
+  flipud: 0.0
+  fliplr: 0.5
+  mosaic: 1.0
+  mixup: 0.0
+  copy_paste: 0.0
+
+reproducibility:
+  deterministic: true
+
+eval:
+  # Perception-level operating point (rasterised fg IoU, F005). Mirrors Phase B's
+  # default; Phase C's own operating point (downstream T / conf) is selected on val
+  # at Task 5/6, not here.
+  predict_conf: 0.25
+  half: true          # FP16 eval to match training AMP precision (D029)

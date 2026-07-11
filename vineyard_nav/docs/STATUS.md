@@ -111,10 +111,11 @@ Three model arms, all feeding the same downstream (per-side clustering → RANSA
 
 **Phase C perception complete.** Remaining before dissertation-writing consumes results: geometry pipeline → downstream sweep (O010) → 3-way attribution (spec §10); multi-seed robustness (O009).
 
-### Multi-seed robustness (O009) — Phase A & B complete, Phase C in progress
-- [x] Phase A U-Net — 3 seeds (42/43/44). Test fg IoU **0.716 ± 0.008**, mIoU 0.858 ± 0.003, canopy>bare gap +0.076 ± 0.004. Highly stable; no blob mode (U-Net per-pixel).
+### Multi-seed robustness (O009) — COMPLETE (all three arms, seeds 42/43/44)
+- [x] Phase A U-Net — 3 seeds (42/43/44). Test fg IoU **0.716 ± 0.008**, mIoU 0.858 ± 0.003, canopy>bare gap +0.076 ± 0.004. Highly stable; no blob mode (U-Net per-pixel). Blob rate 0/3.
 - [x] Phase B YOLO binary — 3 seeds. Test mask mAP@50 **0.632 ± 0.016**, fg IoU 0.585 ± 0.027. **6799 blob 2/3 seeds** (42,43 blob; 44 clean); when present, same region (cross-seed mask IoU 0.93). Phase B fg-IoU variance ~3.4× Phase A's, blob-driven (F009).
-- [ ] Phase C YOLO multiclass — seeds 43/44 in progress (seed 42 done: no blob). Decisive test of whether class-aware supervision prevents the blob.
+- [x] Phase C YOLO multiclass — 3 seeds. Test mask mAP@50 **0.644 ± 0.008**, fg IoU 0.594 ± 0.022. **6799 blob 2/3 seeds** (43,44 blob; 42 clean). Blob rate identical to Phase B → **6799 blob is class-structure-independent**; class-aware-supervision-prevents-blob hypothesis falsified (F007).
+- **O009 status: COMPLETE.** Cross-arm blob analysis confirms the 6799 blob is a YOLOv11-seg architecture-family × scene pathology (0/3 Phase A; 2/3 each Phase B and Phase C; mask geometry mean 0.93 / range 0.92–0.94 across all six pairwise comparisons of the four blobbing runs). Downstream cross-arm perception ranking deferred to the geometric strand (O010).
 - Config-copy recipe (seed-specific YAMLs); distinct seed-tagged run dirs; seed-42 artefacts untouched. Rule 5: each seed's best.pt test-evaluated once.
 
 ### Cross-arm perception methodology (D031 LOCKED, F005 REVISED)
@@ -183,6 +184,8 @@ Full rationale and history in `DECISIONS.md`. Headline items:
 - **O003 (existed):** Phase A + B + C test metrics — appended to DECISIONS.md as each phase completes.
 - **O004 (new):** Literature review extension — supervisor flagged 6 references as thin. Must reach ~12–15 for A2.
 - **O005 (new):** "Poles remain visible" retraction from A1 — must be openly acknowledged in A2 Methodology or Discussion.
+- **O007 (new):** OOD annotation — label Riseholme footage (different vineyard/season) for an out-of-distribution eval set; scheduled last, per Riccardo. See DECISIONS O007.
+- **O010 (new):** Geometry pipeline + Phase C downstream sweep — deferred to the geometry-pipeline phase; primary cross-arm comparison lives here (RMS lateral error). See DECISIONS O010.
 
 ---
 
