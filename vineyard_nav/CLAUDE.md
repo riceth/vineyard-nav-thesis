@@ -58,3 +58,5 @@ Never run: `git add`, `git commit`, `git push`, `git checkout`, `git reset`, `gi
 You may run read-only git commands when they help diagnose something: `git status`, `git log`, `git diff`, `git show`, `git branch --show-current`, `git remote -v`.
 
 When you complete a substantial unit of work — a working module, a passing test suite, a locked decision — mention it in your response so Edosa can decide whether to commit. Do not propose a commit message unless asked.
+
+**No attribution trailers.** Never add Co-Authored-By trailers to commit messages. Never add Co-Authored-By text or Claude-attribution wording to any file, comment, docstring, or documentation. This is not a project requirement. Only add it if the user explicitly requests it for a specific commit.
