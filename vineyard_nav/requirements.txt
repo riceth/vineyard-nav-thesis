@@ -27,6 +27,12 @@ numpy==2.2.6
 scipy==1.15.3
 matplotlib==3.10.9
 
+# ROS bag reading (scripts/inspect_bag.py; geometry-pipeline bag inventory, pose
+# continuity, frame-matching, and instance-count analysis — reads the kg_march_23
+# ROS1 bag + its ROS2 .db3 conversion). Pure-Python, no ROS install needed; on
+# install it also pulls apsw, lz4, ruamel.yaml, zstandard (numpy already pinned above).
+rosbags==0.11.3
+
 # Logging and utilities
 tensorboard==2.20.0
 pyyaml==6.0.3
