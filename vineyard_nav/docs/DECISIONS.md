@@ -545,6 +545,8 @@ Per-class mask mAP@50 (mean across seeds):
 
 Cross-arm blob overlap on 6799 (results/runs/phase_c_blob_overlap_6799/): Phase C seed 43 blob shows mask IoU ~0.93 with Phase B seed 42 blob and Phase B seed 43 blob. All four blobbing runs (Phase B seeds 42, 43; Phase C seeds 43, 44) produce blob masks in the same right-side canopy region with near-identical geometry.
 
+**Regeneration recipe** (the overlap PNGs live under `results/runs/` and are gitignored like every other run artefact; they are reproducible on demand, not merely held locally): `python scripts/blob_overlap_6799.py` — default runs are the four blobbing runs (Phase B seeds 42, 43; Phase C seeds 43, 44); predicts 6799 with each run's locked `weights/best.pt` at conf 0.25 (half=True, D029), takes the largest-area mask per run, and writes `overlap_<a>_<b>.png` + `overlap_summary.json`. Provenance: analysis script committed with this multi-seed pass; Phase B seed configs committed at c4fb2a4, Phase C seed configs at 78d74aa. Measured 4-way result: largest-mask areas 75,256–76,837 px; pairwise mask IoU mean 0.929 (range 0.924–0.937 across 6 pairs); centroids within ~6 px.
+
 Blob rate across arms: Phase B 2/3, Phase C 2/3. Class-aware supervision does not affect the failure rate. See F007 for full analysis.
 
 Training-run SD on rasterised fg IoU (0.022) is slightly lower than Phase B (0.027) but higher than Phase A (0.008). The intermittent blob failure dominates variance in both YOLO arms.
