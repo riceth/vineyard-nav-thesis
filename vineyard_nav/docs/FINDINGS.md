@@ -101,7 +101,7 @@ The effect is now supported at multiple levels: cross-split replication (within 
 ### F002 — Test performance slightly exceeds validation performance
 **Date recorded:** 4 July 2026
 **Phase:** A (U-Net binary)
-**Status:** Observed; explained by sample composition and small-sample variance. Augmentation is NOT a factor — both splits are evaluated on representative frames only (D028 consumption rule). Bootstrap CI confirms val and test are statistically indistinguishable.
+**Status:** Observed; explained by sample composition and small-sample variance. Augmentation is NOT a factor — both splits are evaluated on representative frames only (D028 consumption rule). Bootstrap CI confirms val and test are statistically indistinguishable. Originally a seed-42 finding; O009 multi-seed validates it across seeds 43 and 44 (see Multi-seed validation below).
 
 **Observation.** Test-set overall mIoU (0.8561) is marginally higher than validation-set overall mIoU (0.8456), a difference of +0.011. The same pattern holds for foreground IoU (+0.020 test-over-val). This is unusual — typically test performance is slightly worse than validation because the model's checkpoint was selected to optimise validation metrics.
 
@@ -128,6 +128,8 @@ The effect is now supported at multiple levels: cross-split replication (within 
 
 *Results:* The test-slightly-above-val pattern should be reported factually without over-interpretation. A reader familiar with typical train-val-test dynamics may be confused if the finding is not addressed. One-sentence acknowledgement plus a pointer to the CI-based analysis is sufficient.
 
+**Multi-seed validation (O009, seeds 43–44).** The test-slightly-above-val pattern is a seed-42 observation; O009 replicates it across all three Phase A seeds. Test − val overall mIoU = +0.011 / +0.015 / +0.010 (seeds 42 / 43 / 44); in every seed the pooled validation foreground IoU (0.699 / 0.701 / 0.702) falls inside the test per-frame 95% bootstrap CI ([0.657, 0.766] / [0.676, 0.775] / [0.657, 0.765]). The original conclusion — val and test are statistically indistinguishable and the small positive gap is sampling variance — holds across seeds 43 and 44.
+
 **What this finding does NOT claim.**
 - Does not claim the model generalises better to unseen data than to its training-adjacent validation data (this would be counterintuitive and requires stronger evidence).
 - Does not indicate a leakage or contamination issue between val and test — the D028 scene-level split explicitly prevents this.
@@ -138,11 +140,13 @@ The effect is now supported at multiple levels: cross-split replication (within 
 ### F003 — Foreground IoU 0.70-0.72 is the Phase A baseline anchor
 **Date recorded:** 4 July 2026
 **Phase:** A (U-Net binary)
-**Status:** Locked. This is the number Phases B and C are calibrated against.
+**Status:** Locked. This is the number Phases B and C are calibrated against. Originally a seed-42 anchor; O009 multi-seed validates its stability across seeds 43 and 44 (see Multi-seed validation below).
 
 **Observation.** Phase A U-Net binary achieved foreground IoU of 0.6991 on validation and 0.7195 on test (pooled). On the 23-scene test split the bootstrap point estimate is a per-frame mean of **0.7119 with a 95% CI of [0.6572, 0.7659]** (D020, 10,000 resamples, seed 42). These become the reference point for evaluating whether Phase B (YOLOv11-seg binary, modernised architecture) meaningfully changes binary-mask performance, and whether Phase C (YOLOv11-seg multiclass) provides additional gain via class-aware downstream logic.
 
 **Statistical anchor, honestly bounded.** The "~0.72" anchor carries a wide interval — roughly [0.66, 0.77] at 95% — the direct consequence of the 23-scene test ceiling (O006). Phase B and C perception comparisons against this anchor should compute the bootstrap CI on the paired difference (the same construction as F001's gap CI), not compare individual arm CIs — the paired-difference CI is the correct inference for cross-arm significance. This is a further reason the headline cross-arm comparison lives at the geometric/command strands (D014), not here.
+
+**Multi-seed validation (O009, seeds 43–44).** The 0.70–0.72 anchor is a seed-42 point estimate; O009 confirms its stability across seeds — test per-frame foreground IoU 0.712 / 0.725 / 0.712 (seeds 42 / 43 / 44), mean **0.716 ± 0.008** (training-run SD ≈ 1% of the metric). The anchor and the Phase B/C calibration reference stand unchanged.
 
 **Analysis.** Foreground IoU is the appropriate primary metric for the perception strand of evaluation for two reasons:
 
@@ -282,8 +286,8 @@ Total spread max−min = 0.0201; the 0.20–0.30 plateau varies by < 0.007. Curv
 - Ground truth: 3,564 pixels of trunk + pole foreground (thin vertical structures on both sides). Canopy foliage is unlabelled in SemanticBLT and treated as background per our binary collapse rule.
 - YOLO union at conf ≥ 0.25: 81,365 pixels. Of these, 76,837 come from detection #0 alone; the remaining 4,528 come from detections #1–#12 (arithmetic verified: 76,837 + 4,528 = 81,365).
 - Detection #0's mask follows the actual canopy boundary reasonably well — it is not a numerical glitch but a shaped mask covering a specific scene region.
-- Detections #1–#12 correctly identify individual trunks and poles with sensible masks (mean size 377 px).
-- Raising conf to ≥ 0.41 removes detection #0 (the blob) but also removes detection #8 (conf 0.287); 11 detections remain and single-frame fg IoU improves from 0.04 to 0.598. Alternatively, a mask-area filter that removes only detection #0 while retaining all 12 correct detections yields the same single-frame fg IoU of 0.598. A residual gap versus U-Net's 0.687 on the same frame remains — YOLO's correct detections cover the ground truth well but do not fully match U-Net's per-pixel foreground coverage, even after blob removal.
+- Detections #1–#12 correctly identify individual trunks and poles with sensible masks (individual mask areas average ~406 px; their union-additional contribution beyond the blob is 4,528 px, i.e. 76,837 + 4,528 = 81,365).
+- Raising conf to ≥ 0.41 removes detection #0 (the blob) but also removes detection #8 (conf 0.287); 11 detections remain and single-frame fg IoU improves from 0.04 to 0.598. Alternatively, a mask-area filter that removes only detection #0 while retaining all 12 correct detections yields the same single-frame fg IoU of 0.598. A residual gap versus U-Net's 0.697 on the same frame remains — YOLO's correct detections cover the ground truth well but do not fully match U-Net's per-pixel foreground coverage, even after blob removal.
 - On the locked best.pt, reproduces deterministically and identically under FP16 and FP32. Does NOT reproduce on last.pt (final epoch of the same run): last.pt yields 12 detections, max mask 963 px, no blob, single-frame fg IoU 0.604. The failure is checkpoint-specific — not stable even across the last two saved checkpoints of the same training run. best.pt was selected by ultralytics' val fitness metric; last.pt is the final epoch's weights.
 
 **Analysis.** The mask boundary follows canopy structure — this is a shaped prediction, not a numerical artifact. But the failure is not a stable learned property of the model: fourteen epochs later in the same training run (last.pt), the same architecture with slightly different weights does not produce the failure at all. This checkpoint-specificity substantially bounds the interpretation.
