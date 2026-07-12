@@ -116,7 +116,17 @@ Per eligible frame `i` (independent of arm — A/B/C differ only at step 1):
 
 For scale, the full eligible set is ≈ 11,800 frames (val + test), ≈ 350 at the Δs = 1.5 m subsample; the test corridors are ~2/5 of these (exact counts at CP-1).
 
-**Ground-truth floor (RTK-GNSS).** The `/robot_pose` reference carries **~2–3 cm RTK-GNSS localisation uncertainty** on average across the campaign (Polvara et al. 2024 §3.3.3); **for the March session specifically it is 0.038 m ≈ 3.8 cm** (paper's per-month RTK-ground-truth error, p12 — April 0.008, May 0.044, June 0.010 m), so **~3.8 cm is the operative floor for this March bag**. Any arm's RMS at or below this is reported as *within ground-truth uncertainty*, not a distinguishing result. (Thin-structure perception error is expected well above this floor, but it bounds what the metric can resolve.)
+**Ground-truth floor (RTK-GNSS) — per bag.** The `/robot_pose` RTK-GNSS reference has a **published per-session localisation error** (Polvara et al. 2024 **§5.3**, p12 — this is in the §5.3 text, *not* Table 4, which is weather conditions). Use the **operative floor for the bag under evaluation**:
+
+| Session bag | RTK-GNSS ground-truth floor |
+|---|---|
+| **March (this bag)** | **3.8 cm** (0.038 m) |
+| April | 0.8 cm (0.008 m) |
+| May | 4.4 cm (0.044 m) |
+| June | 1.0 cm (0.010 m) |
+| July, September | *not published in the paper's four evaluated sessions* → use the campaign **average ~2–3 cm** (§3.3.3) as a documented estimate, noting the session-specific floor is unpublished |
+
+**Interpretation rule:** any arm's RMS lateral error **at or below the operative floor** for that bag is reported as *within RTK-GNSS ground-truth uncertainty*, not a distinguishing result. **For our March bag the floor is 3.8 cm.** (Thin-structure perception error is expected well above this, but it bounds what the metric can resolve.)
 
 - **Primary (two-row frames, D-G tier 1):** RMS lateral error at `L_ahead` = 2 m [+ 0 m and 3 m], + **two-row coverage X %** (fraction of eligible frames with both sides fittable).
 - **Secondary (single-row frames, D-G tier 2):** RMS lateral error using the half-spacing prior (§6a), reported separately (its own coverage).
@@ -187,7 +197,7 @@ Measured per-side trunk count on bag frames: **mean 8.5, median 8, range 0–28*
 
 Locked 11 July 2026. **All items resolved and locked**, including D-B (extrinsics from Polvara et al. 2024 Table 3, §6) and the D-D Δs = 1.5 m subsample.
 
-- **D-A — Trajectory reference. [LOCKED]** `/robot_pose` (verified continuous — 0 gaps > 0.5 s, 0 jumps > 1 m). Rationale: Polvara et al. 2024 (§12) describe `/robot_pose` as the `robot_localization` EKF fusion of **wheel odometry + RTK-GNSS** — the paper's own fused localisation output — confirming it as the correct reference; wheel odom alone drifts, ZED VO is local.
+- **D-A — Trajectory reference. [LOCKED]** `/robot_pose` (verified continuous — 0 gaps > 0.5 s, 0 jumps > 1 m). Rationale: `/robot_pose` is the output of the **`robot_localization` EKF (Moore & Stouch 2016, §12)** fusing **wheel odometry + RTK-GNSS**, per Polvara et al. 2024 §3.3.3; the fixed Datum (lat 40.45025, lon 22.9243, orientation 0.0) matches our bag's values. This is not merely methodologically defensible — it is the **published, vineyard-maintainers' own fusion method**. Wheel odom alone drifts; ZED VO is local.
 - **D-B — Camera extrinsics source. [RESOLVED 11 Jul 2026]** From **Polvara et al. 2024 Table 3** (§12), same robot/vineyard/rig: base_link → Zed2 Front = translation **(0.345, 0.060, 0.763) m**, quaternion **(0, 0.017, 0, 1.000) ≈ 2° down**, camera 0.763 m above ground. Not in any public repo; Table 3 is authoritative. Empirical-homography fallback no longer needed. Full detail §6; applied at CP-2.
 - **D-C — Contamination exclusion window. [LOCKED]** `w` = 1.0 s (≈ ±15 frames) around each frame-matched March scene. Rationale: brackets the near-duplicate neighbourhood of a contaminated frame at 15 Hz. **Window placement is empirical per bag** (via frame-matching, §2); Riccardo's "first 5–6 min" recollection is only a search-space heuristic — our matches actually land at ~8 min, so the empirical `t_k` governs wherever it falls.
 - **D-D — Val/test split. [LOCKED]** 3 val / 2 test **by corridor** (whole-corridor grouping, no temporal leakage). Rationale: D028 scene-honest discipline; balances sweep vs test statistical power.
@@ -206,4 +216,5 @@ Closed-loop control / PID (command-level strand, D014); LiDAR pipeline (unless G
 
 ## 12. References
 
-- Polvara, R., Molina, S., Hroob, I., et al. (2024). "Bacchus Long-Term (BLT) data set: Acquisition of the agricultural multimodal BLT data set with automated robot deployment." *Journal of Field Robotics*, **41**(7), 2280–2298. DOI: [10.1002/rob.22228](https://doi.org/10.1002/rob.22228). Same robot, vineyard, and sensor rig as this study. Source for: camera extrinsics (**Table 3** → D-B, §6), the robot/sensor rig, corridor driving speed (0.6 m/s), RTK-GNSS localisation accuracy (~2–3 cm, the RMS-lateral-error floor, §5), `robot_localization` wheel-odometry + RTK-GNSS fusion (D-A), the 5-corridor path (Fig 3), and the GPS→map datum (lat 40.45025, lon 22.9243, orientation 0.0). Local copy in `.personal`.
+- Polvara, R., Molina, S., Hroob, I., et al. (2024). "Bacchus Long-Term (BLT) data set: Acquisition of the agricultural multimodal BLT data set with automated robot deployment." *Journal of Field Robotics*, **41**(7), 2280–2298. DOI: [10.1002/rob.22228](https://doi.org/10.1002/rob.22228). Same robot, vineyard, and sensor rig as this study. Source for: camera extrinsics (**Table 3** → D-B, §6), the robot/sensor rig, corridor driving speed (0.6 m/s, §3.3.2), per-session RTK-GNSS ground-truth floors (**§5.3**: March 3.8 / April 0.8 / May 4.4 / June 1.0 cm → §5) and the campaign average ~2–3 cm (§3.3.3), `robot_localization` wheel-odometry + RTK-GNSS fusion (§3.3.3 → D-A), the 5-corridor path (Fig 3), and the GPS→map datum (lat 40.45025, lon 22.9243, orientation 0.0). Local copy in `.personal`.
+- Moore, T. & Stouch, D. (2016). "A generalized extended Kalman filter implementation for the Robot Operating System." In: *Intelligent Autonomous Systems 13*, Springer, pp. 335–348. — The `robot_localization` EKF package Polvara et al. use to fuse wheel odometry + RTK-GNSS into `/robot_pose` (D-A).
