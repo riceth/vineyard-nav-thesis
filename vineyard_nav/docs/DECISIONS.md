@@ -420,6 +420,26 @@ Since the three-arm study isolates architecture (A↔B) and class-structure (B�
 
 ---
 
+## D033 — Geometric-strand val/test split: pass-level (supersedes corridor-level)
+**Date:** 12 July 2026
+**Status:** LOCKED
+**Refines:** GEOMETRY_PIPELINE_SPEC.md D-D (§3, §10); O010; CP-1 (March bag).
+
+The geometric-strand evaluation on `kg_march_23.bag` splits eligible frames val/test at the **pass level** — the split unit is one **pass** (individual corridor traversal), NOT the corridor.
+
+- 7,857 eligible frames form **11 pass-traversals across 5 corridors**, distributed **7 val / 4 test (60/40 by frames)**.
+- **Val:** 7 passes (p2, p4, p5, p6, p7, p8, p10) = **4,708 frames**, corridors 0, 1, 3.
+- **Test:** 4 passes (p0, p1, p3, p9) = **3,149 frames**, corridors 2, 3, 4.
+- Δs = 1.5 m independence subsample: val 179, test 106.
+
+**Rationale (supersedes corridor-level).** The earlier corridor-level split put **corridor 3 (42 % of eligible frames, traversed 4×) entirely in val**, risking the downstream sweep (config*/T*, D026) overfitting to corridor-3 conditions the test set lacks. Pass-level splitting **deliberately splits corridor 3 across val (1,890 frames) and test (1,412 frames)** so both splits contain it. **No single corridor exceeds 45 % of its containing split** (val max 40 %, test max 45 %).
+
+**Structural limitation.** Corridors 2 and 4 have **only one pass each**, so they cannot appear in both splits — val-only corridors are 0 and 1, test-only are 2 and 4. This val/test corridor asymmetry is inherent to the single-bag (March) scope; **additional bags (April onward, the 6-bag scope) will progressively address it** as more traversals of each corridor become available.
+
+**Cross-references:** GEOMETRY_PIPELINE_SPEC.md D-D / §3; D026 (downstream sweep); D028 (scene-honest split discipline, analogue); O010 (geometry pipeline).
+
+---
+
 ## Open items
 
 ### O001 — Threshold T range (Phase C)
