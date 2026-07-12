@@ -1,6 +1,6 @@
 # GEOMETRY_PIPELINE_SPEC.md — Geometric-strand evaluation on bag camera frames
 
-**Status:** APPROVED. All D-A…D-G decisions locked **except** D-B (camera extrinsics, pending supervisor — 24–48 h window, else empirical-homography fallback). Not implemented; no code written. **Implementation is blocked until (a) this spec is committed and (b) D-B is resolved.** Supersedes the earlier "map-23-test-scenes-to-bag-timestamps" sketch.
+**Status:** APPROVED — all D-A…D-G decisions locked. **D-B resolved 11 July 2026** from Polvara et al. 2024 Table 3 (§6, §12). Not implemented; no code written. **CP-0 is unblocked** — held only for this spec-update review. Supersedes the earlier "map-23-test-scenes-to-bag-timestamps" sketch.
 **Date drafted:** 11 July 2026
 **Depends on:** D014 (three-strand eval), D031 (cross-arm ranking deferred to geometric strand), D026 (downstream sweep 3 configs × T grid), O010 (this pipeline), PHASE_C_SPEC §8.
 
@@ -31,7 +31,9 @@ This approach is **bag-agnostic**: if april/may/summer bags surface later, the s
 **Measured parameter — corridor spacing ≈ 2.45 m.** This is a **measured vineyard ground truth** (from the `/robot_pose` pass x-positions ≈ −2.2 / −4.6 / −7.1 / −9.5 / −12.0 m), **not an assumption** (it corrects an earlier ~4 m eyeball estimate). It feeds the **D-G half-spacing prior (~1.2 m, §6a)** and is a useful reference for future **row-spacing-adaptive control**. The precise metric corridor *width* (for the single-row prior) is measured on two-row frames after D-B (§6a).
 - Alternatives (not used): `/odometry/base_raw` (wheel — drifts), `/front|side/zed_node/pose` (ZED VO — local, from origin). GPS is **GBAS-augmented** (`/gps/fix` status = 2, RTK-like). **D-A [LOCKED]:** `/robot_pose` is the reference (§10).
 
-**Camera extrinsics are NOT in the bag.** The TF tree is `map→odom→base_link→leg{0-3}→wheel{0-3}` plus `map→topo_map` and an isolated `side_left_camera_frame→side_imu_link`. The **front camera has no transform to `base_link`**. Extrinsics (mounting height, pitch) must come from the **Thorvald URDF / `thorvald_description`** or **empirical ground-plane calibration** (§6). **Open decision D-B** (§10).
+**Camera extrinsics are NOT in the bag** (TF tree is `map→odom→base_link→leg/wheel` + `map→topo_map` + an isolated `side_left_camera_frame→side_imu_link`; the front camera has no `base_link` transform). **Resolved via Polvara et al. 2024 Table 3** (§12) — same robot/vineyard/rig: **base_link → Zed2 Front = translation (0.345, 0.060, 0.763) m, quaternion (0, 0.017, 0, 1.000) ≈ 2° downward pitch**, camera 0.763 m above ground (base_link at ground level, paper §3.1.1). See §6, **D-B [RESOLVED]** (§10).
+
+**Cross-checks against Polvara et al. 2024** (same rig/site/campaign): corridor spacing **2.45 m** (our measurement) is consistent with the 5-corridor path in the paper's Fig 3; corridor **driving speed 0.6 m/s** (paper; our when-moving measurement ~0.68 m/s is consistent, mildly GPS-jitter-inflated); **RTK-GNSS ground-truth accuracy ~2–3 cm** (paper — the floor for our RMS lateral error, §5); **GPS→map datum** lat 40.45025 / lon 22.9243 / orientation 0.0 (paper); **March–April are structurally similar** (dormant plants) — useful for interpreting any per-month geometric-error patterns.
 
 **Detection density on bag frames** (Phase C `best.pt`, conf 0.25, 40 frames spread across the run): **trunk mean 17.1 / frame (median 17, range 0–32), pole mean 13.2 (median 13, range 1–21), ≈ 8.5 trunks per side (range 0–28)**. 0/40 frames empty. Model runs cleanly on bag imagery. (Grounds the T-grid, §8.)
 
@@ -47,7 +49,7 @@ This approach is **bag-agnostic**: if april/may/summer bags surface later, the s
 
 **Exclusion procedure (contamination guard):**
 1. Enumerate every **March** SemanticBLT frame across **train + val + test** (unique scenes; the augmented copies collapse to the same scene). [Count to confirm at CP-0; ≈ 420 train + 20 val + 10 test March *frames*, far fewer unique scenes.]
-2. For each, frame-match against the bag front stream (coarse every-Nth descriptor search → fine local search, as prototyped) to recover its bag frame index / timestamp `t_k`.
+2. For each, frame-match against the bag front stream (coarse every-Nth descriptor search → fine local search, as prototyped) to recover its bag frame index / timestamp `t_k`. **Search heuristic (not a locked assumption):** Riccardo recalls the March frames came from roughly the *first 5–6 min* of the bag — used only to prioritise the search window as an accelerator. **The empirical match governs**: our prototype matches actually landed at ~8 min (`march_color_image_16` → #6997 / t+7.9 min; `_17` → #7069 / t+8.0 min; corr 0.80 / 0.89), *outside* the 5–6 min window — so the full stream is searched and the empirical `t_k` is authoritative wherever it lands.
 3. Exclude an **exclusion window** `[t_k − w, t_k + w]` from the eligible set (default `w = 1.0 s` ≈ 15 frames, since adjacent frames are near-duplicate views; **D-C**, §10). Log every excluded interval.
 4. Report residual risk: any match with corr below a threshold (e.g. < 0.6) is flagged as "unlocated" and its neighbourhood treated conservatively.
 
@@ -70,7 +72,7 @@ From 16,656 frames, build the **eligible set**:
 
 *Rationale:* subsampling exists only to satisfy the bootstrap independence assumption; it should not shrink the data behind the point estimate. Using both gives tight point estimates **and** honest CIs.
 
-**Why Δs = 1.5 m, spatial not temporal.** Speed varies substantially (31 % stationary/slow; ~0.68 m/s driving; `/robot_pose` GPS-stepped), so a fixed Δt would oversample the long headland stops and undersample fast segments. Measured falloff (14 in-row anchors, SSIM + ORB vs pose separation): **SSIM is uninformative** — it saturates ~0.46 even for adjacent frames (high-texture scene decorrelates globally), so the 0.85 rule never applies; **ORB good-match count is the criterion and drops below 100 at Δs ≈ 1.5 m** (438 at < 0.25 m → 117 at 1.0–1.5 m → 91 at 1.5–2.0 m). Conservative alternative 2.0 m. Δs = Euclidean `/robot_pose` displacement.
+**Why Δs = 1.5 m, spatial not temporal.** Speed varies substantially (31 % stationary/slow; **~0.6 m/s corridor driving**, Polvara et al. 2024 — so **~4.1 cm between adjacent frames** at 14.77 Hz, and **Δs = 1.5 m ≈ 37 bag frames**; `/robot_pose` GPS-stepped), so a fixed Δt would oversample the long headland stops and undersample fast segments. Measured falloff (14 in-row anchors, SSIM + ORB vs pose separation): **SSIM is uninformative** — it saturates ~0.46 even for adjacent frames (high-texture scene decorrelates globally), so the 0.85 rule never applies; **ORB good-match count is the criterion and drops below 100 at Δs ≈ 1.5 m** (438 at < 0.25 m → 117 at 1.0–1.5 m → 91 at 1.5–2.0 m). Conservative alternative 2.0 m. Δs = Euclidean `/robot_pose` displacement.
 
 **Val/test split (D-D locked: 3 val / 2 test, by corridor; no temporal leakage).** Split **by corridor**, not by frame — all traversals of one corridor (the run has **~5 distinct corridors at ~2.45 m centres, driven up and down = 11 pass-traversals**) go entirely to val or entirely to test, since frames within/across a corridor's passes are correlated. Assign **3 corridors → val (sweep), 2 corridors → test (final)**, balanced by frame count and covering distinct rows. Rationale: matches D028's scene-honest discipline; balances sweep power against test statistical power. Test evaluated **once** at locked (config*, T*, conf*) — rule 5 analogue. Corridor segmentation from `/robot_pose`.
 
@@ -114,6 +116,8 @@ Per eligible frame `i` (independent of arm — A/B/C differ only at step 1):
 
 For scale, the full eligible set is ≈ 11,800 frames (val + test), ≈ 350 at the Δs = 1.5 m subsample; the test corridors are ~2/5 of these (exact counts at CP-1).
 
+**Ground-truth floor (RTK-GNSS).** The `/robot_pose` reference carries **~2–3 cm RTK-GNSS localisation uncertainty** on average across the campaign (Polvara et al. 2024 §3.3.3); **for the March session specifically it is 0.038 m ≈ 3.8 cm** (paper's per-month RTK-ground-truth error, p12 — April 0.008, May 0.044, June 0.010 m), so **~3.8 cm is the operative floor for this March bag**. Any arm's RMS at or below this is reported as *within ground-truth uncertainty*, not a distinguishing result. (Thin-structure perception error is expected well above this floor, but it bounds what the metric can resolve.)
+
 - **Primary (two-row frames, D-G tier 1):** RMS lateral error at `L_ahead` = 2 m [+ 0 m and 3 m], + **two-row coverage X %** (fraction of eligible frames with both sides fittable).
 - **Secondary (single-row frames, D-G tier 2):** RMS lateral error using the half-spacing prior (§6a), reported separately (its own coverage).
 - **Complementary:** RMS heading error (deg, GT-2); per-pass lateral bias (GT-1).
@@ -125,11 +129,13 @@ For scale, the full eligible set is ≈ 11,800 frames (val + test), ≈ 350 at t
 
 **Intrinsics (measured, in bag):** K = [[1057.0, 0, 952.2],[0,1057.0,553.6],[0,0,1]] at 1920×1080. If perception runs on the 640×640 **stretched** image, either (a) project using original-resolution pixel coordinates (recommended — map detections back to 1920×1080 before projection, undoing the anisotropic stretch sx=1920/640, sy=1080/640), or (b) rescale K anisotropically to 640×640. **(a) is cleaner** and avoids distorting K.
 
-**Extrinsics (NOT in bag — must be sourced; D-B pending supervisor):**
-- **(D-B option 1, preferred) Thorvald URDF / robot description.** The `base_link → front-camera` transform (ZED2i height above ground, forward offset, pitch/roll) gives a principled `T_base←cam`. **Search outcome (11 Jul 2026):** *not located in public repos.* The L-CAS `ros2_zed_multi_camera` package positions cameras only relative to a `zed_multi_link` reference (front camera `xyz=0.06 0 0`, no height/pitch to the base); the BLT paper (Polvara 2024) documents the ZED2i × 2 rig on a customised 1.5×1 m Thorvald II but gives **no** mounting height/angle; the robot-level attachment (`base_link → zed_multi_link`) lives in a non-public BLT bringup. **→ Supervisor question:** provide the front ZED2i's height / forward offset / pitch on the BLT Thorvald, or a pointer to its URDF.
-- **(D-B option 2, last resort) Empirical ground-plane homography.** Estimate the image→ground homography `H` directly: pick ≥ 4 ground correspondences with known metric layout (e.g. exploit the trajectory-measured corridor spacing ~2.45 m, or a one-off tape-measure calibration image), solve `H`. Self-contained; less traceable. Use only if the supervisor route yields nothing.
+**Extrinsics (D-B — RESOLVED 11 July 2026, from Polvara et al. 2024 Table 3, §12).** The BLT paper documents this exact robot / vineyard / sensor rig. **base_link → Zed2 Front frame:**
+- Translation: **x = 0.345 m (forward), y = 0.060 m (lateral), z = 0.763 m (up)** — camera 34.5 cm forward, 6 cm to one side, **0.763 m above ground** (base_link is at ground level, paper §3.1.1).
+- Rotation quaternion (x, y, z, w) = **(0, 0.017, 0, 1.000)** → **~2° downward pitch** (approximately level).
 
-**Projection model (flat-ground assumption).** With `h`, pitch `θ`, and K, each image base point `(u,v)` back-projects to a ray; intersect with the ground plane `Z=0` (in base frame) → `(X,Y)` metric. Equivalent to a planar homography `H` mapping image points to the ground plane. Validity: **flat local ground** — reasonable within a row segment; headland slopes are an edge case (§7). Report the assumed `h, θ` and their provenance.
+This gives a principled `T_base←cam` from those six DOF. (The mount is in no public repo — the L-CAS `ros2_zed_multi_camera` package only positions cameras relative to a `zed_multi_link`, and the robot-level attachment lives in a non-public BLT bringup — so **Table 3 is the authoritative source**.) The earlier empirical-homography fallback is **no longer needed**.
+
+**Projection model (flat-ground assumption).** With **h = 0.763 m**, **pitch θ ≈ 2° down**, and K, each image base point `(u,v)` back-projects to a ray; intersect with the ground plane `Z = 0` (base frame) → `(X, Y)` metric — equivalently a planar homography `H` from image to ground. **Given the small pitch, either the full 6-DOF model or a simplified pinhole-plus-ground-plane model is valid** (both acceptable per Riccardo). The 0.345 m forward / 0.060 m lateral offsets shift the origin from base_link to the camera and are applied when expressing offsets in the base frame. Validity: **flat local ground** — reasonable within a row segment; headland slopes are an edge case (§7).
 
 **Sanity check (CP-2):** project detections on a frame; confirm the left/right rows land ~2.45 m apart (the trajectory-measured corridor spacing) and parallel.
 
@@ -166,24 +172,24 @@ Measured per-side trunk count on bag frames: **mean 8.5, median 8, range 0–28*
 
 ## 9. Implementation checkpoints (gates — hold at each)
 
-- **CP-0 — Contamination census.** Enumerate all March train/val/test frames; frame-match each to the bag; produce the exclusion-window list + an unlocated-frames report. Gate: exclusion coverage acceptable, residual risk quantified.
+- **CP-0 — Contamination census.** Enumerate all March train/val/test frames; frame-match each to the bag (**first-5–6-min heuristic as a search accelerator; empirical match governs** — prototype matches landed at ~8 min); produce the exclusion-window list + an unlocated-frames report. Gate: exclusion coverage acceptable, residual risk quantified.
 - **CP-1 — Extraction.** Extract all 16,656 `(frame_640, timestamp, pose)` triples to a processed dataset (~2.3 GB JPEG q90 / ~20 GB raw; ~5–15 min). Gate: continuity check (no missing frames), pose join correct, sample overlays look right.
-- **CP-2 — Projection calibration.** Fix extrinsics (URDF or empirical); validate corridor spacing ~2.45 m & parallel on known frames. Gate: projection sanity passes.
+- **CP-2 — Projection calibration.** Apply the **Table 3 extrinsics** (base_link → cam: 0.345, 0.060, 0.763 m; pitch ~2°) + bag intrinsics; validate corridor spacing ~2.45 m & parallel on known frames; then measure the metric corridor width for the D-G half-spacing prior. Gate: projection sanity passes.
 - **CP-3 — Single-arm dry run.** Full pipeline on one arm over a small val subset; confirm RANSAC rejects the F007 blob; inspect centreline overlays. Gate: qualitative sanity.
 - **CP-4 — Sweep on val.** Finalise T grid vs measured val densities; run 13-point sweep for Phase C; select (config*, T*). Gate: sweep curves sane, selection stable.
 - **CP-5 — Test (once).** Locked config; all three arms; RMS lateral + heading + coverage + bootstrap CIs; cross-arm paired-difference ranking. Gate: rule-5 analogue (single test evaluation per arm).
 
-**D-F is decided (§5) — GT-1 primary + GT-2 complementary, GT-3 deferred.** Extrinsics source (D-B, pending supervisor) must be resolved before CP-2.
+**D-F and D-B are both resolved** (§5 metric; §6 extrinsics from Polvara et al. 2024 Table 3). All checkpoint prerequisites are met — **CP-0 is unblocked.**
 
 ---
 
 ## 10. Decision register (D-A … D-G)
 
-Locked 11 July 2026 unless noted. One item pending supervisor (D-B); everything else — including the D-D Δs = 1.5 m subsample — is locked.
+Locked 11 July 2026. **All items resolved and locked**, including D-B (extrinsics from Polvara et al. 2024 Table 3, §6) and the D-D Δs = 1.5 m subsample.
 
-- **D-A — Trajectory reference. [LOCKED]** `/robot_pose` (GPS-fused, RTK, verified continuous — 0 gaps > 0.5 s, 0 jumps > 1 m). Rationale: the only continuous global pose; wheel odom drifts, ZED VO is local.
-- **D-B — Camera extrinsics source. [PENDING SUPERVISOR — 24–48 h window]** Preferred: Thorvald URDF (`base_link → front-camera` height/offset/pitch) — **not found in public L-CAS/Saga repos** (§6). **Resolution plan:** await Riccardo ~24–48 h; **if no reply, proceed with the empirical ground-plane homography fallback (§6 option 2)**, documented as such. Either outcome (supervisor values or fallback) is recorded in §6 and here before CP-2. Implementation blocked until resolved.
-- **D-C — Contamination exclusion window. [LOCKED]** `w` = 1.0 s (≈ ±15 frames) around each frame-matched March scene. Rationale: brackets the near-duplicate neighbourhood of a contaminated frame at 15 Hz.
+- **D-A — Trajectory reference. [LOCKED]** `/robot_pose` (verified continuous — 0 gaps > 0.5 s, 0 jumps > 1 m). Rationale: Polvara et al. 2024 (§12) describe `/robot_pose` as the `robot_localization` EKF fusion of **wheel odometry + RTK-GNSS** — the paper's own fused localisation output — confirming it as the correct reference; wheel odom alone drifts, ZED VO is local.
+- **D-B — Camera extrinsics source. [RESOLVED 11 Jul 2026]** From **Polvara et al. 2024 Table 3** (§12), same robot/vineyard/rig: base_link → Zed2 Front = translation **(0.345, 0.060, 0.763) m**, quaternion **(0, 0.017, 0, 1.000) ≈ 2° down**, camera 0.763 m above ground. Not in any public repo; Table 3 is authoritative. Empirical-homography fallback no longer needed. Full detail §6; applied at CP-2.
+- **D-C — Contamination exclusion window. [LOCKED]** `w` = 1.0 s (≈ ±15 frames) around each frame-matched March scene. Rationale: brackets the near-duplicate neighbourhood of a contaminated frame at 15 Hz. **Window placement is empirical per bag** (via frame-matching, §2); Riccardo's "first 5–6 min" recollection is only a search-space heuristic — our matches actually land at ~8 min, so the empirical `t_k` governs wherever it falls.
 - **D-D — Val/test split. [LOCKED]** 3 val / 2 test **by corridor** (whole-corridor grouping, no temporal leakage). Rationale: D028 scene-honest discipline; balances sweep vs test statistical power.
 - **D-D — Dual-mode data use. [LOCKED]** **Point estimates over ALL eligible frames (~11.8k)**; **bootstrap CIs over the Δs = 1.5 m spatially-independent subsample (~350)**. Δs = 1.5 m from measured ORB falloff (< 100 matches; SSIM uninformative), spatial not temporal (speed varies, 31 % stationary); conservative alt 2.0 m. Changes *how* retained data is used, not what is excluded.
 - **D-E — Look-ahead. [LOCKED]** `L_ahead` = 2 m primary + 0 m (at-robot) secondary; 3 m also reported if cheap.
@@ -195,3 +201,9 @@ Locked 11 July 2026 unless noted. One item pending supervisor (D-B); everything 
 ## 11. What is explicitly out of scope here
 
 Closed-loop control / PID (command-level strand, D014); LiDAR pipeline (unless GT-3 adopted); canopy-condition geometric eval (needs summer bags — pipeline extends to them when available); any change to the labelled 23-scene test set or Phase A/B/C perception artefacts (untouched).
+
+---
+
+## 12. References
+
+- Polvara, R., Molina, S., Hroob, I., et al. (2024). "Bacchus Long-Term (BLT) data set: Acquisition of the agricultural multimodal BLT data set with automated robot deployment." *Journal of Field Robotics*, **41**(7), 2280–2298. DOI: [10.1002/rob.22228](https://doi.org/10.1002/rob.22228). Same robot, vineyard, and sensor rig as this study. Source for: camera extrinsics (**Table 3** → D-B, §6), the robot/sensor rig, corridor driving speed (0.6 m/s), RTK-GNSS localisation accuracy (~2–3 cm, the RMS-lateral-error floor, §5), `robot_localization` wheel-odometry + RTK-GNSS fusion (D-A), the 5-corridor path (Fig 3), and the GPS→map datum (lat 40.45025, lon 22.9243, orientation 0.0). Local copy in `.personal`.
