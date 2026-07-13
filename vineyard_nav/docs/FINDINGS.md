@@ -484,3 +484,182 @@ That mAP@50 shows lower cross-seed variance in Phase C (0.008) than Phase B (0.0
 - Does not claim the variance ratios (Phase A stable ~15%, Phase B/C ~35-40%) will be identical on other datasets. On different data with different failure modes, the arms could show different profiles.
 - Does not claim class-aware supervision reduces Phase B/C variance in a meaningful way. Phase C's slight variance reduction (0.027 → 0.022) is not statistically distinguishable at n=3.
 - Does not claim ±0.05 is a universal bootstrap CI half-width; Phase A's is 0.053, Phase B's is 0.067, Phase C's is 0.063. The training-variance fraction of data variance differs across arms partly because the YOLO arms' data variance is itself larger (wider CIs), not solely because their training SD is larger.
+
+---
+
+## Geometric strand — in-row centreline evaluation (kg_march_23 bag, CP-5 val)
+
+*F010–F015 report the geometric strand: image → base points → ground projection → line-fit centreline → GT-1 lateral offset (at 2 m look-ahead) / GT-2 heading (centreline slope), evaluated on the 4,708 val frames of kg_march_23 across all nine models (A/B/C × seeds 42/43/44) with the locked D036–D038 line-fit pipeline. These are **val** results; the discriminating cross-arm comparison (paired bootstrap) and the held-out test (CP-6) are pending. Each entry follows: Finding · Evidence · Implication · Cross-arm treatment.*
+
+### F010 — Systematic ~2.3° heading tilt is consistent across all nine models (projection, not perception)
+
+**Finding.** Every model's GT-2 (line-fit centreline slope) has a mean of ~+2.3° with cross-arm SD ≤ 0.07° (A 2.25°, B 2.30°, C 2.28°), and the per-side slope structure (m_L ≈ +0.036, m_R ≈ +0.043, both positive) is identical across arms. This consistency is strong empirical support that the tilt is a projection effect, not a per-arm perception property.
+
+**Evidence.** CP-5 line-fit re-run (`results/geometric/march/cp5_linefit_val_report.json`): per-arm tilt A 2.25 ± 0.03°, B 2.30 ± 0.07°, C 2.28 ± 0.07°; m_L/m_R positive and near-equal across all 9 models. Frame 3998 shows the slant directly (right row m_R = +0.10). Root cause established in F015.
+
+**Implication.** Absolute GT-1 at the 2 m look-ahead includes a residual ~8 cm offset contribution from this tilt (tan 2.3° × 2 m). It does not affect the *ranking* of arms.
+
+**Cross-arm treatment.** Neutral — identical across arms, cancels in paired cross-arm differences. Absolute GT-1/GT-2 include it; stated wherever reported.
+
+**Cross-references.** F015 (yaw-offset root cause + rule-out investigation); D038 (line-fit centreline); D034 / §6 known limitation 2.
+
+> **Test-side confirmation (CP-6).** Per-arm test tilt A +1.86° / B +1.99° / C +1.94°, cross-arm SD 0.054° (≤ the val ≤0.07°) — the tilt remains arm-consistent on held-out data (the small B-vs-others spread is the F019 micro-difference).
+
+### F011 — Far-field extension (D037) rescues ~20 pp of two-row coverage with zero loss, arm-independently
+
+**Finding.** Two-row coverage rises from ~64% (superseded near-5 m Y-constant, D035) to **83–84%** (line-fit + far-extension) across all nine models, rescuing **871–975 frames per model with zero frames lost**. The rescued-frame count is similar across arms → not arm-specific.
+
+**Evidence.** CP-5: A 83.8 ± 0.5%, B 84.1 ± 0.9%, C 83.2 ± 0.1%; rescued (old ≠ two-row → new two-row) 871–975/model, lost = 0. D037 admits same-row dots at 5–10 m within ±0.5 m of the near-field row Y.
+
+**Implication.** The coverage gain adds *harder* (sparse-near) frames to the two-row set, so the aggregate GT-1 RMS does not fall — per-frame accuracy is characterised by the bias / residual-SD **decomposition in F012, not raw RMS**; the coverage-impact metric is frames-rescued, not an accuracy change. More frames now yield a two-row centreline for the sweep and CIs.
+
+**Cross-arm treatment.** Neutral — same extension and gate for all arms; rescued frames are common across arms, so paired differences are unaffected.
+
+**Cross-references.** D037 (far-field extension); F012 (per-frame accuracy decomposition, Analysis A); D-G (coverage reporting).
+
+### F014 — Adjacent-corridor detection is scene-geometry-driven, not arm-driven
+
+**Finding.** Adjacent-corridor detections (secondary same-side clusters at higher |Y|, logged and rejected by D036) occur at a consistent rate across arms — 3,262–3,698 per model on the 4,708-frame val set — and concentrate by scene: corridor 3 (the val+test split corridor) dominates, with a stable per-pass distribution.
+
+**Evidence.** CP-5 adjacent-by-corridor (summed over 9 models): corridor 3 (13.3 k) > 1 (10.5 k) > 0 (7.9 k); by pass: pass 2 (7.5 k) > 10 (5.8 k) > 6 (4.8 k). Per-model adjacent-frame counts 3,262–3,698 (spread < 15%).
+
+**Implication.** Neighbouring rows becoming visible at the far-extension range (5–10 m) is a property of the vineyard geometry and pass trajectory, not of the perception arm. The row fit correctly rejects them on all arms.
+
+**Cross-arm treatment.** Neutral — a data property; the rejection logic is arm-agnostic.
+
+**Cross-references.** D036 (adjacent-corridor logging); D037 (far-field range); D033 (corridor-3 pass split).
+
+### F015 — Front-camera yaw offset (~2.2–2.3°) not captured in the published extrinsics
+
+> **STATUS: SUPERSEDED (kept, not deleted).** The camera-yaw attribution proposed in F015 was **refuted by independent LiDAR cross-check (F017)**. Both the Zed2 camera and the Ouster LiDAR (identity extrinsic, cannot share camera-mount yaw) measure the same ~2.3–3.8° tilt of the vine rows relative to base_link. This localises the tilt to a **sensor-common base_link-vs-row geometric offset**, not a camera-specific yaw.
+> The investigation in F015 (four alternative rule-outs, positive regression test) remains valid as characterisation of the camera-only evidence; **the four rule-outs still exclude those causes** (distortion, projection convention, cropping, driving-direction) as contributors to the observed heading offset. What is refuted is the specific attribution to camera-mount yaw. Refer to **F017** for the current interpretation.
+
+**Finding.** A systematic heading offset of ~+2.28° (cross-arm SD ≤ 0.07°) is present in all nine models. A four-way rule-out investigation plus a positive localisation test attribute it to an **unmodelled front-camera yaw** absent from Polvara et al. (2024) Table 3 (which specifies q_z = 0, zero yaw). Attribution is **strongly supported by camera-only evidence; independent LiDAR cross-check pending.**
+
+**Evidence.**
+- *Ruled out:* (1) radial distortion — camera_info `D = [0,0,0,0,0]`, `image_rect_color` stream rectified; (2) projection convention — principal ray projects to Y = +0.060 m constant at all ranges, symmetric points sum to 2× the lateral offset (pure translation, no rotational bias); (3) image cropping — full-frame `cv2.resize` stretch, principal point preserved; (4) robot driving angle — crab (yaw − path tangent) = −0.03° ± 1.64°, angle-to-corridor = −0.15° ± 0.99° over 4,708 frames (robot drives aligned with the rows).
+- *Positive test:* regressing camera GT-2 against the robot's true angle-to-corridor gives slope −0.75, r −0.50, **intercept +2.20°** — with the robot perfectly aligned to the row the camera still reads +2.20°, localising the residual to the camera.
+
+**Per-pass structure (Analysis C).** The mean heading offset of +2.28° is composed of at least two components: (1) a systematic contribution consistent with unmodelled camera-mount yaw, supported by the alternative rule-outs and positive regression test above; and (2) a per-pass component of **~0.9° half-range, up to ~1.1° in the most extreme pass (pass 8)** beyond the systematic contribution. The source of the per-pass component is not identified within this work; candidate causes include but are not limited to ground non-planarity coupling to apparent yaw through the ground-plane projection assumption, per-pass differences in detection distributions, and per-pass variation in adjacent-corridor rejection patterns. Disentangling these is out of scope; the 2.28° pooled mean is reported with the per-pass wander explicitly quantified rather than attributed.
+
+**Implication.** The ~2.3° tilt (F010) and its ~8 cm GT-1 contribution are a sensor-extrinsic artefact, not a navigation/perception result. Documented as a Methodology limitation with a removal path (extrinsic re-calibration adding yaw, or the LiDAR GT-3).
+
+**Cross-arm treatment.** Neutral — a shared projection effect; cancels in paired cross-arm differences.
+
+**Cross-references.** F010 (the cross-arm tilt it explains); D038, D034 / §6 known limitation 2; D-B (Table 3 extrinsics); §12 references (Polvara et al. 2024).
+
+### F012 — Geometric noise floor is characterised by decomposition (arm-invariant)
+
+**Finding.** The geometric noise floor is reported by decomposition, not raw RMS. GT-2 = a systematic tilt (pooled mean +2.28°; F010/F015) plus a residual. Regressing GT-2 on the robot's true angle-to-corridor gives slope −0.74 to −0.79 (r ≈ −0.50) on all nine models — the value expected (−1, attenuated by measurement noise) if the perception tracks the true row direction — and leaves a **regression-residual RMS of 1.29–1.36° per arm** (A 1.33 ± 0.04, B 1.36 ± 0.08, C 1.29 ± 0.04), arm-invariant.
+
+**Evidence.** Analysis A (RMS decomposition, all 9 models sane, RMS² − mean² ≥ 0): GT-1 = 0.14 m bias ⊕ 0.16 m residual SD; GT-2 = 2.28° tilt ⊕ 1.5° residual SD. Analysis B (regression): slope −0.74…−0.79, intercept 2.07–2.28°, r −0.45…−0.53; regression-residual RMS A 1.33 / B 1.36 / C 1.29° (SD ≤ 0.08, overlapping). The raw global residual SDs (0.16 m, 1.5°) are upper bounds — they absorb per-pass bias wander (Analysis C), whose GT-1 direction-structure component is characterised in **F016**.
+
+**Implication.** The regression-residual (removes the tilt via the intercept and the robot's heading via the slope) is the cleanest available noise-floor estimate; it still bundles perception + row-fit + ground non-planarity, not disentangled within this work. No external benchmark exists (Analysis G): Polvara et al. (2024) report only the RTK-GNSS localization floor (2–3 cm, a sensor accuracy) and SLAM APE/RPE trajectory RMSE (a localization-algorithm metric), neither comparable to an image-derived perception lateral/heading error, and no heading-uncertainty bound. This characterisation is therefore a contribution of this work.
+
+**Cross-arm treatment.** Arm-invariant (regression-residual 1.29–1.36°, overlapping SDs; Analyses B/F) — no hidden arm difference lurks under the raw RMS.
+
+**Cross-references.** F010/F015 (tilt component); F016 (the GT-1 direction structure within the per-pass wander — not restated here); F013 (indistinguishability); Analyses A/B/C/G; D038 (line-fit metric).
+
+> **Test-side confirmation (CP-6).** GT-2 ~ angle-to-corridor on test gives slope −0.88…−0.94 (r −0.50…−0.55) and regression-residual RMS A 1.145 / B 1.028 / C 1.052° — arm-invariant (0.12° spread; the ordering flips vs val's A 1.33 / B 1.36 / C 1.29 → noise, not a real arm difference). Test floor ~1.0–1.15° (slightly tighter than val's ~1.3°).
+
+### F013 — Cross-arm indistinguishability on val, confirmed at tight autocorrelation-corrected bounds
+
+**Finding.** On paired val frames, no cross-arm pair (A-B, A-C, B-C) shows a mean paired difference in GT-1 or GT-2 whose 95% bootstrap CI excludes zero. The **moving-block bootstrap** (block length ≈ 2× measured decorrelation distance from Analysis H; using all ~3,600 both-two-row frames) yields:
+- **GT-1:** A-B [−1.9, +8.8] mm; A-C [−1.9, +6.2] mm; B-C [−3.7, +1.7] mm — all bounded to within roughly a fifth of the RTK-GNSS floor (3.8 cm; Polvara et al. 2024, §5.3), CIs include zero.
+- **GT-2:** all pairs within [−7%, +2%] of the F012 regression-residual noise floor (~1.3°), CIs include zero.
+
+Cross-checked with the **Δs = decorrelation-distance subsample bootstrap** (n = 329–751 per pair) — same conclusion, CIs 20–40% wider but overlapping with the block-bootstrap CIs. For GT-2, a **stricter block length** (2× the 0.05-threshold decorrelation, ~2.2–2.9 m) was also computed: A-B [−0.090, +0.015]°, A-C [−0.081, +0.027]°, B-C [−0.014, +0.023]° — **even at the strictest autocorrelation threshold, all CIs still include zero.**
+
+The three arms are therefore statistically and practically indistinguishable on val at the tight bounds allowed by measured autocorrelation, not merely at the conservative bounds implied by pre-specified spatial-independence thresholds.
+
+**Evidence.** `cp5_paired_val.json` + Analyses H, I. Decorrelation distances measured per-pair per-metric (0.22–0.67 m at the 0.1 threshold; 0.22–1.43 m at the 0.05 threshold). Sign inconsistency across seeds preserved (5 of 6 pairs flip sign). The one sign-consistent case (A-C GT-2, all negative) is negligible (0.02–0.06°) and its aggregate CI includes zero. (The earlier preliminary framing — analytical MDD ≈ 3.5 mm at the autocorrelated n ≈ 11k, and every single-arm CI overlapping every other's — is subsumed by the paired-bootstrap confirmation here.)
+
+**Implication / status.** **Upgraded from preliminary to confirmed on val** with tight, autocorrelation-corrected CIs. The claim "arms are indistinguishable on val" holds at both statistical (CI includes zero across three bootstrap methods) and practical (differences bounded to a small fraction of the ground-truth and noise floors) levels. Test-set evaluation (CP-6) is the final confirmation on held-out data.
+
+**Cross-arm treatment.** This finding *is* the cross-arm treatment: on val, the arms cannot be distinguished by centreline-estimation quality at tight autocorrelation-corrected bounds. **F013's cross-arm claim is unaffected by the F015→F017 revision:** a base_link-common tilt cancels in paired differences equally with a camera-specific tilt.
+
+**Cross-references.** F012 (noise floor); F016, Analysis C (common per-pass and direction structure that cancels in paired differences); F017 (sensor-common tilt, cancels equally); Analyses D/E/H/I; §5.3 RTK floor; D-D spatial-independence subsampling; CP-6 test-set final confirmation.
+
+> **Note (post-CP-6).** F013's val claim of GT-2 indistinguishability is subject to F019's test partial divergence: at test n (~2,200), the paired GT-2 for A-B and B-C exceeds the analytical detection threshold by 0.035–0.122°. The magnitude sits far below the noise floor and is comparable to the val-to-test scene-tilt variation (~0.4°), so the operative navigation-relevant conclusion (arms deliver equivalent geometry at GT-1) holds. See F019 for full test-side reporting.
+
+### F016 — GT-1 bias is direction-dependent in the teleoperated reference
+
+**Finding.** The per-pass GT-1 bias (pooled across all nine models) depends on driving direction: the four passes at heading −84° have pooled GT-1 bias 0.195–0.224 m (mean ~0.21 m); the three passes at the opposite heading +96° have 0.038–0.076 m (mean ~0.06 m) — **a ~0.15 m difference associated with driving direction** (the biases are both positive; see candidate explanations for the underlying structure). All nine models exhibit the identical per-pass structure, so the effect is a property of the ground-truth reference (teleoperated trajectory relative to corridor geometry), not of any perception arm.
+
+**Evidence.** Per-pass pooled GT-1 bias: pass 2/4/6/8 (−84°) = 0.203/0.195/0.206/0.224 m; pass 5/7/10 (+96°) = 0.038/0.076/0.055 m. At pass level (n = 7) the bias has no significant correlation with corridor (r = −0.02), recording time (r = −0.37), or speed (r = −0.20); canopy state is constant (single bare-vine March session, no variation).
+
+**Implication.** The pooled GT-1 bias (~0.14 m) averages two direction-dependent regimes and is a direction-structured quantity, not a single constant — a limitation of a teleoperated trajectory as an *absolute* lateral reference, not a pipeline error.
+
+**Cross-arm treatment.** Neutral — all nine models share the identical direction structure (same frames), so it cancels exactly in paired cross-arm differences; F013's claim is unaffected.
+
+**Candidate explanations (not asserted; out of scope to disentangle).** The measured biases are both positive (0.21 vs 0.06 m) — a magnitude difference, not a sign flip. Named candidates: (i) **teleoperator systematic offset** — the human driver may have consistently favoured one physical row of the corridor when centring during teleoperation, producing a driving-direction-linked bias structure (the most operationally likely mechanism given the human-mediated nature of the teleoperated reference, and consistent with the both-positive, different-magnitude pattern); (ii) a direction-independent constant (e.g. a camera lateral/yaw offset contribution) superimposed on a sign-flipping teleoperator physical offset, which would also reproduce a both-positive pattern; (iii) world-frame corridor asymmetry (e.g. non-parallel row geometry).
+
+**Cross-references.** F012 (per-pass wander at the pipeline level; F016 is its ground-truth-reference component); F013 (cancels in paired differences); D-F (teleoperator-centred GT-1 assumption + limitation); F010/F015 (the GT-2 tilt, a separate effect).
+
+> **Test-side confirmation (CP-6).** The direction-dependence replicates — negative-heading passes (0, 9) mean GT-1 bias 0.206 m vs positive-heading passes (1, 3) 0.040 m, matching the val ~0.21/~0.06 m split.
+
+### F017 — Sensor-common ~2.3–3.8° base_link-to-row tilt (mechanism open)
+
+**Finding.** The ~2.28° mean heading offset observed in the camera pipeline (F010) is **also observed by the Ouster OS1-16 LiDAR at ~+3.84° (SD 0.17°)** on the six anchor frames tested. The LiDAR has an **identity extrinsic** in Table 3 (base_link → LiDAR quaternion = (0,0,0,1)), so it cannot exhibit the camera-mount yaw hypothesised in F015. That both sensors independently measure a nonzero tilt of the same sign **refutes the camera-yaw attribution** and localises the tilt to a geometric relationship between the robot's body frame (base_link) and the vine rows.
+
+**Evidence.** LiDAR row heading vs camera row heading on 6 anchor frames (`results/geometric/march/lidar_crosscheck.json`):
+
+| frame | LiDAR | camera | diff |
+|---|---|---|---|
+| 3998 | +3.84° | +3.63° | +0.21° |
+| 4223 | +3.76° | +2.67° | +1.10° |
+| 4107 | +4.20° | +2.61° | +1.59° |
+| 3991 | +3.72° | +3.21° | +0.51° |
+| 3994 | +3.79° | +3.46° | +0.33° |
+| 3996 | +3.70° | +3.94° | −0.24° |
+| **mean** | **+3.84° (SD 0.17)** | **+3.25°** | |
+
+Anchor frames were selected toward high-tilt scenes for visualisation clarity, giving values above the ~2.28° val-mean; the core conclusion (LiDAR ≠ 0° and agrees with the camera in direction) is robust to this selection. LiDAR row heading = centreline slope from a robust per-side line fit on the trunk-height band (0.2 < Z < 1.2 m) transformed to base_link.
+
+**Candidate explanations (not asserted; out of scope to disentangle).** A **body-frame (base_link) vs odometry-driving-direction offset** would produce this pattern: `/robot_pose` yaw tracks odometry (measured crab angle ≈ 0°; F015 evidence), while sensors mounted to the physical body observe the world tilted relative to odometry. **World-frame corridor asymmetry** (non-parallel row geometry) is an alternative. Resolving base_link-physical vs odometry-frame definitively requires TF-tree analysis beyond the current time-box.
+
+**Caveats.** (1) The LiDAR extrinsic is nominal from Table 3; a small LiDAR-frame yaw cannot be fully excluded but cannot plausibly produce ~+3.8° from an expected ~0°. (2) Six-frame sample; extension to full val or per-pass structure requires further work.
+
+**Cross-arm impact.** Unchanged and reinforced. A base_link-common tilt is shared by all three camera arms and cancels exactly in paired cross-arm differences; F013's practical-indistinguishability claim on val is unaffected.
+
+**Cross-references.** F010 (cross-arm tilt consistency observation, unchanged); F015 (superseded, kept as the camera-only investigation trail); F013 (cross-arm claim unaffected); D-B (Table 3 extrinsics); Polvara et al. 2024 §5.3.
+
+> **Test-side confirmation (CP-6).** On 6 held-out test anchors (2 per test corridor), LiDAR heading +3.04° (SD 0.36) and camera +2.74° agree in sign and magnitude (Δ −0.31°), both nonzero — the tilt is sensor-common on held-out data. Both sensor measurements are lower than val (LiDAR 3.84° / camera 3.25°) — consistent with F019's observation that the tilt has a scene-dependent per-pass component; sensor-commonality is the operative claim and it replicates. `results/geometric/march/cp6_lidar_test.json`.
+
+### F018 — Phase C downstream config sweep + single-class ablations: trunks load-bearing; poles supplement coverage, not quality
+
+**Finding.** Across the Phase C downstream config sweep (trunk-primary / pole-primary × T∈{1,2,3,5,8,12}, class-agnostic) plus single-class ablations (trunk-only, pole-only): (1) in the **viable regime (coverage ≥70%)**, class structure does **not** distinguish centreline quality — GT-1 RMS 0.193–0.204 m and GT-2 RMS 2.63–2.72° are mutually CI-overlapping (block bootstrap, Analysis-H block lengths); (2) **trunk-only ≈ class-agnostic on quality** (GT-1/GT-2 CIs overlap) at 71.0% vs 82.9% coverage; (3) **pole-only degenerates** — 1.1% two-row, 85.5% no-estimate; (4) adding poles to trunks (agnostic) raises coverage +12 pp (71.0→82.9%) at zero quality change.
+
+**Evidence.** Cross-config table (`results/geometric/march/cp4_sweep_val.json`):
+
+| config | coverage | base pts | GT-1 RMS · CI | GT-2 RMS · CI |
+|---|---|---|---|---|
+| class-agnostic | 82.9% | 31.6 | 0.200 · [0.189, 0.210] | 2.65 · [2.42, 2.83] |
+| trunk-only | 71.0% | 18.3 | 0.204 · [0.192, 0.216] | 2.72 · [2.48, 2.95] |
+| pole-only | 1.1% (85.5% none) | 13.3 | (degenerate) | (degenerate) |
+| trunk-primary (T grid) | 71–82% | 18–27 | 0.198–0.204 (all overlap) | 2.65–2.72 (all overlap) |
+| pole-primary (T grid) | 1→80% | — | degenerate ≤T5; T12 ≈ agnostic | — |
+
+trunk-only GT-1 0.204 [0.192, 0.216] overlaps agnostic 0.200 [0.189, 0.210] (GT-2 likewise). **Pole-only produced n = 1 two-row frame at 1.1% coverage; the reported 0.118 m / 1.26° values are single-frame artefacts, not RMS estimates, and are reported for transparency rather than as a comparable measurement.** Pole-primary collapses at T≤5 (poles too sparse); viable only at T12 (trunk-fallback-dominated). Argmin among viable cells = pole_T12, whose CIs overlap agnostic → pre-stated tie-break locks class-agnostic.
+
+**Interpretation.** In the viable regime (coverage ≥70%), class structure affects base-point availability but does not distinguish centreline quality; low-coverage pole-only cells degenerate before this can be tested at matched base-point counts. The pole collapse is not merely a coverage limitation — it is the **mechanistic explanation** for the flat quality result: if poles carried independent, complementary structural information, pole-primary at high T (or pole-only) should have produced distinguishable centreline quality; instead, pole-only base points are too sparse to fit a stable row (1–5% coverage at T1–T5), and the only viable pole-primary cell (T12) is one where fallback to trunks dominates. Multiclass information is therefore **not silently helpful** — it exposes that **trunks are the load-bearing feature and poles cannot substitute at this bag's density**. **Class-aware information has two operational contributions to the pipeline: a *quality* contribution (none within measurement bounds — trunk-only and agnostic centreline RMS are CI-indistinguishable) and a *coverage* contribution (+12 pp when poles supplement trunks — 71.0% trunk-only vs 82.9% agnostic).** The ablations resolve the hypothesis: trunk-only matches agnostic on quality (Hypothesis A on quality); poles contribute measurably to coverage but not quality, and cannot substitute alone.
+
+**Design decision.** Class-agnostic locked for CP-6: **it captures the coverage benefit at zero measurable quality cost — the positive reason for locking it beyond the argmin tie-break** — with the highest coverage (82.9%), centreline RMS indistinguishable from every viable config, and the simplest logic (no class-priority or T threshold to justify). The pole-primary/pole-only collapse confirms poles cannot substitute for trunks as the primary row cue.
+
+**Caveats.** Val only; the config-invariance of centreline quality is measured at F013's bounds. A denser-canopy bag (different trunk/pole visibility) is a multi-bag question — poles may carry more structural information at higher visibility.
+
+**Cross-references.** F013 (arm-level indistinguishability; F018 is the config-level analogue); D026 (sweep design); D030/D032 (Phase C conf/config); Analysis H (block lengths); CP-6 (test at the locked class-agnostic config).
+
+> **Test-side confirmation (CP-6).** Mechanism replicates on the 3,149 held-out test frames: trunk-only GT-1/GT-2 RMS CI-overlap agnostic (0.187 vs 0.183 m; 2.38 vs 2.30°), poles supplement coverage +13.3 pp (agnostic 77.3% vs trunk-only 64.0%), and pole-only degenerates (0.9% two-row, 0 across-seed frames). `results/geometric/march/cp6_ablation_test.json`.
+
+### F019 — CP-6 held-out test: GT-1 indistinguishable (confirms F013); GT-2 a negligible-but-detectable B-vs-others micro-difference
+
+**Finding.** On the 4 held-out test corridors (3,149 frames, class-agnostic locked config, all 9 models), the three arms are **indistinguishable on GT-1 lateral offset** — paired differences ≤2.8 mm (≤7% of the RTK floor), all block-bootstrap CIs include zero — confirming F013 on held-out data. On **GT-2 heading**, 2 of 3 pairs' CIs **exclude zero** (A-B −0.122°, B-C +0.035°; A-C includes zero): B's heading sits 0.035–0.122° above A's and C's — statistically detectable at test n but **practically negligible** (3–9% of the ~1.3° noise floor; a small fraction of the ~2.3–3.8° systematic tilt, F017).
+
+**Evidence.** Per-arm test (across-seed, block-bootstrap CI): A GT-1 RMS 0.181 [0.167, 0.194] / GT-2 2.28 [2.11, 2.47]; B 0.183 [0.165, 0.200] / 2.33 [2.16, 2.51]; C 0.183 [0.167, 0.194] / 2.30 [2.14, 2.50] — all per-arm CIs overlap. Paired (across-seed): A-B GT-1 −2.8 mm [−11.1,+3.9] (incl 0), GT-2 −0.122° [−0.199,−0.031] (**excl 0**); A-C GT-1 −2.1 mm (incl 0), GT-2 −0.084° [−0.167,+0.002] (incl 0); B-C GT-1 −0.8 mm (incl 0), GT-2 +0.035° [+0.010,+0.057] (**excl 0**). `cp6_linefit_test_report.json`, `cp6_paired_test.json`. Coverage ~77% (all arms) vs val's ~83%; systematic tilt ~1.9° on test vs ~2.28° on val (F017's scene-dependent component).
+
+**Interpretation.** The primary metric (GT-1) confirms F013 on held-out data — the arms are indistinguishable, sub-RTK-floor. On the complementary GT-2, the B arm shows a tiny, statistically-detectable-at-test-n but practically-negligible higher heading. **The B-vs-others GT-2 difference (0.035–0.122°) is smaller than the val-to-test change in the systematic tilt itself (2.28° → ~1.9°, a shift of ~0.4°). A per-arm heading difference of that magnitude cannot be reliably distinguished from residual per-arm sensitivity to the same corridor-level scene variation that produced the tilt shift. The paired significance is reported as what the test data shows, without asserting an arm-level mechanism that could not be distinguished from residual scene-sensitivity at this magnitude.** The operative conclusion (arms deliver equivalent navigation-relevant centreline geometry) holds.
+
+**Caveats.** Single-shot test (not iterated). The GT-2 micro-difference is at the edge of metric resolution; its mechanism is not investigated (out of scope). **The val-to-test coverage drop (83→77%) is scene-explained, not pipeline:** the shared corridor 3 is consistent (val 90.2% / test 88.5%); the test set adds corridor 4 (test-only), the sparsest-detection corridor (mean base 21.3 vs 26–32 elsewhere; 64.0% two-row, 10.4% none), which drags the test average down — scene-harder, not a pipeline regression.
+
+**Cross-references.** F013 (val — GT-1 confirmed, GT-2 partial divergence); F012 (noise floor); F017 (systematic tilt dominates GT-2; scene-dependent); F018 (locked config); Analysis H (block lengths); D033 (corridor-3 val/test split).

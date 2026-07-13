@@ -15,16 +15,21 @@
 
 ---
 
-## Current state (as of 28 June 2026)
+## Current state (as of 13 July 2026)
 
-**Planning phase — post supervisor feedback design refinement. Implementation not yet started.**
+**Perception complete; geometric strand at the CP-5 val gate.** All three arms trained + tested once + multi-seed (O009 complete). The geometric strand (in-row centreline evaluation on `kg_march_23`) has run CP-0→CP-5 on val with the locked **line-fit** pipeline (D036–D038):
 
-Recent events:
-1. A1 proposal submitted (1 July 2026 deadline; submitted early)
-2. Supervisor instruction: reproduce baseline first, then novel development
-3. Supervisor feedback rounds resulted in three-arm design (U-Net binary + YOLO binary + YOLO multiclass) with Config A/B/C downstream sweep on Phase C
-4. Data split changed from Roboflow default (95/5/2) to 70/20/10 stratified resplit
-5. Roboflow-trained model verified as `roboflow-3-n-seg` (instance seg, mAP@50 74.1%) — reference only, not reused
+- **CP-5 val (9 models, line-fit) complete.** Per-arm GT-1 RMS ~0.22 m, GT-2 RMS ~2.7°, two-row coverage ~83%; arms **statistically and practically indistinguishable** (F013 **confirmed** — paired moving-block bootstrap, tight autocorrelation-corrected bounds; all CIs include zero). Reports: `results/geometric/march/cp5_linefit_val_report.json` + `cp5_paired_val.json` + per-frame CSV (uncommitted).
+- **Findings F010–F019 logged** (FINDINGS.md) with **decomposed reporting** (bias / residual-SD, not raw RMS): F010 cross-arm tilt · F011 far-field coverage (64→83%) · F012 noise-floor decomposition (~1.3° arm-invariant) · F013 cross-arm indistinguishability (**confirmed** on val; amended with post-CP-6 note) · F014 adjacent-corridor scene-driven · F015 camera-yaw (**SUPERSEDED by F017**) · F016 GT-1 direction-dependence · **F017 sensor-common ~2.3–3.8° base_link-to-row tilt** (LiDAR refutes camera-specific attribution) · **F018 config sweep + ablations** (quality config-invariant; trunks load-bearing, poles supplement coverage +12 pp not quality) · **F019 CP-6 held-out test** (GT-1 indistinguishable, confirms F013; GT-2 negligible-but-detectable B-vs-others micro-difference, sub-noise-floor).
+- **LiDAR cross-check complete** — `results/geometric/march/lidar_crosscheck.json`. Refuted F015; tilt sensor-common (F017).
+- **CP-4 sweep + ablations complete** (D026) — `cp4_sweep_val.json`; **class-agnostic locked** (F018).
+- **CP-6 single-shot test complete** — 9 models × 3,149 held-out frames, class-agnostic; `cp6_linefit_test_report.json` + `cp6_paired_test.json`. GT-1 arms indistinguishable (confirms F013); GT-2 tiny detectable B-vs-others difference (sub-floor, F019). Coverage 77% (scene-driven: corridor 4 sparsest, F019).
+- **Test-side mechanism-verification batch complete — 5/5 confirm val:** F018 ablation (trunk-only ≈ agnostic; poles +13.3 pp coverage not quality; pole-only degenerate), F012/Analysis-B noise floor (arm-invariant, ~1.0–1.15°), F010 tilt consistency (cross-arm SD 0.054°), F016 GT-1 direction-dependence (0.206 vs 0.040 m), F017 LiDAR-on-test (LiDAR +3.04 / cam +2.74°, sensor-common). Each val finding carries a "Test-side confirmation (CP-6)" block. Artefacts: `cp6_ablation_test.json`, `cp6_lidar_test.json`.
+- **March geometric strand FULLY CLOSED (incl. test-side mechanism verification):** **F010–F019** all with appropriate **val + test evidence**; F013 confirmed + test-annotated; F015 superseded by F017; class-agnostic config locked; test evaluated once (rule 5).
+- **Pending (awaiting Edosa's PID sequence message):** multi-bag seasonal evaluation (April/May/June/July/Sept); PID / command-level characterisation (deferred until now).
+- **Test set (23 scenes), Phase A/B/C artefacts, CP-0/1/2/3 artefacts untouched.**
+
+*Planning-phase history (retained for context):* A1 submitted early; supervisor → three-arm design (U-Net binary + YOLO binary + YOLO multiclass) + Config A/B/C sweep on Phase C; split changed to 70/20/10 stratified; Roboflow `roboflow-3-n-seg` reference-only.
 
 ---
 
@@ -141,13 +146,22 @@ Perception uses **native metrics per arm** (U-Net: mIoU/IoU; YOLO: mAP@50/per-cl
 
 ## Immediate next action
 
-**Data preparation, in this order:**
-1. ~~Script the 70/20/10 stratified resplit~~ ✅ done — scene-level resplit (D028), manifest at `data/splits/resplit_70_20_10.json`
-2. ~~Verify no augmented duplicates leak across splits~~ ✅ done — leakage guard passes; determinism confirmed
-3. Prepare binary mask generation for Phase A U-Net  ← **next**
-4. Convert COCO annotations to YOLO format for Phases B and C
+**March-bag geometric strand is CLOSED** (perception A/B/C + O009; CP-0→CP-6; F010–F019; config locked; test evaluated once). **Holding at the closure gate** for Edosa's sequence message. Remaining, in expected order (do not start until instructed):
+1. **Multi-bag seasonal evaluation** — repeat the locked pipeline on April/May/June/July/September bags (canopy-state generalisation; where a class-structure effect is most likely to appear).
+2. **PID / command-level characterisation** — deferred throughout; the downstream control strand.
+3. **A2 writing** — Methodology (DECISIONS trail), Results/Discussion (FINDINGS F001–F019).
 
-**⚠ Before Phase A training:** raise O006 with supervisor — honest test set is 23 scenes (dataset ceiling of 230 unique scenes). D024's ~100-frame target was augmentation-inflated; D028 makes evaluation honest but revives the 23-frame thinness the supervisor flagged.
+---
+
+## Val/test discipline (geometric strand)
+
+Same one-shot-test discipline as perception (rule 5):
+
+- **Val** (7 passes p2/4/5/6/7/8/10; 4,708 frames) — all pipeline development, the row-model refinement (CP-4, D036–D038), the 9-model CP-5 evaluation, the paired cross-arm bootstrap, and every methodological analysis (A–I) run here. Val may be inspected freely.
+- **Test** (4 passes p0/1/3/9; 3,149 frames) — held out for **one** final evaluation at the locked config (CP-6). Not inspected until then. The labelled 23-scene perception test set is separately untouched.
+- **F013 confirmed on val** (statistically + practically indistinguishable at tight autocorrelation-corrected paired-bootstrap bounds); CP-6 is the held-out confirmation, not substituted by the val conclusion.
+- **Subsampling rule — supersedes the D-D Δs = 1.5 m default for paired analyses:** the spatial-independence gap or block length for paired-difference CIs is **grounded in per-pair, per-metric measured autocorrelation (Analysis H)**, not a global default. Measured paired-difference decorrelation is 0.22–0.67 m (0.1 threshold), well below the 1.5 m pre-specified default. Δs = 1.5 m remains the conservative fallback where autocorrelation is not measured.
+- **PID / command-level characterisation** remains deferred pending full geometric-strand closure (sweep + test).
 
 ---
 
