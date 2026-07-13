@@ -1,0 +1,39 @@
+{
+  "params": {
+    "conf": 0.25,
+    "near_m": 5.0,
+    "inl": 3,
+    "tol": 0.5,
+    "blob_frac": 0.15,
+    "bins": [
+      [
+        1.0,
+        3.0
+      ],
+      [
+        3.0,
+        5.0
+      ]
+    ],
+    "half": {
+      "traj": 1.2,
+      "proj": 0.96
+    }
+  },
+  "summary": {
+    "frames": 4708,
+    "two_row": 3015,
+    "two_row_pct": 64.0,
+    "single_row": 1259,
+    "single_row_pct": 26.7,
+    "none": 434,
+    "none_pct": 9.2,
+    "offset_mean": 0.164,
+    "offset_sd": 0.144,
+    "offset_abs_median": 0.167,
+    "heading_mean": -0.32,
+    "heading_sd": 7.73,
+    "heading_abs_median": 3.21,
+    "blob_frames": 0
+  }
+}

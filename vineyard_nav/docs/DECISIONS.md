@@ -455,6 +455,25 @@ The CP-2 image→ground projection (IPM) is built from the **Polvara et al. 2024
 
 ---
 
+## D035 — Geometric-strand locked pipeline + GT-2 heading redefinition (CP-3)
+**Date:** 13 July 2026
+**Status:** LOCKED
+**Refines:** GEOMETRY_PIPELINE_SPEC.md §4 (steps 5–6), §5 (GT-2), §9 (CP-3), D-F; D034.
+
+The CP-3 single-arm dry run (Phase C seed 42, all 4 708 val frames) locked the row model and metric construction. Module: `scripts/cp3_pipeline.py`; report `results/geometric/march/cp3_dryrun_report.json`.
+
+**Row model — near-field Y-constant.** Base points are restricted to the **near field X < 5 m** and each side is fit as a **Y-constant row** (median Y; valid if ≥ 3 points within 0.5 m of the median). **Rationale:** the CP-2 projection fan (D034) makes projected points fan outward with range, which *destroys per-row line fits* — a naïve RANSAC line-fit pipeline gave only **10 % two-row coverage**. Vine rows are at constant Y in the robot frame, so a constant model estimates the correct quantity (row lateral position) and is fan-robust, recovering **64.0 % two-row coverage** (single-row 26.7 %, none 9.2 %) on 4 708 val frames — ≈ 3 015 usable frames, ample for the sweep and bootstrap CIs.
+
+**GT-2 heading — centreline-derived, fan-free (redefinition of D-F GT-2).** The per-row slope is fan-corrupted (spurious ±45°). But the fan is **symmetric** (left row +Y, right row −Y with range), so it **cancels in the centreline midpoint**. GT-2 is therefore redefined as the direction of the **centreline** between its 2 m and 4 m look-ahead bins, compared against the robot's actual heading from `/robot_pose` orientation (base_link frame). CP-3 gives an **unbiased** heading (mean −0.32°, |median| 3.21°, SD 7.73°), confirming the fan-free construction carries genuine signal. The robot's own row-misalignment is a common floor across all three arms (as with GT-1's centring floor), cancelling in the cross-arm ranking; the slip-corrected form (subtract path-tangent-minus-heading ≈ 0) is a documented refinement.
+
+**GT-1 lateral offset.** Centreline lateral position at the 1–3 m (≈ 2 m) look-ahead bin. CP-3: mean +0.164 m, SD 0.144 m, |median| 0.167 m — consistent with near-centred teleoperation plus a small per-pass bias (reported separately, GT-1).
+
+**Blob guard — lenient (CP-3 finding).** The F007 canopy-blob pathology does **not** manifest on the bare-vine March bag: the largest detections (~10.5 % of frame) are **real close-up trellis poles**, verified visually. An aggressive area cap would reject real poles, so the guard is set at **15 % of frame** — it drops 0 real detections in March val while still rejecting a gross whole-frame blob. The per-frame outlier defence is the row fit's median ± 0.5 m inlier test. (The blob guard remains relevant for the leafy April/June bags, future work.)
+
+**Cross-references:** GEOMETRY_PIPELINE_SPEC.md §4–6, §9, D-F; D034 (projection fan); D033 (pass-level split); F007 (blob pathology, canopy scenes).
+
+---
+
 ## Open items
 
 ### O001 — Threshold T range (Phase C)
