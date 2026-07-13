@@ -440,6 +440,21 @@ The geometric-strand evaluation on `kg_march_23.bag` splits eligible frames val/
 
 ---
 
+## D034 — Geometric-strand image→world projection (CP-2) + D-G two-value half-spacing prior
+**Date:** 13 July 2026
+**Status:** LOCKED
+**Refines:** GEOMETRY_PIPELINE_SPEC.md D-B, D-G, §5, §6; O010; CP-2.
+
+The CP-2 image→ground projection (IPM) is built from the **Polvara et al. 2024 Table 3 extrinsics** (base_link → Zed2 Front) + bag intrinsics + a flat Z = 0 ground plane, validated on 22 well-detected val frames (parallel rows; correct centreline). Module: `scripts/cp2_projection.py`.
+
+**Known limitation (accepted, not blocking).** Projection-measured corridor width is **median 1.91 m (IQR [1.59, 2.45])** — ~22 % narrower than the trajectory-derived **2.45 m** corridor spacing. The narrowing is **symmetric**, so it does **not** bias the primary two-row centreline metric (midpoint preserved); it shifts only width-dependent measures (the D-G single-row fallback prior). Likely cause: bbox-bottom projects to the visible inner edge of the trunk/pole rather than true ground contact, plus possible sub-cm pitch/height offset from Table 3 nominal. Refinement (true-ground-contact detection) is future work.
+
+**D-G half-spacing prior — two-value reporting.** The single-row fallback prior is reported at **two values side by side**: **1.2 m** (primary, trajectory-anchored — true vineyard geometry) and **0.96 m** (sensitivity, projection-consistent — half the measured 1.91 m width), making the projection-vs-truth sensitivity transparent.
+
+**Cross-references:** GEOMETRY_PIPELINE_SPEC.md D-B (§6 extrinsics), D-G (§10), §5, §6; D033 (pass-level split); O010.
+
+---
+
 ## Open items
 
 ### O001 — Threshold T range (Phase C)

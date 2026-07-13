@@ -129,7 +129,7 @@ For scale, the full eligible set is ≈ 11,800 frames (val + test), ≈ 350 at t
 **Interpretation rule:** any arm's RMS lateral error **at or below the operative floor** for that bag is reported as *within RTK-GNSS ground-truth uncertainty*, not a distinguishing result. **For our March bag the floor is 3.8 cm.** (Thin-structure perception error is expected well above this, but it bounds what the metric can resolve.)
 
 - **Primary (two-row frames, D-G tier 1):** RMS lateral error at `L_ahead` = 2 m [+ 0 m and 3 m], + **two-row coverage X %** (fraction of eligible frames with both sides fittable).
-- **Secondary (single-row frames, D-G tier 2):** RMS lateral error using the half-spacing prior (§6a), reported separately (its own coverage).
+- **Secondary (single-row frames, D-G tier 2):** RMS lateral error using the half-spacing prior (§6a), reported separately (its own coverage) — at **both** prior values (1.2 m trajectory-anchored primary; 0.96 m projection-consistent sensitivity, D034) to expose the CP-2 projection-vs-truth width sensitivity (§6 known limitation).
 - **Complementary:** RMS heading error (deg, GT-2); per-pass lateral bias (GT-1).
 - **Cross-arm:** paired-difference bootstrap CIs (as in F001/F003, on the paired subsample), not overlapping single-arm CIs.
 
@@ -149,7 +149,9 @@ This gives a principled `T_base←cam` from those six DOF. (The mount is in no p
 
 **Sanity check (CP-2):** project detections on a frame; confirm the left/right rows land ~2.45 m apart (the trajectory-measured corridor spacing) and parallel.
 
-**Half-spacing prior (D-G secondary tier).** The single-row fallback places the centre at the detected row ± half the corridor width. **Provisional value from `/robot_pose`: corridors are ~2.45 m centre-to-centre (driven corridors at x ≈ −2.2 / −4.6 / −7.1 / −9.5 / −12.0 m) → half-spacing ≈ 1.2 m.** The **precise metric corridor width must be measured on two-row frames after D-B projection is calibrated** (median left–right row separation in the ground plane); the trajectory figure is a placeholder until then.
+**Half-spacing prior (D-G secondary tier) — two-value (CP-2 complete, D034).** The single-row fallback places the centre at the detected row ± half the corridor width. The prior is **reported at two values side by side** to make the projection-vs-truth sensitivity transparent: **1.2 m (primary, trajectory-anchored)** — corridors ~2.45 m centre-to-centre from `/robot_pose` (x ≈ −2.2/−4.6/−7.1/−9.5/−12.0 m), reflecting true vineyard geometry — and **0.96 m (sensitivity, projection-consistent)** — half the CP-2 projection-measured corridor width (median 1.91 m over 22 well-detected val frames).
+
+**Known limitation (CP-2 projection width).** Projection-measured corridor width (median 1.91 m, IQR [1.59, 2.45]) is ~22% narrower than the trajectory-derived 2.45 m spacing. This symmetric narrowing does NOT bias the primary two-row centreline metric (midpoint is preserved). It affects width-dependent measures (specifically D-G single-row fallback prior). Likely cause: bounding-box bottom projects to the visible inner edge of trunk/pole rather than true ground contact, plus possible sub-centimetre pitch/height offset from Table 3 nominal values. Refinement (e.g., true-ground-contact detection) is left as future work.
 
 ---
 
@@ -184,7 +186,7 @@ Measured per-side trunk count on bag frames: **mean 8.5, median 8, range 0–28*
 
 - **CP-0 — Contamination census.** Enumerate all March train/val/test frames; frame-match each to the bag (**first-5–6-min heuristic as a search accelerator; empirical match governs** — prototype matches landed at ~8 min); produce the exclusion-window list + an unlocated-frames report. Gate: exclusion coverage acceptable, residual risk quantified.
 - **CP-1 — Extraction.** Extract all 16,656 `(frame_640, timestamp, pose)` triples to a processed dataset (~2.3 GB JPEG q90 / ~20 GB raw; ~5–15 min). Gate: continuity check (no missing frames), pose join correct, sample overlays look right.
-- **CP-2 — Projection calibration.** Apply the **Table 3 extrinsics** (base_link → cam: 0.345, 0.060, 0.763 m; pitch ~2°) + bag intrinsics; validate corridor spacing ~2.45 m & parallel on known frames; then measure the metric corridor width for the D-G half-spacing prior. Gate: projection sanity passes.
+- **CP-2 — Projection calibration. [DONE]** Applied the **Table 3 extrinsics** (base_link → cam: 0.345, 0.060, 0.763 m; pitch 1.95°) + bag intrinsics + Z=0 ground plane; validated on 22 well-detected val frames — parallel rows, correct centreline. **Row width median 1.91 m, IQR [1.59, 2.45]** (~22 % narrower than the 2.45 m trajectory spacing — *symmetric*, so the two-row centreline metric is unaffected; **known limitation §6, D034**). D-G half-spacing prior: **1.2 m / 0.96 m** (two-value). Module `scripts/cp2_projection.py`; report `results/geometric/march/cp2_calibration_report.json`.
 - **CP-3 — Single-arm dry run.** Full pipeline on one arm over a small val subset; confirm RANSAC rejects the F007 blob; inspect centreline overlays. Gate: qualitative sanity.
 - **CP-4 — Sweep on val.** Finalise T grid vs measured val densities; run 13-point sweep for Phase C; select (config*, T*). Gate: sweep curves sane, selection stable.
 - **CP-5 — Test (once).** Locked config; all three arms; RMS lateral + heading + coverage + bootstrap CIs; cross-arm paired-difference ranking. Gate: rule-5 analogue (single test evaluation per arm).
@@ -204,7 +206,7 @@ Locked 11 July 2026. **All items resolved and locked**, including D-B (extrinsic
 - **D-D — Dual-mode data use. [LOCKED]** **Point estimates over ALL eligible frames (~11.8k)**; **bootstrap CIs over the Δs = 1.5 m spatially-independent subsample (~350)**. Δs = 1.5 m from measured ORB falloff (< 100 matches; SSIM uninformative), spatial not temporal (speed varies, 31 % stationary); conservative alt 2.0 m. Changes *how* retained data is used, not what is excluded.
 - **D-E — Look-ahead. [LOCKED]** `L_ahead` = 2 m primary + 0 m (at-robot) secondary; 3 m also reported if cheap.
 - **D-F — Ground-truth metric. [LOCKED]** GT-1 teleoperator-centred lateral (primary) + GT-2 heading (complementary, reported alongside); GT-3 LiDAR-referenced deferred to future work. Rationale in §5.
-- **D-G — Single-row handling. [LOCKED]** Report BOTH tiers: primary two-row (coverage X %, RMS Y m) + secondary single-row with a measured half-spacing prior (RMS Z m). Half-spacing provisional ≈ 1.2 m (trajectory); precise value measured post-D-B.
+- **D-G — Single-row handling. [LOCKED — two-value prior, D034]** Report BOTH tiers: primary two-row (coverage X %, RMS Y m) + secondary single-row (RMS Z m) with a half-spacing prior reported at **two values**: **1.2 m** (trajectory-anchored, primary) and **0.96 m** (projection-consistent, sensitivity — half the CP-2 measured 1.91 m width). See §6 known limitation + D034.
 
 ---
 

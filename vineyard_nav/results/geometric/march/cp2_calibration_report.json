@@ -1,0 +1,58 @@
+{
+  "meta": {
+    "checkpoint": "CP-2",
+    "generated": "2026-07-13T00:28:05",
+    "intrinsics_1920x1080": {
+      "fx": 1057.0,
+      "fy": 1057.0,
+      "cx": 952.2,
+      "cy": 553.6
+    },
+    "extrinsics_base_to_cam": {
+      "xyz_m": [
+        0.345,
+        0.06,
+        0.763
+      ],
+      "quat_xyzw": [
+        0.0,
+        0.017,
+        0.0,
+        1.0
+      ],
+      "pitch_deg_down": 1.95,
+      "source": "Polvara et al. 2024 Table 3"
+    },
+    "ground_plane": "Z=0 in base_link (base_link at ground level)"
+  },
+  "sanity_projections_XY_m": {
+    "image_centre": null,
+    "bottom_centre": [
+      1.95,
+      0.05
+    ],
+    "bottom_left": [
+      1.85,
+      0.92
+    ],
+    "bottom_right": [
+      1.85,
+      -0.82
+    ]
+  },
+  "row_width_m": {
+    "median": 1.91,
+    "mean": 2.02,
+    "iqr": [
+      1.59,
+      2.45
+    ],
+    "n_frames": 22,
+    "trajectory_spacing_m": 2.45
+  },
+  "d_g_half_spacing_prior_m": {
+    "primary_trajectory_anchored": 1.2,
+    "sensitivity_projection_consistent": 0.96
+  },
+  "known_limitation": "Projection-measured corridor width (median 1.91 m, IQR [1.59, 2.45]) is ~22% narrower than the trajectory-derived 2.45 m spacing. This symmetric narrowing does NOT bias the primary two-row centreline metric (midpoint is preserved); it affects only width-dependent measures (D-G single-row fallback prior). Likely cause: bbox-bottom projects to the visible inner edge of trunk/pole rather than true ground contact, plus possible sub-cm pitch/height offset from Table 3 nominal. Refinement (true-ground-contact detection) is future work."
+}
