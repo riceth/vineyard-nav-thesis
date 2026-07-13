@@ -449,6 +449,8 @@ The CP-2 image→ground projection (IPM) is built from the **Polvara et al. 2024
 
 **Known limitation (accepted, not blocking).** Projection-measured corridor width is **median 1.91 m (IQR [1.59, 2.45])** — ~22 % narrower than the trajectory-derived **2.45 m** corridor spacing. The narrowing is **symmetric**, so it does **not** bias the primary two-row centreline metric (midpoint preserved); it shifts only width-dependent measures (the D-G single-row fallback prior). Likely cause: bbox-bottom projects to the visible inner edge of the trunk/pole rather than true ground contact, plus possible sub-cm pitch/height offset from Table 3 nominal. Refinement (true-ground-contact detection) is future work.
 
+> **Update (D036–D038, 13 July 2026).** The ~22 % narrowing measured here was largely **adjacent-corridor + far-field-fan contamination of the row fit** (the CP-2 validation used a near-8 m line fit that mixed in far/neighbouring-row dots), not a pure projection error. The revised row model (hybrid clustering D036 + far-field extension D037 + line-fit D038) gives **width median ≈ 2.5–2.6 m** (near the true 2.45 m), substantially resolving this limitation. A residual sub-cm pitch/height offset and the ~2.3° yaw tilt (D038) remain. The extrinsics themselves (D-B) are unchanged.
+
 **D-G half-spacing prior — two-value reporting.** The single-row fallback prior is reported at **two values side by side**: **1.2 m** (primary, trajectory-anchored — true vineyard geometry) and **0.96 m** (sensitivity, projection-consistent — half the measured 1.91 m width), making the projection-vs-truth sensitivity transparent.
 
 **Cross-references:** GEOMETRY_PIPELINE_SPEC.md D-B (§6 extrinsics), D-G (§10), §5, §6; D033 (pass-level split); O010.
@@ -457,10 +459,11 @@ The CP-2 image→ground projection (IPM) is built from the **Polvara et al. 2024
 
 ## D035 — Geometric-strand locked pipeline + GT-2 heading redefinition (CP-3)
 **Date:** 13 July 2026
-**Status:** LOCKED
-**Refines:** GEOMETRY_PIPELINE_SPEC.md §4 (steps 5–6), §5 (GT-2), §9 (CP-3), D-F; D034.
+**Status:** **SUPERSEDED (13 July 2026)** by **D036** (hybrid clustering + RANSAC), **D037** (far-field extension), **D038** (line-fit centreline). The CP-3 artefacts (`scripts/cp3_pipeline.py`, `cp3_dryrun_report.json`, `cp3_samples/`) **remain committed as a locked historical state** (commit 32de7c8) — this entry is retained, not deleted, to document the row model CP-5 evolved past.
+**Superseded because:** (1) the **near-field 5 m cutoff excluded valid same-row detections** — on frame 4107, 6 of the 8 left-row dots lie at X > 5 m, leaving a fragile 2-dot fit (→ D037); (2) the **Y-constant model missed a systematic ~2.3° common tilt** — frame 3998's right row visibly slants (m_R = +0.10), and the slope distribution over 3 910 frames is m_centre = +0.040 ± 0.026 (→ D038); (3) the **global-median fit landed in the gap between the true-row cluster and adjacent-corridor detections** — frame 4223's old fit sat at Y = +1.44 vs the true row at +0.6 (→ D036). **Retained forward:** the 15 % blob-area guard (below) and the CP-2 projection (D034) carry into D036–D038 unchanged.
+**Refines (historical):** GEOMETRY_PIPELINE_SPEC.md §4 (steps 5–6), §5 (GT-2), §9 (CP-3), D-F; D034.
 
-The CP-3 single-arm dry run (Phase C seed 42, all 4 708 val frames) locked the row model and metric construction. Module: `scripts/cp3_pipeline.py`; report `results/geometric/march/cp3_dryrun_report.json`.
+The CP-3 single-arm dry run (Phase C seed 42, all 4 708 val frames) locked the (now-superseded) row model and metric construction. Module: `scripts/cp3_pipeline.py`; report `results/geometric/march/cp3_dryrun_report.json`.
 
 **Row model — near-field Y-constant.** Base points are restricted to the **near field X < 5 m** and each side is fit as a **Y-constant row** (median Y; valid if ≥ 3 points within 0.5 m of the median). **Rationale:** the CP-2 projection fan (D034) makes projected points fan outward with range, which *destroys per-row line fits* — a naïve RANSAC line-fit pipeline gave only **10 % two-row coverage**. Vine rows are at constant Y in the robot frame, so a constant model estimates the correct quantity (row lateral position) and is fan-robust, recovering **64.0 % two-row coverage** (single-row 26.7 %, none 9.2 %) on 4 708 val frames — ≈ 3 015 usable frames, ample for the sweep and bootstrap CIs.
 
@@ -471,6 +474,76 @@ The CP-3 single-arm dry run (Phase C seed 42, all 4 708 val frames) locked the r
 **Blob guard — lenient (CP-3 finding).** The F007 canopy-blob pathology does **not** manifest on the bare-vine March bag: the largest detections (~10.5 % of frame) are **real close-up trellis poles**, verified visually. An aggressive area cap would reject real poles, so the guard is set at **15 % of frame** — it drops 0 real detections in March val while still rejecting a gross whole-frame blob. The per-frame outlier defence is the row fit's median ± 0.5 m inlier test. (The blob guard remains relevant for the leafy April/June bags, future work.)
 
 **Cross-references:** GEOMETRY_PIPELINE_SPEC.md §4–6, §9, D-F; D034 (projection fan); D033 (pass-level split); F007 (blob pathology, canopy scenes).
+
+---
+
+## D036 — Hybrid clustering + RANSAC row-fitting
+**Date:** 13 July 2026
+**Status:** LOCKED (supersedes the D035 global-median row fit)
+**Refines:** GEOMETRY_PIPELINE_SPEC.md §4 (step 5); D035.
+
+**Decision.** Fit each side's row by **densest-cluster seed → RANSAC refinement**, not a global median: (a) slide a **0.5 m Y-window** over the near-field (X < 5 m) points, take the densest window's median as the seed; (b) **RANSAC-refine** — search candidate row Y over **seed ± 0.3 m in 0.05 m steps**, pick the Y with the most inliers within **± 0.25 m**, refit as the median of those inliers; (c) **sanity checks** — reject if |Y| > 3 m, < 3 inliers, or X-span < 1 m (a horizontal blob, not a row); (d) **adjacent-corridor logging** — a secondary same-side cluster beyond the row band (|Y| > row |Y| + ~0.95 m) is recorded and rejected. The **15 % bbox-area blob guard** (from D035) is retained.
+
+**Rationale.** The D035 global-median fit fails when a side contains **two clusters** — the true row and an adjacent corridor: the median of a bimodal set falls in the empty gap between the modes. The densest-window seed locks onto the true (nearest, most-detected) row; RANSAC tightens it; the adjacent cluster is logged and excluded.
+
+**Alternatives considered.** (i) Global-median per side (D035) — lands in the inter-cluster gap on bimodal frames. (ii) Plain RANSAC line fit over all near-field points — fan- and adjacent-corrupted (only ~10 % two-row coverage at CP-3). Both rejected.
+
+**Sample frames (visual verification, `results/geometric/march/rowfit_validation/`).** 4223 — old median at Y = +1.44 sits between the true row (+0.6) and the adjacent corridor (+2.4…+4.7); 3991 — adjacent-left dots at Y ≈ −3.1 correctly rejected; 4107 — adjacent-right dots at Y ≈ +4 rejected.
+
+**Cross-arm comparability.** Applied identically to all 9 models; a cleaner, arm-agnostic inlier selection. Preserves fairness — the same rejection logic runs for A/B/C.
+
+---
+
+## D037 — Far-field inlier extension
+**Date:** 13 July 2026
+**Status:** LOCKED (extends D036)
+**Refines:** GEOMETRY_PIPELINE_SPEC.md §4 (step 5), §6 (projection range); D035 (near-field cutoff).
+
+**Decision.** Project detections out to **X ≤ 10 m** (was 5 m). After the near-field (X < 5 m) hybrid fit (D036) establishes the row Y, **include far-field dots (5 m ≤ X ≤ 10 m) as inliers when within ± 0.5 m of the established row Y**; refit the row on all (near + far) inliers. Far dots outside ± 0.5 m are rejected as fan-noise or adjacent corridor.
+
+**Rationale.** The near-5 m cutoff (D035) **discarded valid same-row detections** beyond 5 m, leaving fragile fits and abstentions. Real same-row trunks/poles at range project to nearly the **same Y** (within ± 0.5 m); only the adjacent corridor sits off-Y — so a Y-consistency gate safely re-admits the far same-row dots while still rejecting neighbours.
+
+**Alternatives considered.** (i) Near-5 m only (D035) — 61.2 % two-row coverage, fragile near-field fits. (ii) Naïve near-10 m with no ± 0.5 m gate — re-admits adjacent-corridor contamination (the original bug). Rejected.
+
+**Impact / evidence.** Two-row coverage **61.2 % → 83.1 %** (+1 030 frames rescued, **0 lost**) on Phase C s42 val. Frame 4107: left row went from 2 near-field dots (single_row) → **8 inliers** (two_row). Adjacent corridors are now visible and logged in **81 % of frames** — all rejected. GT-1 aggregate RMS rises ~29 mm, but only because the rescued (harder, sparse) frames are added — per-frame offset on already-two-row frames is unchanged (mean |Δ| = 6 mm).
+
+**Sample frames.** 4107 (rescued single→two-row), 4223 (row extended along the full column, adjacent flagged "adj n=5"). `rowfit_validation/far_ext/`.
+
+**Cross-arm comparability.** Same extension and same ± 0.5 m gate for all arms; rescued frames are common across arms → paired differences unaffected. The coverage gain (and its added variance) is shared, so fairness holds.
+
+---
+
+## D038 — Line-fit centreline (per-side line regression)
+**Date:** 13 July 2026
+**Status:** LOCKED (supersedes the D035 Y-constant / bin-centre construction)
+**Refines:** GEOMETRY_PIPELINE_SPEC.md §4 (step 6), §5 (GT-1, GT-2); D035; D-E, D-F.
+
+**Decision.** Fit **Y = mX + c per side (least squares)** on the far-extension inliers (D037). Centreline = **midline** of the two fitted lines. **GT-1 lateral offset = centreline Y at X = 2 m** (the Pure-Pursuit look-ahead, D-E). **GT-2 heading = centreline slope in degrees** (arctan of the centreline dY/dX). **Width = mean Y_L − mean Y_R** (rows parallel, for the D-G prior). **Quality flags:** steep slope |m| > 0.3, L/R slope mismatch |m_L − m_R| > 0.2, fit failure.
+
+**Rationale.** A slope analysis over 3 910 two-row frames found a **systematic common tilt**: m_L = +0.036 ± 0.043, m_R = +0.045 ± 0.042, **m_centre = +0.040 ± 0.026 → ~2.31° centreline heading**. The **corridor width is parallel** (width-slope m_L − m_R ≈ −0.009, symmetric around 0 → the "convergence" is noise), so the tilt is a **common lean**, most consistent with a small **unmodelled camera yaw (~2°)** — Table 3 (D-B) encodes pitch (q_y = 0.017) with q_z = 0 (zero yaw). The Y-constant model (D035) **washes this tilt out** and, by averaging Y over the whole range, produces a **~0.20 m range-bias** in GT-1 (Y-const offset RMS 0.332 vs **line-fit @ 2 m 0.226**). The far-extension adjacent-rejection (D037) cleans the inliers enough that the per-row slope is now reliable (**only 0.3 %** of frames flag |m| > 0.3) — resolving the original D035 "fan-corrupted slope" concern that had motivated the bin-centre GT-2.
+
+**Alternatives considered.** (i) Y-constant median (D035) — range-biased by the tilt (RMS 0.332). (ii) Fitted-row all-inlier midpoint ("Option 1") — same all-range bias. (iii) Near-bin [1,3) midpoint — sparse (median 1–2 inliers/side; 18.8 % of frames get no heading). Line-fit uniquely uses **all inliers via the line** *and* evaluates at the **2 m look-ahead**, and yields a physically-grounded slope-heading. Chosen.
+
+**Sample frames.** 3998 — right row m_R = +0.103 visibly slants, line-fit tracks it while Y-const stays vertical (offset +0.20 → +0.01); 4223, 4107 similar; near-vertical rows (m_L ≈ +0.02) keep near-zero slope (no over-fit). Histogram `slope_hist.png`; plots `rowfit_validation/linefit_final/`.
+
+**Cross-arm comparability & limitation.** The ~2.3° tilt is a **projection (likely yaw-extrinsic) effect common to all 9 models**, so **paired cross-arm differences cancel it**. Absolute GT-1 numbers include this systematic component but remain comparable across arms and are meaningful for absolute performance characterisation (stated wherever the number is reported). Documented limitation in Methodology; a future extrinsic re-calibration (add yaw) or LiDAR GT (GT-3) would remove it.
+
+---
+
+## D039 — U-Net binary geometry front-end (base-point extraction)
+**Date:** 13 July 2026
+**Status:** LOCKED
+**Refines:** GEOMETRY_PIPELINE_SPEC.md §4 (steps 1–2).
+
+**Decision.** The only arm-specific pipeline stage is base-point extraction. **YOLO arms (B, C):** per-instance **bbox-bottom-centre** on the 640² frame (detections back-mapped to 1920×1080 for projection), 15 % blob guard. **U-Net arm (A):** the foreground mask is **connected-component-labelled (8-connectivity)**, and each component ≥ **40 px** contributes its **bbox-bottom-centre**. Everything downstream (projection D-B/D037, row-fit D036/D037, centreline D038) is **arm-agnostic**.
+
+**Rationale.** U-Net binary produces a foreground mask with **no instance separation**, so connected components stand in for YOLO instances. Validated on val frames: base points land on trunk/vine bases and feed cleanly through projection + row-fit.
+
+**Alternatives considered.** Per-column lowest-foreground-pixel sampling (denser, not per-instance) — deferred; it would inflate U-Net point density relative to YOLO and confound the A-vs-YOLO structural comparison.
+
+**Sample frames.** `phaseA_f3991`, `phaseA_f3993` (earlier validation) — CC base points on both rows.
+
+**Cross-arm comparability.** This is the **single** arm-specific stage; keeping the downstream identical means the A-vs-YOLO contrast isolates the perception difference. The **~27 base points/frame (U-Net) vs ~31–33 (YOLO)** density difference is an **intentional, expected characteristic of binary-vs-instance perception** — the U-Net foreground fragments into connected components rather than resolving individual instances — **not a pipeline artefact or a disadvantage to the binary arm**. The downstream is **robust to this variation by design**: the row fit operates on the *distribution* of base points, not on an instance count — the **D036 densest-window + RANSAC** clustering needs only a dense-enough cluster to seed, and the **D038 line-fit** needs only ≥ 3 inliers per side, so both arms reach comparable two-row coverage despite the density gap (the median/least-squares aggregation absorbs the extra or fewer points). Reported transparently at CP-5 so the methodology write-up can attribute any residual A-vs-YOLO geometric difference to *perception*, not to base-point counting. (U-Net also shows ~2 pp more "none" frames — the same structural property.)
 
 ---
 
