@@ -11,7 +11,7 @@ GEOMETRY_PIPELINE_SPEC.md sections 4-6 and DECISIONS.md D-F/D034/D035):
      The per-frame outlier defence is the Y-constant row fit's median +/- tol
      inlier test, which rejects any single off-row spurious base point.
   3. Project bbox-bottom-centre base points to the ground plane
-     (cp2_projection, CP-2), restricted to the near field X < 5 m where the
+     (projection_calibration, CP-2), restricted to the near field X < 5 m where the
      projection fan is smallest.
   4. Cluster left/right by image column (u < 320 / u >= 320).
   5. Y-constant row model per side: a side is valid if >= 3 projected points
@@ -43,9 +43,9 @@ from pathlib import Path
 import numpy as np
 import cv2
 
-PKG = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(PKG / "scripts"))
-import cp2_projection as C  # noqa: E402  (CP-2 image->ground projection)
+PKG = Path(__file__).resolve().parent.parent.parent
+sys.path.insert(0, str(PKG / "scripts" / "geometric"))
+import projection_calibration as C  # noqa: E402  (CP-2 image->ground projection)
 
 # ---- CP-3 locked parameters -------------------------------------------------
 CONF = 0.25              # D030 detection confidence
@@ -164,9 +164,9 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     frames_dir = PKG / "results/runs/geom_cp1_frames_640"
-    manifest = json.load(open(PKG / "results/geometric/march/cp1_manifest.json"))
+    manifest = json.load(open(PKG / "results/geometric/march/dataset_manifest.json"))
     val = [f["i"] for f in manifest["frames"] if f["split"] == "val"]
-    outdir = PKG / "results/geometric/march/cp3_samples"
+    outdir = PKG / "results/geometric/march/single_arm_dryrun_samples"
     outdir.mkdir(parents=True, exist_ok=True)
 
     model = YOLO(str(PKG / "results/runs/phase_c_yolo_multiclass/weights/best.pt"))
@@ -203,7 +203,7 @@ if __name__ == "__main__":
         ax[1].set_xlim(-3, 3); ax[1].set_ylim(0, 5)
         ax[1].set_xlabel("-Y  (right +, m)"); ax[1].set_ylabel("X forward (m)")
         ax[1].legend(fontsize=8, loc="lower left"); ax[1].grid(alpha=.3)
-        fig.tight_layout(); fig.savefig(outdir / f"cp3_dryrun_f{fi}.png", dpi=110); plt.close(fig)
+        fig.tight_layout(); fig.savefig(outdir / f"single_arm_dryrun_f{fi}.png", dpi=110); plt.close(fig)
         viz += 1
 
     for r in results:
@@ -211,5 +211,5 @@ if __name__ == "__main__":
     json.dump({"params": {"conf": CONF, "near_m": NEAR_M, "inl": INL, "tol": TOL,
                           "blob_frac": BLOB_FRAC, "bins": BINS, "half": HALF},
                "summary": s},
-              open(PKG / "results/geometric/march/cp3_dryrun_report.json", "w"), indent=2)
+              open(PKG / "results/geometric/march/single_arm_dryrun_report.json", "w"), indent=2)
     print(f"saved {viz} visualisations -> {outdir}")

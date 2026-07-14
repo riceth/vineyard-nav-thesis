@@ -495,7 +495,7 @@ That mAP@50 shows lower cross-seed variance in Phase C (0.008) than Phase B (0.0
 
 **Finding.** Every model's GT-2 (line-fit centreline slope) has a mean of ~+2.3° with cross-arm SD ≤ 0.07° (A 2.25°, B 2.30°, C 2.28°), and the per-side slope structure (m_L ≈ +0.036, m_R ≈ +0.043, both positive) is identical across arms. This consistency is strong empirical support that the tilt is a projection effect, not a per-arm perception property.
 
-**Evidence.** CP-5 line-fit re-run (`results/geometric/march/cp5_linefit_val_report.json`): per-arm tilt A 2.25 ± 0.03°, B 2.30 ± 0.07°, C 2.28 ± 0.07°; m_L/m_R positive and near-equal across all 9 models. Frame 3998 shows the slant directly (right row m_R = +0.10). Root cause established in F015.
+**Evidence.** CP-5 line-fit re-run (`results/geometric/march/final/val_evaluation/line_fit_val_report.json`): per-arm tilt A 2.25 ± 0.03°, B 2.30 ± 0.07°, C 2.28 ± 0.07°; m_L/m_R positive and near-equal across all 9 models. Frame 3998 shows the slant directly (right row m_R = +0.10). Root cause established in F015.
 
 **Implication.** Absolute GT-1 at the 2 m look-ahead includes a residual ~8 cm offset contribution from this tilt (tan 2.3° × 2 m). It does not affect the *ranking* of arms.
 
@@ -572,7 +572,7 @@ Cross-checked with the **Δs = decorrelation-distance subsample bootstrap** (n =
 
 The three arms are therefore statistically and practically indistinguishable on val at the tight bounds allowed by measured autocorrelation, not merely at the conservative bounds implied by pre-specified spatial-independence thresholds.
 
-**Evidence.** `cp5_paired_val.json` + Analyses H, I. Decorrelation distances measured per-pair per-metric (0.22–0.67 m at the 0.1 threshold; 0.22–1.43 m at the 0.05 threshold). Sign inconsistency across seeds preserved (5 of 6 pairs flip sign). The one sign-consistent case (A-C GT-2, all negative) is negligible (0.02–0.06°) and its aggregate CI includes zero. (The earlier preliminary framing — analytical MDD ≈ 3.5 mm at the autocorrelated n ≈ 11k, and every single-arm CI overlapping every other's — is subsumed by the paired-bootstrap confirmation here.)
+**Evidence.** `final/val_evaluation/paired_crossarm_val.json` + Analyses H, I. Decorrelation distances measured per-pair per-metric (0.22–0.67 m at the 0.1 threshold; 0.22–1.43 m at the 0.05 threshold). Sign inconsistency across seeds preserved (5 of 6 pairs flip sign). The one sign-consistent case (A-C GT-2, all negative) is negligible (0.02–0.06°) and its aggregate CI includes zero. (The earlier preliminary framing — analytical MDD ≈ 3.5 mm at the autocorrelated n ≈ 11k, and every single-arm CI overlapping every other's — is subsumed by the paired-bootstrap confirmation here.)
 
 **Implication / status.** **Upgraded from preliminary to confirmed on val** with tight, autocorrelation-corrected CIs. The claim "arms are indistinguishable on val" holds at both statistical (CI includes zero across three bootstrap methods) and practical (differences bounded to a small fraction of the ground-truth and noise floors) levels. Test-set evaluation (CP-6) is the final confirmation on held-out data.
 
@@ -602,7 +602,7 @@ The three arms are therefore statistically and practically indistinguishable on 
 
 **Finding.** The ~2.28° mean heading offset observed in the camera pipeline (F010) is **also observed by the Ouster OS1-16 LiDAR at ~+3.84° (SD 0.17°)** on the six anchor frames tested. The LiDAR has an **identity extrinsic** in Table 3 (base_link → LiDAR quaternion = (0,0,0,1)), so it cannot exhibit the camera-mount yaw hypothesised in F015. That both sensors independently measure a nonzero tilt of the same sign **refutes the camera-yaw attribution** and localises the tilt to a geometric relationship between the robot's body frame (base_link) and the vine rows.
 
-**Evidence.** LiDAR row heading vs camera row heading on 6 anchor frames (`results/geometric/march/lidar_crosscheck.json`):
+**Evidence.** LiDAR row heading vs camera row heading on 6 anchor frames (`results/geometric/march/final/val_evaluation/lidar_crosscheck_val.json`):
 
 | frame | LiDAR | camera | diff |
 |---|---|---|---|
@@ -624,13 +624,13 @@ Anchor frames were selected toward high-tilt scenes for visualisation clarity, g
 
 **Cross-references.** F010 (cross-arm tilt consistency observation, unchanged); F015 (superseded, kept as the camera-only investigation trail); F013 (cross-arm claim unaffected); D-B (Table 3 extrinsics); Polvara et al. 2024 §5.3.
 
-> **Test-side confirmation (CP-6).** On 6 held-out test anchors (2 per test corridor), LiDAR heading +3.04° (SD 0.36) and camera +2.74° agree in sign and magnitude (Δ −0.31°), both nonzero — the tilt is sensor-common on held-out data. Both sensor measurements are lower than val (LiDAR 3.84° / camera 3.25°) — consistent with F019's observation that the tilt has a scene-dependent per-pass component; sensor-commonality is the operative claim and it replicates. `results/geometric/march/cp6_lidar_test.json`.
+> **Test-side confirmation (CP-6).** On 6 held-out test anchors (2 per test corridor), LiDAR heading +3.04° (SD 0.36) and camera +2.74° agree in sign and magnitude (Δ −0.31°), both nonzero — the tilt is sensor-common on held-out data. Both sensor measurements are lower than val (LiDAR 3.84° / camera 3.25°) — consistent with F019's observation that the tilt has a scene-dependent per-pass component; sensor-commonality is the operative claim and it replicates. `results/geometric/march/final/test_evaluation/lidar_crosscheck_test.json`.
 
 ### F018 — Phase C downstream config sweep + single-class ablations: trunks load-bearing; poles supplement coverage, not quality
 
 **Finding.** Across the Phase C downstream config sweep (trunk-primary / pole-primary × T∈{1,2,3,5,8,12}, class-agnostic) plus single-class ablations (trunk-only, pole-only): (1) in the **viable regime (coverage ≥70%)**, class structure does **not** distinguish centreline quality — GT-1 RMS 0.193–0.204 m and GT-2 RMS 2.63–2.72° are mutually CI-overlapping (block bootstrap, Analysis-H block lengths); (2) **trunk-only ≈ class-agnostic on quality** (GT-1/GT-2 CIs overlap) at 71.0% vs 82.9% coverage; (3) **pole-only degenerates** — 1.1% two-row, 85.5% no-estimate; (4) adding poles to trunks (agnostic) raises coverage +12 pp (71.0→82.9%) at zero quality change.
 
-**Evidence.** Cross-config table (`results/geometric/march/cp4_sweep_val.json`):
+**Evidence.** Cross-config table (`results/geometric/march/final/val_evaluation/config_sweep_val.json`):
 
 | config | coverage | base pts | GT-1 RMS · CI | GT-2 RMS · CI |
 |---|---|---|---|---|
@@ -650,13 +650,13 @@ trunk-only GT-1 0.204 [0.192, 0.216] overlaps agnostic 0.200 [0.189, 0.210] (GT-
 
 **Cross-references.** F013 (arm-level indistinguishability; F018 is the config-level analogue); D026 (sweep design); D030/D032 (Phase C conf/config); Analysis H (block lengths); CP-6 (test at the locked class-agnostic config).
 
-> **Test-side confirmation (CP-6).** Mechanism replicates on the 3,149 held-out test frames: trunk-only GT-1/GT-2 RMS CI-overlap agnostic (0.187 vs 0.183 m; 2.38 vs 2.30°), poles supplement coverage +13.3 pp (agnostic 77.3% vs trunk-only 64.0%), and pole-only degenerates (0.9% two-row, 0 across-seed frames). `results/geometric/march/cp6_ablation_test.json`.
+> **Test-side confirmation (CP-6).** Mechanism replicates on the 3,149 held-out test frames: trunk-only GT-1/GT-2 RMS CI-overlap agnostic (0.187 vs 0.183 m; 2.38 vs 2.30°), poles supplement coverage +13.3 pp (agnostic 77.3% vs trunk-only 64.0%), and pole-only degenerates (0.9% two-row, 0 across-seed frames). `results/geometric/march/final/test_evaluation/config_ablation_test.json`.
 
 ### F019 — CP-6 held-out test: GT-1 indistinguishable (confirms F013); GT-2 a negligible-but-detectable B-vs-others micro-difference
 
 **Finding.** On the 4 held-out test corridors (3,149 frames, class-agnostic locked config, all 9 models), the three arms are **indistinguishable on GT-1 lateral offset** — paired differences ≤2.8 mm (≤7% of the RTK floor), all block-bootstrap CIs include zero — confirming F013 on held-out data. On **GT-2 heading**, 2 of 3 pairs' CIs **exclude zero** (A-B −0.122°, B-C +0.035°; A-C includes zero): B's heading sits 0.035–0.122° above A's and C's — statistically detectable at test n but **practically negligible** (3–9% of the ~1.3° noise floor; a small fraction of the ~2.3–3.8° systematic tilt, F017).
 
-**Evidence.** Per-arm test (across-seed, block-bootstrap CI): A GT-1 RMS 0.181 [0.167, 0.194] / GT-2 2.28 [2.11, 2.47]; B 0.183 [0.165, 0.200] / 2.33 [2.16, 2.51]; C 0.183 [0.167, 0.194] / 2.30 [2.14, 2.50] — all per-arm CIs overlap. Paired (across-seed): A-B GT-1 −2.8 mm [−11.1,+3.9] (incl 0), GT-2 −0.122° [−0.199,−0.031] (**excl 0**); A-C GT-1 −2.1 mm (incl 0), GT-2 −0.084° [−0.167,+0.002] (incl 0); B-C GT-1 −0.8 mm (incl 0), GT-2 +0.035° [+0.010,+0.057] (**excl 0**). `cp6_linefit_test_report.json`, `cp6_paired_test.json`. Coverage ~77% (all arms) vs val's ~83%; systematic tilt ~1.9° on test vs ~2.28° on val (F017's scene-dependent component).
+**Evidence.** Per-arm test (across-seed, block-bootstrap CI): A GT-1 RMS 0.181 [0.167, 0.194] / GT-2 2.28 [2.11, 2.47]; B 0.183 [0.165, 0.200] / 2.33 [2.16, 2.51]; C 0.183 [0.167, 0.194] / 2.30 [2.14, 2.50] — all per-arm CIs overlap. Paired (across-seed): A-B GT-1 −2.8 mm [−11.1,+3.9] (incl 0), GT-2 −0.122° [−0.199,−0.031] (**excl 0**); A-C GT-1 −2.1 mm (incl 0), GT-2 −0.084° [−0.167,+0.002] (incl 0); B-C GT-1 −0.8 mm (incl 0), GT-2 +0.035° [+0.010,+0.057] (**excl 0**). `final/test_evaluation/line_fit_test_report.json`, `final/test_evaluation/paired_crossarm_test.json`. Coverage ~77% (all arms) vs val's ~83%; systematic tilt ~1.9° on test vs ~2.28° on val (F017's scene-dependent component).
 
 **Interpretation.** The primary metric (GT-1) confirms F013 on held-out data — the arms are indistinguishable, sub-RTK-floor. On the complementary GT-2, the B arm shows a tiny, statistically-detectable-at-test-n but practically-negligible higher heading. **The B-vs-others GT-2 difference (0.035–0.122°) is smaller than the val-to-test change in the systematic tilt itself (2.28° → ~1.9°, a shift of ~0.4°). A per-arm heading difference of that magnitude cannot be reliably distinguished from residual per-arm sensitivity to the same corridor-level scene variation that produced the tilt shift. The paired significance is reported as what the test data shows, without asserting an arm-level mechanism that could not be distinguished from residual scene-sensitivity at this magnitude.** The operative conclusion (arms deliver equivalent navigation-relevant centreline geometry) holds.
 

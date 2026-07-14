@@ -25,9 +25,9 @@ Method (robust to Roboflow augmentation of train scenes):
      merge overlaps.
 
 Deterministic; read-only w.r.t. the dataset and bag. Uses the ROS2 `.db3` (fast: pulls
-only the camera topic). Writes results/geometric/march/cp0_exclusion_FINAL.json.
+only the camera topic). Writes results/geometric/march/contamination_census_exclusions.json.
 
-Run:  python3 vineyard_nav/scripts/cp0_frame_matching.py
+Run:  python3 vineyard_nav/scripts/geometric/contamination_census.py
 """
 from __future__ import annotations
 import sqlite3, glob, json, re, time, datetime, collections
@@ -36,12 +36,12 @@ import numpy as np
 import cv2
 from rosbags.typesys import Stores, get_typestore
 
-GIT_ROOT = Path(__file__).resolve().parents[2]          # /workspaces/dissertation
-PKG = Path(__file__).resolve().parents[1]               # vineyard_nav
+GIT_ROOT = Path(__file__).resolve().parents[3]          # /workspaces/dissertation
+PKG = Path(__file__).resolve().parents[2]               # vineyard_nav
 DATASET = GIT_ROOT / "SemanticBLT.v1-2024-june.coco-segmentation"
 DB3 = GIT_ROOT / "kg_march_23_ros2" / "kg_march_23_ros2.db3"
 CAM = "/front/zed_node/rgb/image_rect_color/compressed"
-OUT = PKG / "results" / "geometric" / "march" / "cp0_exclusion_FINAL.json"
+OUT = PKG / "results" / "geometric" / "march" / "contamination_census_exclusions.json"
 
 COARSE = 10          # coarse-bank stride (frames)
 FINE = 30            # fine local search half-width (frames)

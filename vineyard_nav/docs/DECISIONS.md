@@ -445,7 +445,7 @@ The geometric-strand evaluation on `kg_march_23.bag` splits eligible frames val/
 **Status:** LOCKED
 **Refines:** GEOMETRY_PIPELINE_SPEC.md D-B, D-G, §5, §6; O010; CP-2.
 
-The CP-2 image→ground projection (IPM) is built from the **Polvara et al. 2024 Table 3 extrinsics** (base_link → Zed2 Front) + bag intrinsics + a flat Z = 0 ground plane, validated on 22 well-detected val frames (parallel rows; correct centreline). Module: `scripts/cp2_projection.py`.
+The CP-2 image→ground projection (IPM) is built from the **Polvara et al. 2024 Table 3 extrinsics** (base_link → Zed2 Front) + bag intrinsics + a flat Z = 0 ground plane, validated on 22 well-detected val frames (parallel rows; correct centreline). Module: `scripts/geometric/projection_calibration.py`.
 
 **Known limitation (accepted, not blocking).** Projection-measured corridor width is **median 1.91 m (IQR [1.59, 2.45])** — ~22 % narrower than the trajectory-derived **2.45 m** corridor spacing. The narrowing is **symmetric**, so it does **not** bias the primary two-row centreline metric (midpoint preserved); it shifts only width-dependent measures (the D-G single-row fallback prior). Likely cause: bbox-bottom projects to the visible inner edge of the trunk/pole rather than true ground contact, plus possible sub-cm pitch/height offset from Table 3 nominal. Refinement (true-ground-contact detection) is future work.
 
@@ -459,11 +459,11 @@ The CP-2 image→ground projection (IPM) is built from the **Polvara et al. 2024
 
 ## D035 — Geometric-strand locked pipeline + GT-2 heading redefinition (CP-3)
 **Date:** 13 July 2026
-**Status:** **SUPERSEDED (13 July 2026)** by **D036** (hybrid clustering + RANSAC), **D037** (far-field extension), **D038** (line-fit centreline). The CP-3 artefacts (`scripts/cp3_pipeline.py`, `cp3_dryrun_report.json`, `cp3_samples/`) **remain committed as a locked historical state** (commit 32de7c8) — this entry is retained, not deleted, to document the row model CP-5 evolved past.
+**Status:** **SUPERSEDED (13 July 2026)** by **D036** (hybrid clustering + RANSAC), **D037** (far-field extension), **D038** (line-fit centreline). The CP-3 artefacts (`scripts/geometric/single_arm_dryrun.py`, `single_arm_dryrun_report.json`, `single_arm_dryrun_samples/`) **remain committed as a locked historical state** (commit 32de7c8) — this entry is retained, not deleted, to document the row model CP-5 evolved past.
 **Superseded because:** (1) the **near-field 5 m cutoff excluded valid same-row detections** — on frame 4107, 6 of the 8 left-row dots lie at X > 5 m, leaving a fragile 2-dot fit (→ D037); (2) the **Y-constant model missed a systematic ~2.3° common tilt** — frame 3998's right row visibly slants (m_R = +0.10), and the slope distribution over 3 910 frames is m_centre = +0.040 ± 0.026 (→ D038); (3) the **global-median fit landed in the gap between the true-row cluster and adjacent-corridor detections** — frame 4223's old fit sat at Y = +1.44 vs the true row at +0.6 (→ D036). **Retained forward:** the 15 % blob-area guard (below) and the CP-2 projection (D034) carry into D036–D038 unchanged.
 **Refines (historical):** GEOMETRY_PIPELINE_SPEC.md §4 (steps 5–6), §5 (GT-2), §9 (CP-3), D-F; D034.
 
-The CP-3 single-arm dry run (Phase C seed 42, all 4 708 val frames) locked the (now-superseded) row model and metric construction. Module: `scripts/cp3_pipeline.py`; report `results/geometric/march/cp3_dryrun_report.json`.
+The CP-3 single-arm dry run (Phase C seed 42, all 4 708 val frames) locked the (now-superseded) row model and metric construction. Module: `scripts/geometric/single_arm_dryrun.py`; report `results/geometric/march/single_arm_dryrun_report.json`.
 
 **Row model — near-field Y-constant.** Base points are restricted to the **near field X < 5 m** and each side is fit as a **Y-constant row** (median Y; valid if ≥ 3 points within 0.5 m of the median). **Rationale:** the CP-2 projection fan (D034) makes projected points fan outward with range, which *destroys per-row line fits* — a naïve RANSAC line-fit pipeline gave only **10 % two-row coverage**. Vine rows are at constant Y in the robot frame, so a constant model estimates the correct quantity (row lateral position) and is fan-robust, recovering **64.0 % two-row coverage** (single-row 26.7 %, none 9.2 %) on 4 708 val frames — ≈ 3 015 usable frames, ample for the sweep and bootstrap CIs.
 
@@ -488,7 +488,7 @@ The CP-3 single-arm dry run (Phase C seed 42, all 4 708 val frames) locked the (
 
 **Alternatives considered.** (i) Global-median per side (D035) — lands in the inter-cluster gap on bimodal frames. (ii) Plain RANSAC line fit over all near-field points — fan- and adjacent-corrupted (only ~10 % two-row coverage at CP-3). Both rejected.
 
-**Sample frames (visual verification, `results/geometric/march/rowfit_validation/`).** 4223 — old median at Y = +1.44 sits between the true row (+0.6) and the adjacent corridor (+2.4…+4.7); 3991 — adjacent-left dots at Y ≈ −3.1 correctly rejected; 4107 — adjacent-right dots at Y ≈ +4 rejected.
+**Sample frames (visual verification, `results/geometric/march/diagnostics/figures/rowfit_validation/`).** 4223 — old median at Y = +1.44 sits between the true row (+0.6) and the adjacent corridor (+2.4…+4.7); 3991 — adjacent-left dots at Y ≈ −3.1 correctly rejected; 4107 — adjacent-right dots at Y ≈ +4 rejected.
 
 **Cross-arm comparability.** Applied identically to all 9 models; a cleaner, arm-agnostic inlier selection. Preserves fairness — the same rejection logic runs for A/B/C.
 
@@ -507,7 +507,7 @@ The CP-3 single-arm dry run (Phase C seed 42, all 4 708 val frames) locked the (
 
 **Impact / evidence.** Two-row coverage **61.2 % → 83.1 %** (+1 030 frames rescued, **0 lost**) on Phase C s42 val. Frame 4107: left row went from 2 near-field dots (single_row) → **8 inliers** (two_row). Adjacent corridors are now visible and logged in **81 % of frames** — all rejected. GT-1 aggregate RMS rises ~29 mm, but only because the rescued (harder, sparse) frames are added — per-frame offset on already-two-row frames is unchanged (mean |Δ| = 6 mm).
 
-**Sample frames.** 4107 (rescued single→two-row), 4223 (row extended along the full column, adjacent flagged "adj n=5"). `rowfit_validation/far_ext/`.
+**Sample frames.** 4107 (rescued single→two-row), 4223 (row extended along the full column, adjacent flagged "adj n=5"). `diagnostics/figures/rowfit_validation/far_ext/`.
 
 **Cross-arm comparability.** Same extension and same ± 0.5 m gate for all arms; rescued frames are common across arms → paired differences unaffected. The coverage gain (and its added variance) is shared, so fairness holds.
 
@@ -524,7 +524,7 @@ The CP-3 single-arm dry run (Phase C seed 42, all 4 708 val frames) locked the (
 
 **Alternatives considered.** (i) Y-constant median (D035) — range-biased by the tilt (RMS 0.332). (ii) Fitted-row all-inlier midpoint ("Option 1") — same all-range bias. (iii) Near-bin [1,3) midpoint — sparse (median 1–2 inliers/side; 18.8 % of frames get no heading). Line-fit uniquely uses **all inliers via the line** *and* evaluates at the **2 m look-ahead**, and yields a physically-grounded slope-heading. Chosen.
 
-**Sample frames.** 3998 — right row m_R = +0.103 visibly slants, line-fit tracks it while Y-const stays vertical (offset +0.20 → +0.01); 4223, 4107 similar; near-vertical rows (m_L ≈ +0.02) keep near-zero slope (no over-fit). Histogram `slope_hist.png`; plots `rowfit_validation/linefit_final/`.
+**Sample frames.** 3998 — right row m_R = +0.103 visibly slants, line-fit tracks it while Y-const stays vertical (offset +0.20 → +0.01); 4223, 4107 similar; near-vertical rows (m_L ≈ +0.02) keep near-zero slope (no over-fit). Histogram `slope_hist.png`; plots `diagnostics/figures/rowfit_validation/linefit_final/`.
 
 **Cross-arm comparability & limitation.** The ~2.3° tilt is a **projection (likely yaw-extrinsic) effect common to all 9 models**, so **paired cross-arm differences cancel it**. Absolute GT-1 numbers include this systematic component but remain comparable across arms and are meaningful for absolute performance characterisation (stated wherever the number is reported). Documented limitation in Methodology; a future extrinsic re-calibration (add yaw) or LiDAR GT (GT-3) would remove it.
 

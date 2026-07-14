@@ -14,7 +14,7 @@ Known limitation (see docstring of validate() and spec §6): projection-measured
 is ~22% narrower than the trajectory-derived 2.45 m spacing — symmetric, so it does NOT bias the
 two-row centreline metric; it only shifts the D-G single-row fallback prior.
 
-Run:  python3 vineyard_nav/scripts/cp2_projection.py
+Run:  python3 vineyard_nav/scripts/geometric/projection_calibration.py
 """
 from __future__ import annotations
 import json, datetime
@@ -63,11 +63,11 @@ def _validate():
     import cv2
     from ultralytics import YOLO
     import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
-    PKG = Path(__file__).resolve().parents[1]; GIT = Path(__file__).resolve().parents[2]
+    PKG = Path(__file__).resolve().parents[2]; GIT = Path(__file__).resolve().parents[3]
     FR = PKG / "results/runs/geom_cp1_frames_640"
-    man = json.load(open(PKG / "results/geometric/march/cp1_manifest.json"))
-    out_json = PKG / "results/geometric/march/cp2_calibration_report.json"
-    samples = PKG / "results/geometric/march/cp2_samples"; samples.mkdir(parents=True, exist_ok=True)
+    man = json.load(open(PKG / "results/geometric/march/dataset_manifest.json"))
+    out_json = PKG / "results/geometric/march/projection_calibration_report.json"
+    samples = PKG / "results/geometric/march/projection_calibration_samples"; samples.mkdir(parents=True, exist_ok=True)
 
     sanity = {name: (lambda g: None if g is None else [round(float(g[0]), 2), round(float(g[1]), 2)])(project_px(u, v))
               for name, (u, v) in {"image_centre": (320, 320), "bottom_centre": (320, 600),
@@ -101,7 +101,7 @@ def _validate():
                 xs = np.linspace(0, NEAR_M, 10); ax[1].plot(-(mL*xs+cL), xs, "b--"); ax[1].plot(-(mR*xs+cR), xs, "r--")
                 ax[1].axvline(0, color="k", lw=.5); ax[1].set_xlabel("-Y (right +, m)"); ax[1].set_ylabel("X fwd (m)")
                 ax[1].set_title(f"width {cL-cR:.2f} m (expect ~2.45)"); ax[1].legend(); ax[1].grid(alpha=.3); ax[1].axis("equal")
-                fig.tight_layout(); fig.savefig(str(samples / f"cp2_birdseye_f{fi}.png"), dpi=110); plt.close(fig); plotted += 1
+                fig.tight_layout(); fig.savefig(str(samples / f"projection_birdseye_f{fi}.png"), dpi=110); plt.close(fig); plotted += 1
     w = np.array(widths)
     report = {
         "meta": {"checkpoint": "CP-2", "generated": datetime.datetime.now().isoformat(timespec="seconds"),

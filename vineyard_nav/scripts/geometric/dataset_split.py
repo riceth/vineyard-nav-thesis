@@ -8,10 +8,10 @@ and splits the 11 passes val/test at the PASS level (D033, supersedes the earlie
 corridor-level split). Marks the Delta_s = 1.5 m independence subsample per split.
 
 Deterministic, read-only w.r.t. dataset/bag. Writes:
-  results/geometric/march/cp1_manifest.json       (all 16,656 frames + flags/split/subsample)
-  results/geometric/march/cp1_split_summary.json  (counts per pass / per split x corridor)
+  results/geometric/march/dataset_manifest.json       (all 16,656 frames + flags/split/subsample)
+  results/geometric/march/val_test_split_summary.json  (counts per pass / per split x corridor)
 
-Run:  python3 vineyard_nav/scripts/cp1_pass_split.py
+Run:  python3 vineyard_nav/scripts/geometric/dataset_split.py
 """
 from __future__ import annotations
 import sqlite3, json, itertools, collections
@@ -19,11 +19,11 @@ from pathlib import Path
 import numpy as np
 from rosbags.typesys import Stores, get_typestore
 
-GIT = Path(__file__).resolve().parents[2]; PKG = Path(__file__).resolve().parents[1]
+GIT = Path(__file__).resolve().parents[3]; PKG = Path(__file__).resolve().parents[2]
 DB3 = GIT / "kg_march_23_ros2" / "kg_march_23_ros2.db3"
-CP0 = PKG / "results/geometric/march/cp0_exclusion_FINAL.json"
-OUT = PKG / "results/geometric/march/cp1_manifest.json"
-SUMMARY = PKG / "results/geometric/march/cp1_split_summary.json"
+CP0 = PKG / "results/geometric/march/contamination_census_exclusions.json"
+OUT = PKG / "results/geometric/march/dataset_manifest.json"
+SUMMARY = PKG / "results/geometric/march/val_test_split_summary.json"
 CAM = "/front/zed_node/rgb/image_rect_color/compressed"
 TS = get_typestore(Stores.ROS2_HUMBLE)
 
