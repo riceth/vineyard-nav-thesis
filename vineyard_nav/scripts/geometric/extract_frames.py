@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """CP-1 image extraction (GEOMETRY_PIPELINE_SPEC.md §9 CP-1).
 
-Reads the CP-1 manifest (dataset_split.py) and, for every ELIGIBLE bag frame, decodes
+Reads the CP-1 manifest (frame_manifest_build.py) and, for every ELIGIBLE bag frame, decodes
 it from kg_march_23_ros2.db3, resizes to 640x640 with the training STRETCH preprocessing,
 and saves a JPEG named by bag frame index. Idempotent — existing frames are skipped.
-Also (re)generates a few annotated sample overlays (one per split x corridor) for the gate.
+Also (re)generates a few annotated sample overlays (one per corridor) for the gate.
 
 Frame images go to results/runs/geom_cp1_frames_640/ (GITIGNORED, ~1 GB, not committed);
-overlays go to results/geometric/march/dataset_split_samples/ (small, committed). The manifest holds
-all 16,656 (timestamp, pose, flags) triples; CP-2 consumes only the eligible frames.
+overlays go to results/geometric/march/superseded/dataset_split_samples/ (small, committed; the
+original split-labelled overlays, retained as audit trail). The manifest holds all 16,656
+(timestamp, pose, flags) triples; CP-2 consumes only the eligible frames.
 
 Run:  python3 vineyard_nav/scripts/geometric/extract_frames.py
 """
@@ -22,7 +23,7 @@ GIT = Path(__file__).resolve().parents[3]; PKG = Path(__file__).resolve().parent
 DB3 = GIT / "kg_march_23_ros2" / "kg_march_23_ros2.db3"
 MAN = PKG / "results/geometric/march/dataset_manifest.json"
 FRAMES = PKG / "results/runs/geom_cp1_frames_640"          # gitignored
-SAMPLES = PKG / "results/geometric/march/dataset_split_samples"
+SAMPLES = PKG / "results/geometric/march/superseded/dataset_split_samples"
 CAM = "/front/zed_node/rgb/image_rect_color/compressed"
 TS = get_typestore(Stores.ROS2_HUMBLE)
 

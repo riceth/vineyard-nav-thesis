@@ -12,7 +12,7 @@ logic runs on march / april / … unchanged (e.g. `line_fit_infer.py --bag march
 Frames are selected on `eligible` alone — there is no val/test split in the
 pipeline logic.
 
-- `contamination_census.py`, `extract_frames.py`, `dataset_split.py` — CP-0/CP-1 census, frame extraction, manifest build. (`dataset_split.py` still writes the legacy val/test `split` field; the whole-bag pipeline ignores it — a rename to a split-free manifest builder is deferred to **Commit 5**.)
+- `contamination_census.py`, `extract_frames.py`, `frame_manifest_build.py` — CP-0/CP-1 census, frame extraction, whole-bag manifest build. (`frame_manifest_build.py` — renamed from `dataset_split.py` in Commit 5 — writes a single canonical `split="eligible"` marker and a whole-bag Δs=1.5 m subsample; no val/test partitioning. D040/D041.)
 - `projection_calibration.py` — CP-2 image→ground IPM (shared `project_px`, imported by drivers).
 - `single_arm_dryrun.py` — CP-3 dry-run **and** the shared parameter/function module (`CONF`, `BLOB_FRAC`, `FRAME_PX`, `side_valid`, `bin_centre`) imported by every driver.
 - `row_model.py` — D036–D038 row model (`exec`'d by the drivers + figure scripts).

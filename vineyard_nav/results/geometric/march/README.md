@@ -13,7 +13,7 @@ checkpoint artefacts CP-0…CP-3 remain at top level as locked historical state.
 | Artefact | Checkpoint | Commit | Role |
 |---|---|---|---|
 | `contamination_census_exclusions.json` | CP-0 | 4885320 | Contamination census / frame-exclusion list |
-| `dataset_manifest.json`, `val_test_split_summary.json`, `dataset_split_samples/` | CP-1 | 8365ed9 | Processed dataset + val/test split |
+| `dataset_manifest.json`, `manifest_summary.json` | CP-1 | 8365ed9 | Processed whole-bag dataset — `split="eligible"` marker + Δs=1.5 m subsample (D040/D041; the val/test-split manifest was superseded in Commit 5). Overlay samples moved to `superseded/dataset_split_samples/`. |
 | `projection_calibration_report.json` | CP-2 | 32de7c8 | Image→world projection calibration (D034) |
 | `single_arm_dryrun_report.json`, `single_arm_dryrun_samples/` | CP-3 | 798d7d4 | Single-arm dry run — **superseded row model**, kept as locked historical state (see `superseded/README.md`) |
 
