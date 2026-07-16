@@ -495,6 +495,8 @@ That mAP@50 shows lower cross-seed variance in Phase C (0.008) than Phase B (0.0
 
 This work evaluates the pipeline on **7,857 in-row frames** per model — **47%** of the 16,656 total March-bag frames (D040 whole-bag pooling; D041 frame accounting). Non-in-row segments (headland manoeuvres, corridor transitions, stationary intervals) — **5,841 frames (35%)** — are characterised **separately** as deployment-gap behaviour with explicit metric caveats (a *driven-path error*, not the in-row centreline RMS; realised in **F020** (output distribution) + **F021** (driven-path error); see **D041**). Contaminated frames — **2,958 (18%)**, those overlapping the segmentation training set within ±1.0 s of a CP-0 exclusion interval — are excluded to prevent perception leakage. Headland exclusion is a **methodological-validity constraint**, not merely scoping: the inverse projective mapping assumes flat ground, which does not hold on headland slopes (`GEOMETRY_PIPELINE_SPEC.md` §7). Frame accounting closes exactly: 7,857 + 5,841 + 2,958 = 16,656 (D041, mutually exclusive and exhaustive under contamination-first ordering).
 
+The strand's logical progression is: **D041** (frame accounting) → **F013** (the in-row headline) → **F020/F021** (non-in-row characterisation — the deployment gap *measured*, not asserted) → **F022/F023** (mitigation *demonstration* — a two-layer rejection design with **measured effectiveness**, not a claim that the gap is solved). The two layers are an odometry-based runtime **state gate** (F022 — closes ~98% of the gap at ~1% in-row cost, arm-invariant) and a perception-only **geometry filter** (F023 — an odometry-free fallback whose ~40% ceiling and turn-blindness *is itself the finding*: most non-in-row failures are geometrically indistinguishable from valid in-row). Combined, they reject **98.6%** of the spurious non-in-row outputs at a **~4%** in-row false-positive cost. What a full deployment solution still requires — beyond this rejection demonstration — is **learned state classification**, **sensor fusion**, and a **formal state machine with hysteresis** (future work).
+
 ---
 
 ### F010 — Systematic ~2.3° heading tilt is consistent across all nine models (projection, not perception)
@@ -853,3 +855,49 @@ trunk-only GT-1 0.204 [0.192, 0.216] overlaps agnostic 0.200 [0.189, 0.210] (GT-
 - ✗ call it a navigation accuracy or a perception error (projection / undefined-row breakdown).
 
 **Citation map.** Ours: `final/non_in_row_evaluation/non_in_row_analysis.json` (F021 block). D041, D-F. No paper support (contribution).
+
+### F022 — Runtime state gate: odometry-based rejection recovers ~98% of the deployment gap
+
+**Finding.** Moving CP-1's exclusion criteria from eval-time filtering to a **runtime state gate** — reject the centreline whenever the robot is not in a row-following state (`speed > 0.10 m/s`, `|v_y| > 0.30 m/s`, `|heading-rate| < 22°/s`, all from odometry) — rejects **98.4% of the spurious non-in-row two_row outputs** (F020) at a **1.2% false-positive rate** on valid in-row outputs, and is **arm-invariant** (odometry-based, not perception-based). With oracle state (the manifest `eligible` flag) the architectural upper bound is **100% rejection / 0% FP** by construction; the 98.4% / 1.2% figure is the runtime-realistic causal per-frame gate, whose residual error is confined to boundary frames near the thresholds. Per category: stationary 100%, turn ~95%, transition ~96%.
+
+**Evidence.** `final/mitigation_evaluation/mitigation_analysis.json`. Causal gate from per-frame odometry (speed from `/robot_pose`; `v_y` = smoothed along-row velocity; heading-rate = angular rate of the velocity direction, robust cross/dot form; turn threshold = in-row p99 = 22°/s). Non-in-row rejection A 98.4 / B 98.5 / C 98.4%; in-row FP A/B/C 1.2%; per-category F022 rejection stationary 100% / turn 95.1–95.3% / transition 95.7–96.0%. Arm-invariance confirms the gate does not depend on perception.
+
+**Implication.** The deployment gap F020/F021 measured is **almost entirely closable with odometry the robot already carries** — the missing piece was never perception, it was a state input; a real deployment gates the row-follow controller on this state (the "state machine" F020 concluded). **Honest limit: F022 requires runtime odometry; if odometry is unavailable or degraded, F022 fails**, and the perception-only fallback (F023) is all that remains.
+
+**Cross-references.** F020/F021 (the gap this closes); D041 (frame accounting; the gate is the CP-1 category-A/C boundary at runtime); F023 (perception-only complement); D-A (odometry); GEOMETRY_PIPELINE_SPEC.md §7 (headland edge case).
+
+**Writeup wording (A2):**
+
+**Fully defensible.** Reframing CP-1's exclusion criteria as a runtime state gate — rejecting the centreline whenever the robot is not moving along a row (speed > 0.10 m/s, |v_y| > 0.30 m/s, |heading-rate| < 22°/s, all from odometry) — rejects 98.4 % of the spurious non-in-row two_row outputs (F020) at a 1.2 % false-positive rate on valid in-row outputs, and is arm-invariant because it uses odometry rather than perception. With oracle state knowledge (the manifest eligibility flag) the architectural upper bound is 100 % rejection at 0 % false positives; the 98.4 % / 1.2 % figure is the runtime-realistic causal per-frame gate, whose residual error is confined to boundary frames near the thresholds. Per category it rejects 100 % of stationary, ~95 % of turn and ~96 % of transition frames. The deployment gap characterised in F020/F021 is therefore almost entirely closable with odometry the robot already carries — the missing element was a state input, not better perception.
+
+**Candidate explanations.** The 1.2 % in-row false positives are frames where the smoothed along-row velocity momentarily dips below 0.30 m/s (slow in-row moments) or which sit at a pass boundary; a live gate with temporal hysteresis would reduce these. Not tuned further (out of scope).
+
+**NOT defensible.**
+- ✗ claim the gate "solves" non-in-row navigation (it rejects invalid centrelines; it does not provide a headland controller).
+- ✗ present the 98.4 % as odometry-free (it requires runtime odometry — F023 is the fallback).
+- ✗ rank arms on it (arm-invariant by construction).
+
+**Citation map.** Ours: `final/mitigation_evaluation/mitigation_analysis.json` (F022 block). D041 (CP-1 criteria), D-A (odometry). No paper support (contribution).
+
+### F023 — Geometry-confidence filter: a perception-only fallback, blind to clean-geometry turns
+
+**Finding.** A perception-only rejection filter — reject a two_row output whose geometry is off-nominal against the in-row distribution (`|offset| > 0.71 m`, `|heading| > 6.7°`, `|m_L − m_R| > 0.22`, `n_base < 12`, all in-row p99) — rejects only **~38–41% of the spurious non-in-row outputs** at a **~3% in-row false-positive rate**. The low rejection rate **is the finding**: most non-in-row failures are geometrically **indistinguishable from valid in-row** (their offset 0.14–0.37 m and heading 2–7° overlap the in-row median 0.16 m / 2.2°; F020 diagnostic) because the camera is genuinely seeing a real vine row mid-manoeuvre. F023 catches the geometric outliers — sparsest stationary fits and off-nominal transitions (~40%), and about half of turns (47–54%, the mis-aligned ones) — but the **clean-geometry turns pass straight through** (F022's job). Adding F023 to F022 lifts combined non-in-row rejection only 98.4 → **98.6%** (F022 already catches turns kinematically), so **F023's value is an odometry-free fallback, not an additive gain when F022 works**.
+
+**Evidence.** `final/mitigation_evaluation/mitigation_analysis.json`. Thresholds = in-row p99 (57,449 in-row two_row rows). Non-in-row rejection A 38.0 / B 39.7 / C 40.8% (slightly arm-varying — it operates on the perception output); per category stationary 34–40% / turn 47–54% / transition 40–41%. The turn rejections are **heading-driven** (`|heading| > 6.7°` fires on 84–93% of them; `|offset|` ≤ 18%, parallelism/n_base ≈ 0%) and **turn-phase-graded** (edge/transitional 53–60% → deep/clean-interior 35–44%, decomposed over each contiguous turn run; `F023_turn_mechanism`): even a real adjacent row seen mid-manoeuvre yields a fitted centreline heading past the in-row p99, while the genuinely row-aligned deep-turn frames pass through (F022's job). In-row FP A 2.7 / B 3.4 / C 3.5% — four **near-independent** p99 tails (each ~1% marginal), sub-additive by only ~0.5 pp (weak threshold correlation; top pair co-fires on 8–15% of its union; `F023_in_row_threshold_overlap`). **Combined (F022 ∪ F023): non-in-row 98.6%, in-row FP 3.9–4.7%** (union budget).
+
+**Implication.** F023 demonstrates the **perception-only ceiling**: a geometry filter cannot resolve failures that look geometrically valid (a real row seen mid-manoeuvre). It is a **complement, not a replacement** for the state gate. Together the two layers reject 98.6% of the deployment gap at a ~4% in-row cost — a two-layer rejection design with measured effectiveness; a full deployment solution would still need learned state classification, sensor fusion, and a formal state machine with hysteresis.
+
+**Cross-references.** F022 (the state gate it complements); F013 (the in-row distribution its thresholds derive from); F020/F021 (the failures it filters); D041.
+
+**Writeup wording (A2):**
+
+**Fully defensible.** A perception-only geometry filter — rejecting a two_row output whose lateral offset, heading, per-side slope disagreement, or base-point count falls outside the in-row 99th-percentile envelope (|offset| > 0.71 m, |heading| > 6.7°, |m_L − m_R| > 0.22, n_base < 12) — rejects only ~38–41 % of the spurious non-in-row outputs at a ~3 % in-row false-positive rate. The low rate is the finding, not a tuning failure: most non-in-row failures are geometrically indistinguishable from valid in-row (their offset and heading overlap the in-row distribution), because the camera is genuinely seeing a real vine row mid-manoeuvre. The filter catches the geometric outliers (the sparsest stationary fits, off-nominal transitions, and the mis-aligned ~half of turns) but the clean-geometry turns pass through — which the state gate (F022) handles. Combined, F022 ∪ F023 reject 98.6 % of the deployment gap at a ~4 % in-row cost (union false-positive budget); F023 adds only ~0.2 pp over F022 alone, so its role is an odometry-free fallback rather than an additive gain.
+
+**Candidate explanations.** F023's turn-blindness is intrinsic: a real row seen during a U-turn produces a valid-looking two-row geometry that no geometry threshold can separate from an in-row row without state. The ~3 % in-row false positives are the genuine in-row tail beyond the p99 thresholds (by construction).
+
+**NOT defensible.**
+- ✗ present F023 as a replacement for the state gate (it cannot catch clean-geometry turns).
+- ✗ tighten the thresholds to raise rejection without reporting the in-row FP cost (the two trade off).
+- ✗ call ~40 % rejection a failure (it is the measured perception-only ceiling).
+
+**Citation map.** Ours: `final/mitigation_evaluation/mitigation_analysis.json` (F023 block); in-row p99 thresholds from `final/march_evaluation/line_fit_per_frame.csv`. F013 (in-row distribution). No paper support (contribution).
