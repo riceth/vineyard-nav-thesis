@@ -1,10 +1,10 @@
 """Pooled moving-block length derivation (Analysis-H) for the March pooled strand (D040).
 
 Single source of truth for the paired-difference decorrelation distances and the moving-block
-lengths (L_GT1, L_GT2) consumed by the pooled CI estimators: line_fit_march_eval.py (per-arm
-RMS CIs), paired_crossarm_march.py (paired-diff CIs) and config_analysis_march.py (config RMS
+lengths (L_GT1, L_GT2) consumed by the whole-bag CI estimators: line_fit_eval.py (per-arm
+RMS CIs), paired_crossarm.py (paired-diff CIs) and config_analysis.py (config RMS
 CIs). Keeping the derivation here prevents the three consumers drifting and removes any hardcode
-of the val-derived 11/31 (POOLING_SPEC #2: "re-derive Analysis-H ... on the pooled data").
+of the val-derived 11/31 (POOLING_SPEC #2: "re-derive Analysis-H ... on the whole-bag data").
 
 Methodology is identical to diagnostics/autocorrelation_block_analysis.py (which stays the
 print-only human cross-check): per arm-pair (A-B, A-C, B-C), per metric (GT-1 offset / GT-2
@@ -16,8 +16,8 @@ metric -- this reproduces the single-L convention the val/test production script
 (paired_crossarm_test.py / config_sweep_val.py hardcoded one L per metric), now re-derived on
 the pooled val+test data rather than fixed at 11/31.
 
-Positions pool val+test eligible frames; val and test pass_ids are disjoint, so each pass stays
-a single contiguous spatial series (blocks never straddle val<->test).
+Positions are all eligible frames grouped by pass (whole-bag; no split key); each pass is a
+single contiguous spatial series, so a moving block never straddles a pass boundary.
 """
 import json
 import collections
@@ -27,13 +27,12 @@ import numpy as np
 
 SEEDS = [42, 43, 44]
 PAIRS = [("A", "B"), ("A", "C"), ("B", "C")]
-SPLITS = ("val", "test")
 
 
-def _positions(man, splits=SPLITS):
+def _positions(man):
     byp = collections.defaultdict(list)
     for f in man["frames"]:
-        if f["split"] in splits and f["eligible"]:
+        if f["eligible"]:                    # whole-bag: eligible only, no split key
             byp[f["pass_id"]].append(f)
     pos = {}
     for pid, fs in byp.items():
@@ -136,10 +135,12 @@ def pooled_block_lengths(per_frame_csv, man, thr=0.1, maxd=3.0, bw=0.15, fallbac
             "reduction": "conservative_max_across_pairs", "per_pair": per_pair}
 
 
-if __name__ == "__main__":   # standalone sanity check (prints the derived pooled block lengths)
-    PKG = Path(__file__).resolve().parents[2]
-    man = json.load(open(PKG / "results/geometric/march/dataset_manifest.json"))
-    csv = PKG / "results/geometric/march/final/march_evaluation/line_fit_march_per_frame.csv"
-    bl = pooled_block_lengths(csv, man)
+if __name__ == "__main__":   # standalone sanity check (prints the derived block lengths for a bag)
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from bag_config import parse_bag
+    B = parse_bag()
+    man = json.load(open(B["manifest"]))
+    bl = pooled_block_lengths(B["per_frame_csv"], man)
     print(json.dumps(bl, indent=2))
-    print(f"\ncanonical pooled block lengths: L_GT1={bl['L_GT1']}  L_GT2={bl['L_GT2']}")
+    print(f"\ncanonical block lengths ({B['bag']}): L_GT1={bl['L_GT1']}  L_GT2={bl['L_GT2']}")

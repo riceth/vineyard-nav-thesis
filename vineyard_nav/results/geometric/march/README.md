@@ -19,19 +19,17 @@ checkpoint artefacts CP-0…CP-3 remain at top level as locked historical state.
 
 ## `final/` — reported results
 
-**`val_evaluation/`** — validation (passes 2,4,5,6,7,8,10; 4,708 eligible frames):
-- `line_fit_val_report.json` — CP-5 9-model val evaluation, locked line-fit pipeline (D036–D038). Findings F010–F013.
-- `line_fit_val_per_frame.csv` — per-frame GT-1/GT-2/coverage, 9 models.
-- `paired_crossarm_val.json` — paired cross-arm difference bootstrap, val (F013).
-- `config_sweep_val.json` — class-config sweep + single-class ablations, val (F018).
-- `lidar_crosscheck_val.json` — val-side LiDAR vs camera row-heading cross-check (F017).
+**`march_evaluation/`** — whole-bag evaluation (**D040**): all 7,857 eligible frames
+(passes 0–10, all 5 corridors; no val/test split). Filenames are bag-agnostic
+(Option 1 — the `march/…/march_evaluation/` path carries the bag):
+- `line_fit_per_frame.csv` — per-frame GT-1/GT-2/coverage + per-side slopes (12-col: `arm,seed,i,cls,offset,heading,mL,mR,mc,n_base,adj,flags`), 9 models × 7,857 frames, full precision.
+- `line_fit_report.json` — per-model / per-arm aggregation + moving-block CIs. Findings F010–F013.
+- `paired_crossarm.json` — paired cross-arm difference bootstrap (F013/F019).
+- `config_analysis.json` — Phase-C config sweep + single-class ablations (F018).
+- `lidar_crosscheck.json` — LiDAR vs camera row-heading cross-check (F017).
 
-**`test_evaluation/`** — single-shot held-out test (passes 0,1,3,9; 3,149 eligible frames; evaluated once, rule 5):
-- `line_fit_test_report.json` — CP-6 9-model test evaluation (F019).
-- `line_fit_test_per_frame.csv` — per-frame test.
-- `paired_crossarm_test.json` — paired cross-arm difference bootstrap, test (F019).
-- `config_ablation_test.json` — test-side config ablation (F018 confirmation).
-- `lidar_crosscheck_test.json` — test-side LiDAR cross-check (F017 confirmation).
+The pre-pooling val/test-split artefacts are retained under
+`superseded/march_val_test_split/` (D040).
 
 **`figures/`** — placeholder (`.gitkeep`) for report figures generated after the multi-bag seasonal runs.
 
@@ -43,6 +41,10 @@ Row-fit visual-validation figure tree (D036/D037/D038 development). See
 
 ## `superseded/` — retired artefacts
 
-Buggy Y-constant CP-5 v1 run, retained as audit trail. See
-`superseded/README.md`. (The superseded CP-3 *row model* artefacts stay at top
+- `yconstant_val_evaluation/` — buggy Y-constant CP-5 v1 run (D035).
+- `march_val_test_split/{val,test}_evaluation/` — the pre-pooling val/test-split
+  evaluation artefacts (5 files each), superseded by `final/march_evaluation/`
+  under **D040** (whole-bag pooling). Retained verbatim as audit trail.
+
+See `superseded/README.md`. (The superseded CP-3 *row model* artefacts stay at top
 level — committed, locked historical state — and are not duplicated here.)

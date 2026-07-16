@@ -1,18 +1,21 @@
 """Analysis H (spatial autocorrelation of paired ΔGT-1/ΔGT-2 vs separation in metres) +
 Analysis I (moving-block bootstrap). Reports decorrelation distance per pair, then compares
 CI widths: current Δs=1.5m subsample vs Δs=measured-decorr subsample vs block bootstrap."""
-import json, collections
+import sys, json, collections
 import numpy as np
 from pathlib import Path
 PKG = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PKG / "scripts" / "geometric"))
+from bag_config import parse_bag
+BAG = parse_bag()
 B, SEED = 10000, 42
 SEEDS, PAIRS = [42, 43, 44], [("A", "B"), ("A", "C"), ("B", "C")]
 
-man = json.load(open(f"{PKG}/results/geometric/march/dataset_manifest.json"))
-# path position (cumulative m) per pooled val+test-eligible frame within its pass (D040)
+man = json.load(open(BAG["manifest"]))
+# path position (cumulative m) per whole-bag eligible frame within its pass (D040; no split key)
 byp = collections.defaultdict(list)
 for f in man["frames"]:
-    if f["split"] in ("val", "test") and f["eligible"]: byp[f["pass_id"]].append(f)
+    if f["eligible"]: byp[f["pass_id"]].append(f)
 pos = {}
 for pid, fs in byp.items():
     fs = sorted(fs, key=lambda f: f["i"]); xy = np.array([[f["x"], f["y"]] for f in fs])
@@ -20,7 +23,7 @@ for pid, fs in byp.items():
     for f, d in zip(fs, cum): pos[f["i"]] = (pid, float(d))
 
 D = collections.defaultdict(dict)
-for ln in open(f"{PKG}/results/geometric/march/final/march_evaluation/line_fit_march_per_frame.csv").read().splitlines()[1:]:
+for ln in open(BAG["per_frame_csv"]).read().splitlines()[1:]:
     a, s, i, cls, off, hdg, *_ = ln.split(",")
     if cls == "two_row" and off and hdg: D[(a, int(s))][int(i)] = (float(off), float(hdg))
 

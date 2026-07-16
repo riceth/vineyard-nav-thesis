@@ -14,6 +14,26 @@ clustering + RANSAC + far-field extension + line-fit centreline pipeline
 (**D036–D038**); the corrected run is `../final/val_evaluation/line_fit_val_report.json`
 (offset RMS 0.33 → 0.23 m). Kept to document the bug and its magnitude.
 
+## `march_val_test_split/` — pre-pooling val/test evaluation (D040)
+
+The March strand was originally evaluated on a within-bag **val/test split** (val
+passes 2,4,5,6,7,8,10 = 4,708 frames; test passes 0,1,3,9 = 3,149 frames), with
+the config locked on val (F018) before a single held-out test (F019). Under
+**D040** that split was pooled into one whole-bag evaluation (all 7,857 eligible
+frames), so these per-split artefacts are retired:
+
+- `val_evaluation/` — `line_fit_val_report.json`, `line_fit_val_per_frame.csv`,
+  `paired_crossarm_val.json`, `config_sweep_val.json`, `lidar_crosscheck_val.json`.
+- `test_evaluation/` — `line_fit_test_report.json`, `line_fit_test_per_frame.csv`,
+  `paired_crossarm_test.json`, `config_ablation_test.json`, `lidar_crosscheck_test.json`.
+
+Superseded by `../final/march_evaluation/`. Rationale in **DECISIONS.md D040** /
+**POOLING_SPEC.md**: the split served config-lock leakage-control (now spent);
+seasonal generalisation is claimed at the multi-bag (whole-bag-per-month) level.
+The `test_evaluation/` per-frame CSV stored GT-1/GT-2/mc at 4/3/4-dp; the pooled
+whole-bag CSV stores all frames at full precision (unchanged at reported precision;
+see D040). Retained verbatim as audit trail.
+
 ## Note — the superseded CP-3 *row model* is elsewhere
 
 The CP-3 dry run also used a now-superseded row model, but its artefacts
