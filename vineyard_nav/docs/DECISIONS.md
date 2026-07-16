@@ -547,6 +547,25 @@ The CP-3 single-arm dry run (Phase C seed 42, all 4 708 val frames) locked the (
 
 ---
 
+## D040 — Pool March val+test into a single whole-bag evaluation
+**Date:** 16 July 2026
+**Status:** LOCKED
+**Supersedes:** the held-out-test framing for March (CLAUDE.md rule 5 as applied *within-bag*; the val/test purpose of D033). **Refines:** FINDINGS F013/F019; POOLING_SPEC.md.
+
+**Decision.** Pool the March (`kg_march_23`) validation (passes 2/4/5/6/7/8/10, 4,708 eligible frames) and held-out test (passes 0/1/3/9, 3,149 eligible frames) into a **single whole-bag evaluation** of all **7,857** eligible frames. Every geometric analysis (line-fit evaluation, paired cross-arm bootstrap, config sweep + single-class ablations, LiDAR cross-check) is re-run on the pooled set. The class-agnostic downstream config (F018) is **already locked and is NOT re-selected** — the sweep is re-reported on pooled data for consistency only.
+
+**Rationale.** The within-bag val/test split served two procedural purposes: methodological consistency with the perception phases, and leakage-control for the config lock (F018 was selected on val and locked *before* the single-shot test, CP-6). With the config now locked, the split has served its purpose. The **seasonal-generalisation claim is made at the multi-bag level** (whole-bag evaluation per month, no per-bag splits) — the within-March split does not itself test seasonal generalisation. Pooling therefore (i) maximises statistical power for the March baseline, (ii) standardises methodology across all bags (each bag evaluated whole), and (iii) simplifies the write-up to "pooled per-bag result, generalisation confirmed cross-bag."
+
+**Consequence (accepted).** March no longer has an independent within-bag held-out check; the seasonal-generalisation claim rests entirely on the multi-bag comparison. This trade — maximum power + cross-bag methodological consistency, minus the within-March held-out confirmation — is accepted as defensible given the multi-bag design provides the genuine generalisation test. Rule 5 (single-shot test) applies at the multi-bag level for the geometric strand.
+
+**Findings impact.** F013 becomes the pooled March cross-arm finding (drops the "held-out / confirmed on test" framing). F019 (the CP-6 held-out-test finding) is retained as a historical trail with a SUPERSEDED banner; its purpose (test-side confirmation) is absorbed into the pooled F013. **This decision supersedes the *interpretation that F019 was load-bearing*, not the F019 record itself.** The per-finding "Test-side confirmation (CP-6)" blocks (F010/F011/F012/F014/F016/F017/F018) are merged into each finding's main measured content.
+
+**Alternatives considered.** (i) Keep the val/test split and report both — rejected: adds write-up complexity ("val + held-out test + multi-bag") without testing the generalisation claim, and costs statistical power. (ii) Re-select the config on pooled data — rejected: the config is locked (F018); re-selecting on pooled data (which includes the former test set) would be exactly the leakage the split was designed to prevent. The sweep is re-reported, not re-decided.
+
+**Scope.** Restructures `results/geometric/march/final/` (val_evaluation + test_evaluation → `march_evaluation/`; the val/test artefacts move to `superseded/march_val_test_split/`). New pooled scripts; val/test scripts move to `scripts/geometric/superseded/`. Perception, CP-0/1/2/3 artefacts, and the retained diagnostic/superseded material are untouched. Execution contract: `POOLING_SPEC.md`.
+
+---
+
 ## Open items
 
 ### O001 — Threshold T range (Phase C)
