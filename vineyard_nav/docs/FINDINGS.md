@@ -213,8 +213,8 @@ The effect is now supported at multiple levels: cross-split replication (within 
 
 **Cross-arm comparison methodology.** Per D014 and F003, cross-arm perception comparison is NOT the primary evaluation. The primary comparison happens at:
 
-- **Geometric strand:** RMS lateral error against teleoperator trajectory (all three arms produce the same signal — an estimated centreline — after RANSAC line-fitting). This is the metric committed in the proposal and PHASE_C_SPEC §8.
-- **Command-level strand:** steering-command difference against teleoperator commands (all three arms feed the same PID controller structure).
+- **Geometric strand:** RMS lateral error against the driven-path reference (the robot's driven trajectory; BLT is autonomous deployment, Polvara 2024 §3.3.3) — all three arms produce the same signal (an estimated centreline) after RANSAC line-fitting. This is the metric committed in the proposal and PHASE_C_SPEC §8.
+- **Command-level strand:** steering-command difference against the driven commands (all three arms feed the same PID controller structure).
 
 Both strands await the geometry pipeline, which is scoped for a later phase (O010). Cross-arm ranking at the perception level is deferred to the downstream stages.
 

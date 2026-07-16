@@ -15,18 +15,17 @@
 
 ---
 
-## Current state (as of 13 July 2026)
+## Current state (as of 16 July 2026)
 
-**Perception complete; geometric strand (March) closed.** All three arms trained + tested once + multi-seed (O009 complete). The geometric strand (in-row centreline evaluation on `kg_march_23`) has run CP-0→CP-6 (val + held-out test) with the locked **line-fit** pipeline (D036–D038):
+**Perception complete; March geometric strand closed and POOLED to whole-bag (D040).** All three arms trained + tested once + multi-seed (O009 complete). The March geometric strand (in-row centreline evaluation on `kg_march_23`) ran CP-0→CP-6; the val/test split was then **pooled into a single whole-bag evaluation** (D040; Commits 2a/2b/3) over all **7,857 in-row eligible frames** (47% of the 16,656-frame bag; D041 frame accounting). The locked **line-fit** pipeline (D036–D038) is now **bag-parametrised** (`--bag march`, Commit 2b), the multi-bag template.
 
-- **CP-5 val (9 models, line-fit) complete.** Per-arm GT-1 RMS ~0.22 m, GT-2 RMS ~2.7°, two-row coverage ~83%; arms **statistically and practically indistinguishable** (F013 **confirmed** — paired moving-block bootstrap, tight autocorrelation-corrected bounds; all CIs include zero). Reports: `results/geometric/march/final/val_evaluation/line_fit_val_report.json` + `final/val_evaluation/paired_crossarm_val.json` + per-frame CSV (committed).
-- **Findings F010–F019 logged** (FINDINGS.md) with **decomposed reporting** (bias / residual-SD, not raw RMS): F010 cross-arm tilt · F011 far-field coverage (64→83%) · F012 noise-floor decomposition (~1.3° arm-invariant) · F013 cross-arm indistinguishability (**confirmed** on val; amended with post-CP-6 note) · F014 adjacent-corridor scene-driven · F015 camera-yaw (**SUPERSEDED by F017**) · F016 GT-1 direction-dependence · **F017 sensor-common ~2.3–3.8° base_link-to-row tilt** (LiDAR refutes camera-specific attribution) · **F018 config sweep + ablations** (quality config-invariant; trunks load-bearing, poles supplement coverage +12 pp not quality) · **F019 CP-6 held-out test** (GT-1 indistinguishable, confirms F013; GT-2 negligible-but-detectable B-vs-others micro-difference, sub-noise-floor).
-- **LiDAR cross-check complete** — `results/geometric/march/final/val_evaluation/lidar_crosscheck_val.json`. Refuted F015; tilt sensor-common (F017).
-- **CP-4 sweep + ablations complete** (D026) — `final/val_evaluation/config_sweep_val.json`; **class-agnostic locked** (F018).
-- **CP-6 single-shot test complete** — 9 models × 3,149 held-out frames, class-agnostic; `final/test_evaluation/line_fit_test_report.json` + `final/test_evaluation/paired_crossarm_test.json`. GT-1 arms indistinguishable (confirms F013); GT-2 tiny detectable B-vs-others difference (sub-floor, F019). Coverage 77% (scene-driven: corridor 4 sparsest, F019).
-- **Test-side mechanism-verification batch complete — 5/5 confirm val:** F018 ablation (trunk-only ≈ agnostic; poles +13.3 pp coverage not quality; pole-only degenerate), F012/Analysis-B noise floor (arm-invariant, ~1.0–1.15°), F010 tilt consistency (cross-arm SD 0.054°), F016 GT-1 direction-dependence (0.206 vs 0.040 m), F017 LiDAR-on-test (LiDAR +3.04 / cam +2.74°, sensor-common). Each val finding carries a "Test-side confirmation (CP-6)" block. Artefacts: `final/test_evaluation/config_ablation_test.json`, `final/test_evaluation/lidar_crosscheck_test.json`.
-- **March geometric strand FULLY CLOSED (incl. test-side mechanism verification):** **F010–F019** all with appropriate **val + test evidence**; F013 confirmed + test-annotated; F015 superseded by F017; class-agnostic config locked; test evaluated once (rule 5).
-- **Pending (awaiting Edosa's PID sequence message):** multi-bag seasonal evaluation (April/May/June/July/Sept); PID / command-level characterisation (deferred until now).
+- **Whole-bag line-fit evaluation (9 models × 7,857 frames) complete.** Per-arm GT-1 RMS ~0.19–0.22 m, GT-2 RMS ~2.5°, two-row coverage ~81%; arms **indistinguishable on the primary GT-1 metric** (F013 — paired moving-block bootstrap, all CIs include zero) with a **sub-noise-floor GT-2 offset** that surfaces on pooling (A<C<B, ≤5.6% of the noise floor, sign-inconsistent for 2/3 pairs — reported honestly, below navigation relevance). Artefacts: `results/geometric/march/final/march_evaluation/` (`line_fit_report.json`, `line_fit_per_frame.csv` 12-col, `paired_crossarm.json`, `config_analysis.json`, `lidar_crosscheck.json`).
+- **Findings F010–F019 pooled additively (Commit 3)** — the val→held-out-test-confirmation→pooled derivation trail is preserved in each, with pooled numbers as the headline. F013 pooled (GT-1 indistinguishable + honest GT-2 persistence); F015 & **F019 SUPERSEDED** (kept as historical trails); F016 driven-path (BLT autonomous, Polvara 2024); F017 sensor-common tilt (pooled 10-anchor LiDAR); F018 config (class-agnostic locked, Phase-C-multiclass-specific); F010/F014 whole-bag per-side slopes / adjacent rate (enabled by the Commit-2b 12-col schema); F012 pooled regression-residual (A 1.37/B 1.33/C 1.32°). Decomposed reporting throughout (bias / residual-SD).
+- **D041 frame accounting:** 7,857 in-row eligible (47%) evaluated + 5,841 non-in-row (35%, → Commit 6) + 2,958 contaminated (18%, perception-leakage, excluded) = 16,656; mutually exclusive + exhaustive (contamination-first).
+- **Config sweep + ablations** (D026) re-reported on pooled data — **class-agnostic locked** (F018; re-reported, not re-selected — the design was locked before pooling).
+- **Provenance:** the whole-bag artefacts were produced by the committed bag-parametrised scripts (`line_fit_infer` / `extract_detections` / `line_fit_eval` / `paired_crossarm` / `config_analysis` / `lidar_crosscheck` `--bag march`) — verified byte-for-byte (val) / value-equivalent (test) against the val/test-era outputs. The val/test split scripts + artefacts are retained under `scripts/geometric/superseded/` and `results/geometric/march/superseded/march_val_test_split/` (audit trail).
+- **March geometric strand FULLY CLOSED (whole-bag pooled):** F010–F019 pooled; F013 GT-1 indistinguishable + GT-2 honest sub-noise-floor persistence; F015/F019 superseded trails; class-agnostic locked. **Rule 5 (single-shot test) now applies at the multi-bag (whole-bag-per-month) level (D040)** — the within-March held-out test is superseded by the seasonal generalisation claim.
+- **Remaining strand work (in order):** Commit 4 (this — STATUS + per-month template + O012 figures scope + terminology sweep), Commit 5 (dataset_split cleanup + whole-bag subsample recompute, O013), Commit 6 (non-in-row characterisation F020+, O014), report figures (O012), then multi-bag seasonal (April+) and PID.
 - **Test set (23 scenes), Phase A/B/C artefacts, CP-0/1/2/3 artefacts untouched.**
 
 *Planning-phase history (retained for context):* A1 submitted early; supervisor → three-arm design (U-Net binary + YOLO binary + YOLO multiclass) + Config A/B/C sweep on Phase C; split changed to 70/20/10 stratified; Roboflow `roboflow-3-n-seg` reference-only.
@@ -146,14 +145,22 @@ Perception uses **native metrics per arm** (U-Net: mIoU/IoU; YOLO: mAP@50/per-cl
 
 ## Immediate next action
 
-**March-bag geometric strand is CLOSED** (perception A/B/C + O009; CP-0→CP-6; F010–F019; config locked; test evaluated once). **Holding at the closure gate** for Edosa's sequence message. Remaining, in expected order (do not start until instructed):
-1. **Multi-bag seasonal evaluation** — repeat the locked pipeline on April/May/June/July/September bags (canopy-state generalisation; where a class-structure effect is most likely to appear).
-2. **PID / command-level characterisation** — deferred throughout; the downstream control strand.
-3. **A2 writing** — Methodology (DECISIONS trail), Results/Discussion (FINDINGS F001–F019).
+**March-bag geometric strand is CLOSED and pooled to whole-bag** (Commits 2a/2b/3: pipeline consolidated + bag-parametrised, findings pooled additively, D041 frame accounting). Remaining March-strand commits, in order:
+1. **Commit 4 (this)** — STATUS + per-month template + O012 figures scope (both in-row + non-in-row) + terminology consistency sweep (driven-path, O015).
+2. **Commit 5 (O013)** — `dataset_split.py` → split-free manifest-builder rename; drop the manifest `split` field; handle `dataset_split_samples/`; **whole-bag subsample recompute** (the per-model Δs=1.5 m subsample is currently per-split-computed).
+3. **Commit 6 (O014)** — non-in-row characterisation: extract the 5,841 category-C frames, run the bag-parametrised pipeline, driven-path-error metric, findings F020+.
+4. **Report figures (O012)** — both in-row and non-in-row; bag-parametrised styling module for multi-bag reuse.
+
+Then the seasonal phase:
+5. **Multi-bag seasonal evaluation** — run the locked bag-parametrised pipeline on April/May/June/July/September (`--bag <month>`); cross-month synthesis (canopy-state generalisation, where a class-structure effect is most likely to appear).
+6. **PID / command-level characterisation** — the downstream control strand.
+7. **A2 writing** — Methodology (DECISIONS trail + D041 scope framing), Results/Discussion (FINDINGS F010–F019 pooled).
 
 ---
 
-## Val/test discipline (geometric strand)
+## Val/test discipline (geometric strand) — SUPERSEDED by whole-bag pooling (D040)
+
+> **Note (D040, 16 Jul 2026).** The within-March val/test split described below is **superseded**. It served config-lock leakage-control (F018 selected on val, locked before the CP-6 held-out test) and has served its purpose; the March strand is now evaluated whole-bag (all 7,857 in-row frames; D040/D041). Seasonal generalisation is claimed at the multi-bag level — **rule 5 (single-shot test) applies per-month (whole-bag), not within-March**. The split description is retained for historical context.
 
 Same one-shot-test discipline as perception (rule 5):
 
@@ -162,6 +169,33 @@ Same one-shot-test discipline as perception (rule 5):
 - **F013 confirmed on val** (statistically + practically indistinguishable at tight autocorrelation-corrected paired-bootstrap bounds); CP-6 is the held-out confirmation, not substituted by the val conclusion.
 - **Subsampling rule — supersedes the D-D Δs = 1.5 m default for paired analyses:** the spatial-independence gap or block length for paired-difference CIs is **grounded in per-pair, per-metric measured autocorrelation (Analysis H)**, not a global default. Measured paired-difference decorrelation is 0.22–0.67 m (0.1 threshold), well below the 1.5 m pre-specified default. Δs = 1.5 m remains the conservative fallback where autocorrelation is not measured.
 - **PID / command-level characterisation** remains deferred pending full geometric-strand closure (sweep + test).
+
+---
+
+## Multi-bag structure & per-month template
+
+The pipeline is **bag-parametrised** (`--bag march`, `--bag april`, …; Commit 2b, `bag_config.py`). March is the **design / development / evolution bag** (row-model refinement D036–D038, config lock F018, the val/test → pooling methodology) and keeps the evidence-rich structure; **April onward is locked-pipeline application** (one whole-bag run per bag, no per-bag development).
+
+```
+results/geometric/
+├── march/
+│   ├── final/march_evaluation/       (whole-bag pooled — headline)
+│   ├── diagnostics/                   (retained — decision-supporting evidence)
+│   ├── superseded/                    (retained — dependencies + audit trail)
+│   └── (top-level CP-0/1/2/3 artefacts)
+├── april/
+│   └── final/april_evaluation/        (whole-bag from --bag april)
+├── may/, june/, july/, september/     (same as april)
+└── cross_month/
+    └── final/cross_month_synthesis/   (seasonal generalisation findings)
+```
+
+**Multi-bag readiness:**
+- **Pipeline** bag-parametrised (`--bag <month>`) — Commit 2b; the 9 model weights are bag-independent (the same three-arm models are evaluated on every bag).
+- **Figures module** will be bag-parametrised (O012: `plot_in_row_frame(bag, …)`, `plot_non_in_row_frame(bag, …)`).
+- **Per-month `final/{bag}_evaluation/` template** established (Option-1 artefact naming: the path carries the bag, filenames stay bag-agnostic).
+- **Cross-month synthesis** structure defined (`cross_month/final/`); seasonal generalisation (rule 5 per-month) is where a class-structure effect is most likely to appear (canopy-state variation).
+- Only **March** retains the evidence-rich structure (`diagnostics/`, `superseded/`); April+ carry `final/{bag}_evaluation/` only.
 
 ---
 
@@ -199,8 +233,11 @@ Full rationale and history in `DECISIONS.md`. Headline items:
 - **O004 (new):** Literature review extension — supervisor flagged 6 references as thin. Must reach ~12–15 for A2.
 - **O005 (new):** "Poles remain visible" retraction from A1 — must be openly acknowledged in A2 Methodology or Discussion.
 - **O007 (new):** OOD annotation — label Riseholme footage (different vineyard/season) for an out-of-distribution eval set; scheduled last, per Riccardo. See DECISIONS O007.
-- **O010 (new):** Geometry pipeline + Phase C downstream sweep — deferred to the geometry-pipeline phase; primary cross-arm comparison lives here (RMS lateral error). See DECISIONS O010.
-- **O011 (new):** Report-figure generation — deferred until after the multi-bag seasonal runs, so figures span all bags rather than March alone. Sketch: (i) **pipeline illustration** (image → base points → IPM projection → row fit → centreline → GT-1/GT-2); (ii) **cross-arm comparison** (per-arm GT-1/GT-2 with CIs); (iii) **mechanism figures** — F017 sensor-common tilt (LiDAR vs camera), F018 config sweep + single-class ablations, F016 GT-1 direction-dependence; (iv) **quantitative figures** — RMS + CI, paired cross-arm differences, coverage-by-canopy-state. Placeholder dir: `results/geometric/march/final/figures/`.
+- **O010 (RESOLVED — Commits 2a–3):** Geometry pipeline + Phase C downstream sweep — built, run, and pooled to whole-bag; the primary cross-arm comparison is delivered (F013 pooled, RMS lateral error). See DECISIONS O010, D040.
+- **O012 (was O011):** Report-figure generation — **both in-row AND non-in-row** (deferred until after Commit 6 so non-in-row figures exist). **In-row:** combined view (left panel raw image — blue trunks, yellow poles, red fitted rows, green centreline, optional red-dotted driven-path reference; right panel bird's-eye), representative pipeline-final frames (NOT dev-era 4223/4107/3991), cross-arm comparison, F017 tilt, F018 mechanism. **Non-in-row:** representative frames per category (headland moving, stationary, transitions), same combined-view format, failure modes explicit. **Locked styling module, bag-parametrised** — `plot_in_row_frame(bag, frame_id)`, `plot_non_in_row_frame(bag, frame_id, category)` — for multi-bag reuse. **RMS naming discipline:** `centreline_error_rms` (in-row, headline, comparable) vs `driven_path_error` (non-in-row, degradation characterisation, three conflations noted) — never conflated in a side-by-side "RMS vs RMS". Placeholder dir: `results/geometric/march/final/figures/`.
+- **O013 (new — Commit 5):** Manifest cleanup + whole-bag subsample — rename `dataset_split.py` → split-free manifest builder; drop the manifest `split` field (dead under whole-bag: eligible ⟺ split∈{val,test}); handle `dataset_split_samples/` (per-corridor overlays, drop the split label); **recompute the Δs=1.5 m subsample whole-bag** (currently per-split-computed — a single greedy pass over all eligible frames; affects only the non-headline per-model CI). See `scratchpad/PLAN_NOTES.md`.
+- **O014 (new — Commit 6):** Non-in-row characterisation — extract the **5,841 category-C frames** (not currently on disk; `extract_frames.py` is eligible-only), run the bag-parametrised pipeline over them, report a **driven-path-error** metric with explicit caveats (IPM invalid on headland slopes, centreline undefined on turns, turn geometry conflates), findings **F020+**, and a Discussion-chapter deployment-gap framing. Scripts bag-parametrised (`--bag`). See D041.
+- **O015 (new — Commit 4, RESOLVED this commit):** Terminology consistency sweep — `driven-path` throughout (BLT is autonomous deployment, Polvara 2024 §3.3.3). F016 was fixed in Commit 3; the metric-strand definition (FINDINGS) and the historical DECISIONS references receive the driven-path treatment **additively** in this commit.
 
 ---
 

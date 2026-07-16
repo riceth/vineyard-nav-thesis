@@ -128,7 +128,7 @@ For Phases B and C: ultralytics defaults, with augmentation intensity aligned to
 **Status:** LOCKED
 **Decision:** Three independent evaluation strands, all stratified by canopy state:
 1. Perception — mIoU (Phase A) or mAP@50/precision/recall (Phases B/C) — per-arm only, not cross-arm-compared
-2. Geometric — centreline error vs teleoperator trajectory — cross-arm comparable
+2. Geometric — centreline error vs teleoperator trajectory *(driven-path in current terminology; BLT autonomous, Polvara 2024)* — cross-arm comparable
 3. Command-level — PID command smoothness — cross-arm comparable
 
 Statistical treatment: bootstrap CIs over per-frame metric differences for pairwise comparisons. Effect sizes alongside point estimates. No p-values.
@@ -279,7 +279,7 @@ Isolated comparisons: A ↔ B (architecture effect, binary fixed); B ↔ C (clas
 - T ∈ {1, 2, 3, 5, 8, 12} instance counts (per side, per frame)
 - Config C has no T parameter
 - Total val evaluations: 6 (Config A) + 6 (Config B) + 1 (Config C) = 13
-- Selection criterion: minimise RMS lateral error to teleoperator trajectory on val
+- Selection criterion: minimise RMS lateral error to teleoperator trajectory *(driven-path in current terminology; BLT autonomous, Polvara 2024)* on val
 - Test evaluated **once** at locked (config*, T*)
 
 **Sensitivity reporting:** Full sweep curves plotted in Results (metric vs T for A and B; C as horizontal reference).
@@ -373,8 +373,8 @@ Cross-arm perception-level comparison uses each arm's native metric:
 Direct arm-to-arm perception ranking is NOT performed at this stage. Rasterised foreground IoU (previously used as a cross-arm comparison metric in F005) is retained per YOLO arm only as an internal characterisation metric — useful for canopy stratification, blob-failure detection, and per-arm bootstrap CIs — but is not used to rank arms against each other.
 
 Primary cross-arm comparison happens at:
-- Geometric strand: RMS lateral error against teleoperator trajectory (all three arms produce a centreline estimate via RANSAC line-fitting after their per-arm perception outputs)
-- Command-level strand: steering-command difference against teleoperator commands (all three arms feed the same PID controller structure)
+- Geometric strand: RMS lateral error against teleoperator trajectory *(driven-path in current terminology; BLT autonomous, Polvara 2024)* (all three arms produce a centreline estimate via RANSAC line-fitting after their per-arm perception outputs)
+- Command-level strand: steering-command difference against teleoperator commands *(driven/autonomous commands in current terminology; see above)* (all three arms feed the same PID controller structure)
 
 Both strands await the geometry pipeline, which is scoped for O010 (post-multi-seed phase). Cross-arm ranking at the perception level is DEFERRED to the downstream stages.
 
@@ -469,7 +469,7 @@ The CP-3 single-arm dry run (Phase C seed 42, all 4 708 val frames) locked the (
 
 **GT-2 heading — centreline-derived, fan-free (redefinition of D-F GT-2).** The per-row slope is fan-corrupted (spurious ±45°). But the fan is **symmetric** (left row +Y, right row −Y with range), so it **cancels in the centreline midpoint**. GT-2 is therefore redefined as the direction of the **centreline** between its 2 m and 4 m look-ahead bins, compared against the robot's actual heading from `/robot_pose` orientation (base_link frame). CP-3 gives an **unbiased** heading (mean −0.32°, |median| 3.21°, SD 7.73°), confirming the fan-free construction carries genuine signal. The robot's own row-misalignment is a common floor across all three arms (as with GT-1's centring floor), cancelling in the cross-arm ranking; the slip-corrected form (subtract path-tangent-minus-heading ≈ 0) is a documented refinement.
 
-**GT-1 lateral offset.** Centreline lateral position at the 1–3 m (≈ 2 m) look-ahead bin. CP-3: mean +0.164 m, SD 0.144 m, |median| 0.167 m — consistent with near-centred teleoperation plus a small per-pass bias (reported separately, GT-1).
+**GT-1 lateral offset.** Centreline lateral position at the 1–3 m (≈ 2 m) look-ahead bin. CP-3: mean +0.164 m, SD 0.144 m, |median| 0.167 m — consistent with near-centred teleoperation *(driven-path; BLT autonomous, Polvara 2024)* plus a small per-pass bias (reported separately, GT-1).
 
 **Blob guard — lenient (CP-3 finding).** The F007 canopy-blob pathology does **not** manifest on the bare-vine March bag: the largest detections (~10.5 % of frame) are **real close-up trellis poles**, verified visually. An aggressive area cap would reject real poles, so the guard is set at **15 % of frame** — it drops 0 real detections in March val while still rejecting a gross whole-frame blob. The per-frame outlier defence is the row fit's median ± 0.5 m inlier test. (The blob guard remains relevant for the leafy April/June bags, future work.)
 
