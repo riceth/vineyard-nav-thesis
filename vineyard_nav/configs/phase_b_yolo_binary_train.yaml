@@ -1,6 +1,6 @@
 # Phase B — YOLOv11-seg binary training. Hyperparameters LOCKED (PHASE_B_SPEC 6.2).
 # See DECISIONS.md D023 (YOLOv11-seg), D013 (augmentation parity with Phase A),
-# D016 (reproducibility), O005 (data prep). Data prep by scripts/coco_to_yolo.py.
+# D016 (reproducibility), O005 (data prep). Data prep by scripts/perception/pipeline/coco_to_yolo.py.
 experiment_name: phase_b_yolo_binary
 seed: 42
 

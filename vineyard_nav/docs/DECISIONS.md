@@ -354,11 +354,11 @@ The rasterised per-frame fg IoU used for Phase B's cross-arm perception comparis
 
 Rationale: aligns Phase B methodology with Phase C's val-based T-sweep. Provides a principled operating point rather than reliance on the ultralytics default (0.25). Preserves rule 5: threshold selected on val, test evaluated once at locked value.
 
-Sweep result (val, n=46, half=True; `scripts/phase_b_conf_sweep.py`): mean fg IoU by conf = {0.10: 0.5655, 0.15: 0.5758, 0.20: 0.5793, 0.25: 0.5856, 0.30: 0.5852, 0.40: 0.5786}. **conf\* = 0.25** (argmax; 0.30 within 0.0004). Curve + data: `results/runs/phase_b_yolo_binary/val_conf_sweep.{png,json}`. Sensitivity discussed in F006.
+Sweep result (val, n=46, half=True; `scripts/perception/diagnostics/phase_b_conf_sweep.py`): mean fg IoU by conf = {0.10: 0.5655, 0.15: 0.5758, 0.20: 0.5793, 0.25: 0.5856, 0.30: 0.5852, 0.40: 0.5786}. **conf\* = 0.25** (argmax; 0.30 within 0.0004). Curve + data: `results/runs/phase_b_yolo_binary/val_conf_sweep.{png,json}`. Sensitivity discussed in F006.
 
 **Outcome:** conf\* = 0.25 coincides with the ultralytics default used for the already-committed test result (O003), so that result **stands unchanged** as the locked Phase B test evaluation — no supersede, no test re-run (rule 5 preserved). Had conf\* differed, test would have been re-evaluated once at conf\* and the conf=0.25 files retained as `*_conf025_preliminary.json`; that branch was not taken. The coincidence is recorded for provenance: the operating point was validated post-hoc as optimal on val, not merely inherited from a default.
 
-**Supplementary median-based analysis (8 July 2026, not a supersede):** `scripts/median_conf_sweep.py` computed both mean and median per-frame fg IoU across the 46 val frames at each grid conf, plus catastrophic-frame count (fg IoU < 0.1). **Median-based conf\* = 0.25, identical to the mean-based conf\*** — the two selection criteria coincide, so no mean-vs-median tradeoff arises. Catastrophic frames = 0 at every conf on val (the 6799-type failure appears on no val frame). Primary mean-based conf\* = 0.25 is unchanged; result discussed in F007. Data: `results/runs/phase_b_yolo_binary/val_conf_sweep_median.{json,png}`.
+**Supplementary median-based analysis (8 July 2026, not a supersede):** `scripts/perception/diagnostics/median_conf_sweep.py` computed both mean and median per-frame fg IoU across the 46 val frames at each grid conf, plus catastrophic-frame count (fg IoU < 0.1). **Median-based conf\* = 0.25, identical to the mean-based conf\*** — the two selection criteria coincide, so no mean-vs-median tradeoff arises. Catastrophic frames = 0 at every conf on val (the 6799-type failure appears on no val frame). Primary mean-based conf\* = 0.25 is unchanged; result discussed in F007. Data: `results/runs/phase_b_yolo_binary/val_conf_sweep_median.{json,png}`.
 
 ---
 
@@ -588,7 +588,7 @@ Canopy > bare-vine gap replicates directionally across all 3 seeds (all positive
 
 **Phase B — YOLOv11-seg binary (yolo11n-seg, COCO-pretrained). Test evaluated once, 8 July 2026.**
 - Run: `results/runs/phase_b_yolo_binary/`; checkpoint `best.pt` @ epoch 86; git `7884bca`; seed 42.
-- Data: `data/yolo_binary/` from `scripts/coco_to_yolo.py` (O005); D028 routing (train 721 / val 46 / test 23 representative).
+- Data: `data/yolo_binary/` from `scripts/perception/pipeline/coco_to_yolo.py` (O005); D028 routing (train 721 / val 46 / test 23 representative).
 - Training: 100 epochs, 45.2 min, peak VRAM 4.23/8 GB. Val mask mAP@50 0.629 reproduced exactly by `evaluate.py` (half=True, AMP-consistent — see methods note).
 - Perception metric is mAP (D014); computed under FP16/AMP to match training-time validation (D004) and Phase A's AMP eval regime.
 
@@ -628,7 +628,7 @@ Training-run SD on mAP@50 (0.016) is smaller than SD on rasterised fg IoU (0.027
 
 **Phase C — YOLOv11-seg multiclass (yolo11n-seg, trunk=0 / pole=1). Test evaluated once, 10 July 2026.**
 - Run: `results/runs/phase_c_yolo_multiclass/`; checkpoint `best.pt` @ epoch 94; git `2a69c95`; seed 42.
-- Data: `data/yolo_multiclass/` from `scripts/coco_to_yolo.py --mode multiclass` (O005 / D025); D028 routing (train 721 / val 46 / test 23 representative). Training regime **identical to Phase B** (100 epochs, patience 30, batch 16, workers 0, imgsz 640, SGD schedule, augmentation) — only `nc` and the data path differ (verified: B↔C non-cls training losses match to <0.01, F008).
+- Data: `data/yolo_multiclass/` from `scripts/perception/pipeline/coco_to_yolo.py --mode multiclass` (O005 / D025); D028 routing (train 721 / val 46 / test 23 representative). Training regime **identical to Phase B** (100 epochs, patience 30, batch 16, workers 0, imgsz 640, SGD schedule, augmentation) — only `nc` and the data path differ (verified: B↔C non-cls training losses match to <0.01, F008).
 - Training: 100 epochs (no early stop), 49.3 min, peak VRAM 4.25/8 GB. Val mask mAP@50 0.613 reproduced by `evaluate.py` (0.6126, half=True, D029).
 - **Downstream sweep + test-at-locked-config: DEFERRED (O010).** Phase C closes at **perception only**.
 
@@ -672,7 +672,7 @@ Per-class mask mAP@50 (mean across seeds):
 
 Cross-arm blob overlap on 6799 (results/runs/phase_c_blob_overlap_6799/): Phase C seed 43 blob shows mask IoU ~0.93 with Phase B seed 42 blob and Phase B seed 43 blob. All four blobbing runs (Phase B seeds 42, 43; Phase C seeds 43, 44) produce blob masks in the same right-side canopy region with near-identical geometry.
 
-**Regeneration recipe** (the overlap PNGs live under `results/runs/` and are gitignored like every other run artefact; they are reproducible on demand, not merely held locally): `python scripts/blob_overlap_6799.py` — default runs are the four blobbing runs (Phase B seeds 42, 43; Phase C seeds 43, 44); predicts 6799 with each run's locked `weights/best.pt` at conf 0.25 (half=True, D029), takes the largest-area mask per run, and writes `overlap_<a>_<b>.png` + `overlap_summary.json`. Provenance: analysis script committed with this multi-seed pass; Phase B seed configs committed at 4044395, Phase C seed configs at d44cccf. Measured 4-way result: largest-mask areas 75,256–76,837 px; pairwise mask IoU mean 0.929 (range 0.924–0.937 across 6 pairs); centroids within ~6 px.
+**Regeneration recipe** (the overlap PNGs live under `results/runs/` and are gitignored like every other run artefact; they are reproducible on demand, not merely held locally): `python scripts/perception/diagnostics/blob_overlap_6799.py` — default runs are the four blobbing runs (Phase B seeds 42, 43; Phase C seeds 43, 44); predicts 6799 with each run's locked `weights/best.pt` at conf 0.25 (half=True, D029), takes the largest-area mask per run, and writes `overlap_<a>_<b>.png` + `overlap_summary.json`. Provenance: analysis script committed with this multi-seed pass; Phase B seed configs committed at 4044395, Phase C seed configs at d44cccf. Measured 4-way result: largest-mask areas 75,256–76,837 px; pairwise mask IoU mean 0.929 (range 0.924–0.937 across 6 pairs); centroids within ~6 px.
 
 Blob rate across arms: Phase B 2/3, Phase C 2/3. Class-aware supervision does not affect the failure rate. See F007 for full analysis.
 
@@ -685,7 +685,7 @@ Supervisor flagged A1's 6 references as thin. Must reach ~12–15 for A2. Extens
 **Date:** 4 July 2026
 **Status:** LOCKED. Path B chosen (in-place COCO→YOLO conversion).
 
-Decision: convert COCO polygon annotations to YOLO segmentation format via an in-repo script (`vineyard_nav/scripts/coco_to_yolo.py`), parameterised by class-collapse rule. Do NOT re-download from Roboflow in YOLO format.
+Decision: convert COCO polygon annotations to YOLO segmentation format via an in-repo script (`vineyard_nav/scripts/perception/pipeline/coco_to_yolo.py`), parameterised by class-collapse rule. Do NOT re-download from Roboflow in YOLO format.
 
 Rationale:
 - Preserves single source of truth (COCO JSON is master, YOLO labels derived)

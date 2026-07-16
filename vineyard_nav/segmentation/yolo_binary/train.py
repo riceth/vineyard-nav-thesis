@@ -2,7 +2,7 @@
 """Phase B YOLOv11-seg binary training (PHASE_B_SPEC section 6).
 
 Fine-tunes yolo11n-seg from COCO-pretrained weights on the binary YOLO labels
-produced by scripts/coco_to_yolo.py (O005). Decisions: D023 (YOLOv11-seg via
+produced by scripts/perception/pipeline/coco_to_yolo.py (O005). Decisions: D023 (YOLOv11-seg via
 ultralytics), D013 (augmentation parity), D016 (reproducibility). No test-set
 access here (rule 5).
 

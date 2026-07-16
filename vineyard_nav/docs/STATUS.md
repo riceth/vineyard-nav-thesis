@@ -71,9 +71,9 @@ Three model arms, all feeding the same downstream (per-side clustering → RANSA
 - [x] Working rules locked (including "no directional framing before Results")
 
 ### Data preparation (in progress)
-- [x] 70/20/10 stratified resplit with augmentation-leakage guard — **scene-level** (D028, supersedes D024). `scripts/resplit_dataset.py` → `data/splits/resplit_70_20_10.json`. 230 scenes → 161/46/23; leakage-verified; deterministic (seed 42). Test = **23 independent scenes** (11 bare-vine + 12 canopy) — honest bootstrap units; see O006 (raise with supervisor).
+- [x] 70/20/10 stratified resplit with augmentation-leakage guard — **scene-level** (D028, supersedes D024). `scripts/perception/pipeline/resplit_dataset.py` → `data/splits/resplit_70_20_10.json`. 230 scenes → 161/46/23; leakage-verified; deterministic (seed 42). Test = **23 independent scenes** (11 bare-vine + 12 canopy) — honest bootstrap units; see O006 (raise with supervisor).
 - [x] Binary labels for U-Net (Phase A) — via `SemanticBLTBinaryDataset` (on-the-fly COCO→mask)
-- [x] YOLO binary label files (Phase B) — `scripts/coco_to_yolo.py` (O005, convert_coco + collapse + D028 routing) → `data/yolo_binary/` (721/46/23; 14,894 fg lines audited == COCO cat{3,5}; coords match source to 0.0003px). `data.yaml` + `canopy_state_map.json` written.
+- [x] YOLO binary label files (Phase B) — `scripts/perception/pipeline/coco_to_yolo.py` (O005, convert_coco + collapse + D028 routing) → `data/yolo_binary/` (721/46/23; 14,894 fg lines audited == COCO cat{3,5}; coords match source to 0.0003px). `data.yaml` + `canopy_state_map.json` written.
 - [ ] YOLO multiclass label files (Phase C — trunk + pole only) — same script, `--mode multiclass` (to add)
 
 ### Phase A — U-Net binary
@@ -89,7 +89,7 @@ Three model arms, all feeding the same downstream (per-side clustering → RANSA
 - [x] Bootstrap CIs on the 23 test scenes (D020/O006) — `evaluate.py` now emits `test_per_frame_metrics.csv` (additive; test_metrics.json byte-identical, md5 verified); `evaluation/bootstrap.py` (D020 utility, 10k resamples, seed 42) → `test_bootstrap_ci.json`. Overall fg IoU 0.7119 [0.6572, 0.7659]; canopy−bare-vine gap +0.072 **[−0.034, +0.174] (includes 0)**. F001/F002/F003 + D028 updated.
 
 ### Phase B — YOLO binary
-- [x] Data prep — `scripts/coco_to_yolo.py` (O005 LOCKED); `data/yolo_binary/` built, numeric+visual spot-check passed. ultralytics 8.4.90 installed & pinned (torch unchanged; opencv note in requirements).
+- [x] Data prep — `scripts/perception/pipeline/coco_to_yolo.py` (O005 LOCKED); `data/yolo_binary/` built, numeric+visual spot-check passed. ultralytics 8.4.90 installed & pinned (torch unchanged; opencv note in requirements).
 - [x] YOLO data.yaml configured — `configs/phase_b_yolo_binary_data.yaml`
 - [x] opencv drift reconciled (O008 RESOLVED) — cv2 single-sourced headless 5.0.0.93; requirements pin updated
 - [x] Training config + entry point — `configs/phase_b_yolo_binary_train.yaml` (§6.2; workers 4→0 env-forced), `segmentation/yolo_binary/train.py`. **2-epoch smoke PASSED**: no OOM, no NaN, val losses ↓ (box 3.68→3.25, seg 4.32→3.97), GPU 3.77/8 GB @ batch 16, ~9s/epoch, deterministic (identical reruns). Path nesting fixed (absolute project).
@@ -98,7 +98,7 @@ Three model arms, all feeding the same downstream (per-side clustering → RANSA
 - [x] Test evaluation (once) — **DONE 8 Jul 2026, not to be re-run (rule 5)**. Overall mask mAP@50 **0.6161** (box 0.7219); bare-vine 0.6249 / canopy 0.6192. `test_metrics.json` + 23 GT|Pred panels in `predictions_test/`.
 - [x] `visualize.py` standalone (§2) — GT|Pred mask panels, parallel to Phase A.
 - [x] Bootstrap CIs (D020 reuse) — per-frame foreground **pixel** metrics → `test_per_frame_metrics.csv` + `test_bootstrap_ci.json`. Overall pixel IoU_fg 0.556 [0.466, 0.633]. (mAP has no per-frame CI; per-frame pixel metric parallels Phase A.)
-- [x] conf-threshold sweep on val (D030) — `scripts/phase_b_conf_sweep.py`; **conf\* = 0.25** (val argmax, coincides with default → committed test stands). Curve `val_conf_sweep.png`; mildly sensitive (spread 0.020, F006).
+- [x] conf-threshold sweep on val (D030) — `scripts/perception/diagnostics/phase_b_conf_sweep.py`; **conf\* = 0.25** (val argmax, coincides with default → committed test stands). Curve `val_conf_sweep.png`; mildly sensitive (spread 0.020, F006).
 - [x] Metrics recorded in DECISIONS.md (O003 Phase B block)
 
 **Phase B complete** (§10): trained + best.pt locked · test once · results.csv preserved · predictions saved · DECISIONS O003 updated · STATUS updated. → Phase C (YOLO multiclass) can begin.
@@ -120,7 +120,7 @@ Three model arms, all feeding the same downstream (per-side clustering → RANSA
 - [x] Phase A U-Net — 3 seeds (42/43/44). Test fg IoU **0.716 ± 0.008**, mIoU 0.858 ± 0.003, canopy>bare gap +0.076 ± 0.004. Highly stable; no blob mode (U-Net per-pixel). Blob rate 0/3.
 - [x] Phase B YOLO binary — 3 seeds. Test mask mAP@50 **0.632 ± 0.016**, fg IoU 0.585 ± 0.027. **6799 blob 2/3 seeds** (42,43 blob; 44 clean); when present, same region (cross-seed mask IoU 0.93). Phase B fg-IoU variance ~3.4× Phase A's, blob-driven (F009).
 - [x] Phase C YOLO multiclass — 3 seeds. Test mask mAP@50 **0.644 ± 0.008**, fg IoU 0.594 ± 0.022. **6799 blob 2/3 seeds** (43,44 blob; 42 clean). Blob rate identical to Phase B → **6799 blob is class-structure-independent**; class-aware-supervision-prevents-blob hypothesis falsified (F007).
-- **O009 status: COMPLETE.** Cross-arm blob analysis confirms the 6799 blob is a YOLOv11-seg architecture-family × scene pathology (0/3 Phase A; 2/3 each Phase B and Phase C; mask geometry mean 0.93 / range 0.92–0.94 across all six pairwise comparisons of the four blobbing runs). Downstream cross-arm perception ranking deferred to the geometric strand (O010). Blob-overlap artefacts (gitignored) regenerate on demand via `scripts/blob_overlap_6799.py` (recipe + provenance in DECISIONS O003).
+- **O009 status: COMPLETE.** Cross-arm blob analysis confirms the 6799 blob is a YOLOv11-seg architecture-family × scene pathology (0/3 Phase A; 2/3 each Phase B and Phase C; mask geometry mean 0.93 / range 0.92–0.94 across all six pairwise comparisons of the four blobbing runs). Downstream cross-arm perception ranking deferred to the geometric strand (O010). Blob-overlap artefacts (gitignored) regenerate on demand via `scripts/perception/diagnostics/blob_overlap_6799.py` (recipe + provenance in DECISIONS O003).
 - Config-copy recipe (seed-specific YAMLs); distinct seed-tagged run dirs; seed-42 artefacts untouched. Rule 5: each seed's best.pt test-evaluated once.
 
 ### Cross-arm perception methodology (D031 LOCKED, F005 REVISED)

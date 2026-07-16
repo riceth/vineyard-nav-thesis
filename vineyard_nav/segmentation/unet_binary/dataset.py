@@ -2,7 +2,7 @@
 """SemanticBLT binary dataset for Phase A (U-Net binary baseline).
 
 Contract: docs/PHASE_A_SPEC.md section 4. Split source: the scene-level resplit
-manifest produced by scripts/resplit_dataset.py (decision D028).
+manifest produced by scripts/perception/pipeline/resplit_dataset.py (decision D028).
 
 Label-collapsing rule (LOCKED, D006 / PHASE_A_SPEC 4.2):
   foreground (mask == 1) = any pixel covered by a COCO annotation whose

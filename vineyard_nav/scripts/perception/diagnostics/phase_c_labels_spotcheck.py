@@ -16,7 +16,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-REPO = Path("/workspaces/dissertation/vineyard_nav")
+REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO))
 from segmentation.yolo_binary.visualize import polygons_to_mask
 

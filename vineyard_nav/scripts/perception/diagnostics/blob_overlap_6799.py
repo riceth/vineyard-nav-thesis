@@ -12,7 +12,7 @@ Diagnostic on the already-locked test read; no new metric committed, no retrain,
 no test re-evaluation (rule 5 preserved — each best.pt is only *read*).
 
 Reproduces the O009 4-way result:
-  python scripts/blob_overlap_6799.py \
+  python scripts/perception/diagnostics/blob_overlap_6799.py \
     --runs phase_b_yolo_binary phase_b_yolo_binary_seed43 \
            phase_c_yolo_multiclass_seed43 phase_c_yolo_multiclass_seed44
 
@@ -23,7 +23,7 @@ import sys, json, itertools
 from pathlib import Path
 import numpy as np, cv2, torch
 torch.multiprocessing.set_sharing_strategy("file_system")
-REPO = Path("/workspaces/dissertation/vineyard_nav"); sys.path.insert(0, str(REPO))
+REPO = Path(__file__).resolve().parents[3]; sys.path.insert(0, str(REPO))
 from ultralytics import YOLO
 from segmentation.yolo_binary.visualize import polygons_to_mask
 

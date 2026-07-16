@@ -29,7 +29,7 @@ import torch
 
 torch.multiprocessing.set_sharing_strategy("file_system")
 
-REPO = Path("/workspaces/dissertation/vineyard_nav")
+REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO))
 from ultralytics import YOLO
 from segmentation.yolo_binary.visualize import polygons_to_mask, yolo_lines_to_polygons

@@ -37,7 +37,7 @@ from .visualize import denormalize_to_uint8, save_gt_pred_panel
 CLASS_NAMES = ["background", "foreground"]
 CANOPY_STATES = ("bare_vine", "canopy")
 
-# Roboflow suffix strip -> scene id (same rule as scripts/resplit_dataset.py / D028).
+# Roboflow suffix strip -> scene id (same rule as scripts/perception/pipeline/resplit_dataset.py / D028).
 _RF_SUFFIX = re.compile(r"\.rf\.[0-9a-fA-F]+\.[A-Za-z0-9]+$")
 PER_FRAME_COLUMNS = ["filename", "scene_id", "canopy_state", "iou_foreground",
                      "iou_background", "precision_foreground", "recall_foreground",
