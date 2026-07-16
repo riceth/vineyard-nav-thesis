@@ -566,6 +566,37 @@ The CP-3 single-arm dry run (Phase C seed 42, all 4 708 val frames) locked the (
 
 ---
 
+## D041 — Frame accounting for the March bag evaluation
+**Date:** 16 July 2026
+**Status:** LOCKED
+**Refines:** CP-0 contamination criteria; CP-1 eligibility criteria (`GEOMETRY_PIPELINE_SPEC.md` §3, §7, D-D — locked 11 Jul 2026); D040 (whole-bag pooling scope); `POOLING_SPEC.md`. **Documents:** the evaluation scope for methodological transparency (A2 Methodology).
+
+**Decision.** The **16,656** `kg_march_23` camera frames are categorised into exactly **three mutually-exclusive, exhaustive** buckets (contamination-first ordering; verified against `dataset_manifest.json` — all pairwise intersections empty, zero frames uncovered):
+
+| # | Category | Count | % | Definition (manifest flags) | Treatment |
+|---|---|---|---|---|---|
+| A | **In-row eligible** | **7,857** | 47 % | `inrow ∧ ¬contaminated` | primary pooled evaluation (D040; F010–F018 pooled) |
+| B | **Contaminated** (CP-0 leakage) | **2,958** | 18 % | `contaminated` (taken first) | excluded from all evaluation |
+| C | **Non-in-row** (clean) | **5,841** | 35 % | `¬contaminated ∧ headland` | deployment-gap characterisation (Commit 6, F020+) |
+| | **Total** | **16,656** | 100 % | | |
+
+C sub-splits into **3,946 row-end stops** (`headland ∧ stationary`) + **1,895 turns / corridor transitions** (`headland ∧ moving`).
+
+**Accounting property.** 7,857 + 5,841 + 2,958 = 16,656 — every frame in the bag has a documented treatment; there is no silent exclusion. The partition holds *by construction*: `inrow ⟹ ¬stationary` (in-row requires along-row speed |v_y| > 0.30 m/s, exceeding the v_min = 0.10 m/s stationary threshold — verified `inrow ∧ stationary = 0`), so the eligible set reduces to `inrow ∧ ¬contaminated` and stationary removal adds no exclusions beyond headland.
+
+**Rationale.**
+1. Mutually exclusive and exhaustive — the Methodology chapter can state exactly how all 16,656 frames are treated; no silent exclusion of 53 % of the bag.
+2. **Contamination-first ordering** ensures leakage-affected frames (which may themselves be in-row or headland) do not confound either strand. Contamination is a perception-leakage exclusion (frames overlapping the SemanticBLT segmentation training set within ±1.0 s of a CP-0 exclusion interval); it reflects memorisation, not deployment reality, so it is documented but not re-evaluated.
+3. **In-row and non-in-row are evaluated separately** because they answer distinct questions with distinct metric interpretations: in-row RMS (A) measures pipeline-design performance and is comparable across arms and bags; the non-in-row metric (C) is a *driven-path error* characterising deployment-gap behaviour with explicit caveats — the flat-ground IPM projection is invalid on headland slopes, the row centreline is undefined on turns, and turn geometry conflates with the error. They are **not** conflated into one "RMS".
+
+**Consequence (Methodology chapter).** The evaluation scope is stated explicitly: *"This work evaluates the pipeline on 7,857 in-row frames (47 % of the 16,656 total). A further 5,841 frames (35 %) are characterised as non-in-row deployment-gap behaviour with explicit metric caveats. 2,958 frames (18 %) are excluded due to perception training-set overlap."* This preempts the "what about the rest of the bag?" question with a concrete accounting.
+
+**Documentation trail.** CP-0 contamination criteria (`GEOMETRY_PIPELINE_SPEC.md` §2, D-C); CP-1 eligibility criteria (`GEOMETRY_PIPELINE_SPEC.md` §3, §7, D-D — locked 11 Jul 2026); pooling scope (D040); operational cite-ready counts (`GEOMETRY_PIPELINE_SPEC.md` §3); non-in-row characterisation (Commit 6, F020+ as they land).
+
+**Cross-references.** D033 (CP-1 pass-level split of the eligible set); D040 (whole-bag pooling); CP-0 contamination census; `GEOMETRY_PIPELINE_SPEC.md` §3 (operational reference).
+
+---
+
 ## Open items
 
 ### O001 — Threshold T range (Phase C)

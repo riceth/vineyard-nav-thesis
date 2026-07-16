@@ -65,6 +65,17 @@ From 16,656 frames, build the **eligible set**:
 - **Remove stationary frames:** smoothed speed < v_min (≈ 0.10 m/s) — redundant, no lateral-tracking signal.
 - **Remove degenerate-perception frames** at eval time (§7: < N detections per side).
 
+**Frame accounting (operational reference; canonical source DECISIONS.md D041).** The 16,656 bag frames partition into exactly three mutually-exclusive, exhaustive buckets (contamination-first ordering; verified against `dataset_manifest.json` — pairwise-disjoint, zero uncovered):
+
+| Category | Count | % | Definition (manifest flags) | Treatment |
+|---|---|---|---|---|
+| In-row eligible | **7,857** | 47 % | `inrow ∧ ¬contaminated` | evaluated (whole-bag pooled, D040; F010–F018) |
+| Contaminated (CP-0 leakage) | **2,958** | 18 % | `contaminated` (taken first) | excluded from all evaluation (§2, D-C) |
+| Non-in-row | **5,841** | 35 % | `¬contaminated ∧ headland` | deployment-gap characterisation (Commit 6, F020+) |
+| **Total** | **16,656** | 100 % | | |
+
+Non-in-row = 3,946 row-end stops (`headland ∧ stationary`) + 1,895 turns / corridor transitions (`headland ∧ moving`). Sum 7,857 + 5,841 + 2,958 = 16,656. By construction `inrow ⟹ ¬stationary` (in-row |v_y| > 0.30 m/s > v_min 0.10 m/s), so the eligible set = `inrow ∧ ¬contaminated`. Rationale + the metric-interpretation distinction (in-row centreline RMS vs non-in-row *driven-path error*) are in **D041**.
+
 **Dual-mode use of the retained data (D-D — LOCKED; subsample Δs = 1.5 m, data-driven).** The exclusions above define the **eligible set** (~11.8k frames across val + test — order-of-magnitude; exact count at CP-1). The eligible set is used **two ways** — this is a change only to *how retained data is used*, **not** to what is excluded (the 1.0 s contamination window and headland/stationary removal are unchanged):
 
 - **Point estimates** — RMS lateral error per arm, and per sweep combination — are computed over **ALL eligible frames** (no subsampling), to use all available signal for the tightest measurement.
