@@ -25,7 +25,7 @@ from pathlib import Path
 import numpy as np
 import cv2
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO))
 sys.path.insert(0, str(REPO / "scripts" / "geometric"))
 import torch

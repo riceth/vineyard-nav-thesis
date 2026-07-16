@@ -74,8 +74,8 @@ for name, keep in [("trunk_only", 0), ("pole_only", 1)]:
     print(f"{name:>12}: 2r {o['two_row_pct']}% (single {o['single_pct']}% none {o['none_pct']}%) base {o['mean_base']} "
           f"| GT1 RMS {o['gt1_rms']} CI{o['gt1_ci']} | GT2 RMS {o['gt2_rms']} CI{o['gt2_ci']} | n_2r_frames {o['n_two_row_frames']}")
 # merge with existing sweep json
-sw = json.load(open(PKG/"results/geometric/march/config_sweep_val.json")); sw.update(out)
-json.dump(sw, open(PKG/"results/geometric/march/config_sweep_val.json", "w"), indent=2)
+sw = json.load(open(PKG/"results/geometric/march/final/val_evaluation/config_sweep_val.json")); sw.update(out)
+json.dump(sw, open(PKG/"results/geometric/march/final/val_evaluation/config_sweep_val.json", "w"), indent=2)
 # compare trunk_only vs agnostic
 agn = sw["agnostic"]
 def ov(a, b): return a[0] is not None and b[0] is not None and a[0] <= b[1] and b[0] <= a[1]

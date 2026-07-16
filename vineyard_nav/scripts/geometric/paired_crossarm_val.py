@@ -12,7 +12,7 @@ Reported (dual-mode, D-D):
   - 95% bootstrap CI (10,000 iters, seed 42) over the Δs = 1.5 m spatially-independent subsample
   - sign of the difference, whether the CI excludes zero, and sign consistency across seeds
 
-Saves results/geometric/march/paired_crossarm_val.json. Val only; nothing committed.
+Saves results/geometric/march/final/val_evaluation/paired_crossarm_val.json. Val only; nothing committed.
 """
 import json, collections
 import numpy as np
@@ -28,7 +28,7 @@ man = json.load(open(f"{PKG}/results/geometric/march/dataset_manifest.json"))
 SUB = set(f["i"] for f in man["frames"] if f["split"] == "val" and f.get("subsample_1p5m"))
 
 D = collections.defaultdict(dict)   # (arm,seed) -> {frame_i: (offset, heading)} for two_row
-for ln in open(f"{PKG}/results/geometric/march/line_fit_val_per_frame.csv").read().splitlines()[1:]:
+for ln in open(f"{PKG}/results/geometric/march/final/val_evaluation/line_fit_val_per_frame.csv").read().splitlines()[1:]:
     a, s, i, cls, off, hdg, *_ = ln.split(",")
     if cls == "two_row" and off and hdg:
         D[(a, int(s))][int(i)] = (float(off), float(hdg))
@@ -80,7 +80,7 @@ for (x, y) in PAIRS:
     d1s = np.array([md(i, 0) for i in sub]); d2s = np.array([md(i, 1) for i in sub])
     report["across_seed"][pk] = {"GT1": summarise(d1, d1s, RTK_FLOOR), "GT2": summarise(d2, d2s, g2f)}
 
-json.dump(report, open(f"{PKG}/results/geometric/march/paired_crossarm_val.json", "w"), indent=2)
+json.dump(report, open(f"{PKG}/results/geometric/march/final/val_evaluation/paired_crossarm_val.json", "w"), indent=2)
 
 print("=== paired cross-arm, across-seed (point mean Δ [95% CI on Δs=1.5m subsample]; %=of floor) ===")
 for pk, a in report["across_seed"].items():
@@ -93,4 +93,4 @@ for pk, a in report["across_seed"].items():
 print("\n=== sign consistency across seeds (per-seed pairs) ===")
 for pk, v in report["sign_consistency"].items():
     print(f"{pk}: GT1 {v['GT1_signs']} consistent={v['GT1_consistent']} | GT2 {v['GT2_signs']} consistent={v['GT2_consistent']}")
-print("\nwrote results/geometric/march/paired_crossarm_val.json")
+print("\nwrote results/geometric/march/final/val_evaluation/paired_crossarm_val.json")

@@ -15,7 +15,7 @@ ANCHORS = [3998, 4223, 4107, 3991, 3994, 3996]
 
 # camera heading per frame = mean across all 9 models (tilt is arm-independent)
 camh = collections.defaultdict(list)
-for ln in open(f"{PKG}/results/geometric/march/line_fit_val_per_frame.csv").read().splitlines()[1:]:
+for ln in open(f"{PKG}/results/geometric/march/final/val_evaluation/line_fit_val_per_frame.csv").read().splitlines()[1:]:
     a, s, i, cls, off, hdg, *_ = ln.split(",")
     if cls == "two_row" and hdg: camh[int(i)].append(float(hdg))
 

@@ -659,7 +659,7 @@ The three arms are therefore statistically and practically indistinguishable on 
 - ✗ call the RTK floor a perception benchmark (it is a localisation-sensor accuracy, used as a yardstick).
 - ✗ report p-values (CIs + effect sizes only).
 
-**Citation map.** Ours: `final/val_evaluation/paired_crossarm_val.json` (three estimators); Analyses H/I (decorrelation/block lengths, reproducible via `scripts/geometric/autocorrelation_block_analysis.py`); test → F019 (`final/test_evaluation/paired_crossarm_test.json`). Paper: Polvara §5.3 (3.8 cm yardstick).
+**Citation map.** Ours: `final/val_evaluation/paired_crossarm_val.json` (three estimators); Analyses H/I (decorrelation/block lengths, reproducible via `scripts/geometric/diagnostics/autocorrelation_block_analysis.py`); test → F019 (`final/test_evaluation/paired_crossarm_test.json`). Paper: Polvara §5.3 (3.8 cm yardstick).
 
 ### F016 — GT-1 bias is direction-dependent in the teleoperated reference
 

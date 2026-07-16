@@ -69,7 +69,7 @@ for cfg in ["agnostic","trunk_only","pole_only"]:
                 "gt2_ci": block_rms_ci(hrow,L_GT2), "n2r_frames": len(orow)}
     o = out[cfg]
     print(f"  {cfg:>11}: 2r {o['two_row_pct']}% (none {o['none_pct']}%) base {o['mean_base']} | GT1 RMS {o['gt1_rms']} CI{o['gt1_ci']} | GT2 RMS {o['gt2_rms']} CI{o['gt2_ci']} | n2r {o['n2r_frames']}")
-json.dump(out, open(PKG/"results/geometric/march/config_ablation_test.json","w"), indent=2)
+json.dump(out, open(PKG/"results/geometric/march/final/test_evaluation/config_ablation_test.json","w"), indent=2)
 a = out["agnostic"]; t = out["trunk_only"]
 def ov(x,y): return x[0] is not None and y[0] is not None and x[0]<=y[1] and y[0]<=x[1]
 print(f"\ntrunk_only vs agnostic: GT1 CI overlap {ov(t['gt1_ci'],a['gt1_ci'])}, GT2 CI overlap {ov(t['gt2_ci'],a['gt2_ci'])}")

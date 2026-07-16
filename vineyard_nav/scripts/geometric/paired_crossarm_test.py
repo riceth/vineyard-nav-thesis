@@ -17,7 +17,7 @@ for pid, fs in byp.items():
     cum = np.concatenate([[0], np.cumsum(np.linalg.norm(np.diff(xy, axis=0), axis=1))])
     for f, d in zip(fs, cum): pos[f["i"]] = (pid, float(d))
 D = collections.defaultdict(dict)
-for ln in open(f"{PKG}/results/geometric/march/line_fit_test_per_frame.csv").read().splitlines()[1:]:
+for ln in open(f"{PKG}/results/geometric/march/final/test_evaluation/line_fit_test_per_frame.csv").read().splitlines()[1:]:
     a, s, i, cls, off, hdg, *_ = ln.split(",")
     if cls == "two_row" and off and hdg: D[(a, int(s))][int(i)] = (float(off), float(hdg))
 
@@ -63,5 +63,5 @@ for (x, y) in [("A", "B"), ("A", "C"), ("B", "C")]:
           f"GT2 Δ={d2:+.3f}° ({100*d2/g2f:+.0f}% floor) CI{ci2}° excl0={e2}")
 json.dump({"per_arm_ci": {a: {"gt1_rms": rms([r[2] for r in arm_rows[a][0]]), "gt1_ci": block_stat_ci(arm_rows[a][0], L_GT1, rms),
                               "gt2_rms": rms([r[2] for r in arm_rows[a][1]]), "gt2_ci": block_stat_ci(arm_rows[a][1], L_GT2, rms)} for a in "ABC"},
-           "paired": paired}, open(f"{PKG}/results/geometric/march/paired_crossarm_test.json", "w"), indent=2)
+           "paired": paired}, open(f"{PKG}/results/geometric/march/final/test_evaluation/paired_crossarm_test.json", "w"), indent=2)
 print("\nwrote paired_crossarm_test.json")

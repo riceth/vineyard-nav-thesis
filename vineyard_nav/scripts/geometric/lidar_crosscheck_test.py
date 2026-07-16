@@ -11,7 +11,7 @@ man = json.load(open(f"{PKG}/results/geometric/march/dataset_manifest.json"))
 TS = {f["i"]: int(f["timestamp_ns"]) for f in man["frames"]}; CORR = {f["i"]: f["corridor"] for f in man["frames"]}
 # camera heading per frame = mean across 9 models (cp6); pick anchors = two_row C42, 2 per test corridor
 camh = collections.defaultdict(list); c42 = set()
-for ln in open(f"{PKG}/results/geometric/march/line_fit_test_per_frame.csv").read().splitlines()[1:]:
+for ln in open(f"{PKG}/results/geometric/march/final/test_evaluation/line_fit_test_per_frame.csv").read().splitlines()[1:]:
     a,s,i,cls,off,hdg,mc,nb = ln.split(",")
     if cls == "two_row" and hdg:
         camh[int(i)].append(float(hdg))

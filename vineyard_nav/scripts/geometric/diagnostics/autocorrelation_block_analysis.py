@@ -4,7 +4,7 @@ CI widths: current Δs=1.5m subsample vs Δs=measured-decorr subsample vs block 
 import json, collections
 import numpy as np
 from pathlib import Path
-PKG = Path(__file__).resolve().parents[2]
+PKG = Path(__file__).resolve().parents[3]
 B, SEED = 10000, 42
 SEEDS, PAIRS = [42, 43, 44], [("A", "B"), ("A", "C"), ("B", "C")]
 
@@ -20,7 +20,7 @@ for pid, fs in byp.items():
     for f, d in zip(fs, cum): pos[f["i"]] = (pid, float(d))
 
 D = collections.defaultdict(dict)
-for ln in open(f"{PKG}/results/geometric/march/line_fit_val_per_frame.csv").read().splitlines()[1:]:
+for ln in open(f"{PKG}/results/geometric/march/final/val_evaluation/line_fit_val_per_frame.csv").read().splitlines()[1:]:
     a, s, i, cls, off, hdg, *_ = ln.split(",")
     if cls == "two_row" and off and hdg: D[(a, int(s))][int(i)] = (float(off), float(hdg))
 

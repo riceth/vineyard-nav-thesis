@@ -18,8 +18,8 @@ exec(open(Path(__file__).resolve().parent / "row_model.py").read())
 FR = PKG / "results/runs/geom_cp1_frames_640"
 MAN = json.load(open(PKG / "results/geometric/march/dataset_manifest.json"))
 OLD_CSV = PKG / "results/geometric/march/superseded/yconstant_val_evaluation/yconstant_val_per_frame.csv"
-OUT_JSON = PKG / "results/geometric/march/line_fit_val_report.json"
-OUT_CSV = PKG / "results/geometric/march/line_fit_val_per_frame.csv"
+OUT_JSON = PKG / "results/geometric/march/final/val_evaluation/line_fit_val_report.json"
+OUT_CSV = PKG / "results/geometric/march/final/val_evaluation/line_fit_val_per_frame.csv"
 UNET_MIN_AREA = 40; BOOT_B = 2000; BOOT_SEED = 42
 MODELS = [
     ("A",42,"unet","phase_a_unet_binary_20260704_004105/checkpoints/best.pt"),

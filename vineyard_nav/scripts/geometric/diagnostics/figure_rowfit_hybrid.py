@@ -7,7 +7,7 @@ tight vertical cluster (Edosa's black lines)."""
 import sys, json
 from pathlib import Path
 import numpy as np, cv2
-PKG = Path(__file__).resolve().parents[2]; sys.path.insert(0, str(PKG)); sys.path.insert(0, str(PKG/"scripts"/"geometric"))
+PKG = Path(__file__).resolve().parents[3]; sys.path.insert(0, str(PKG)); sys.path.insert(0, str(PKG/"scripts"/"geometric"))
 import torch; torch.multiprocessing.set_sharing_strategy("file_system")
 from ultralytics import YOLO
 import projection_calibration as C

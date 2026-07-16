@@ -19,8 +19,8 @@ exec(open(Path(__file__).resolve().parent / "row_model.py").read())
 FR = PKG/"results/runs/geom_cp1_frames_640"
 MAN = json.load(open(PKG/"results/geometric/march/dataset_manifest.json"))
 TEST = [f["i"] for f in MAN["frames"] if f["split"] == "test"]
-OUT_CSV = PKG/"results/geometric/march/line_fit_test_per_frame.csv"
-OUT_JSON = PKG/"results/geometric/march/line_fit_test_report.json"
+OUT_CSV = PKG/"results/geometric/march/final/test_evaluation/line_fit_test_per_frame.csv"
+OUT_JSON = PKG/"results/geometric/march/final/test_evaluation/line_fit_test_report.json"
 UNET_MIN = 40
 MODELS = [
     ("A",42,"unet","phase_a_unet_binary_20260704_004105/checkpoints/best.pt"),

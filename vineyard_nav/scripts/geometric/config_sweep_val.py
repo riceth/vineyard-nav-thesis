@@ -93,7 +93,7 @@ for config in CONFIGS:
             "gt2_rms": round(rms([r[2] for r in hrow]), 3), "gt2_ci": block_rms_ci(hrow, L_GT2)}
         print(f"{key:>14}: 2r {report[key]['two_row_pct']}% base {report[key]['mean_base']} | "
               f"GT1 RMS {report[key]['gt1_rms']} CI{report[key]['gt1_ci']} | GT2 RMS {report[key]['gt2_rms']} CI{report[key]['gt2_ci']}", flush=True)
-json.dump(report, open(PKG/"results/geometric/march/config_sweep_val.json", "w"), indent=2)
+json.dump(report, open(PKG/"results/geometric/march/final/val_evaluation/config_sweep_val.json", "w"), indent=2)
 
 # overlap matrix + argmin + tie-break
 def overlaps(a, b): return a[0] <= b[1] and b[0] <= a[1]
@@ -108,4 +108,4 @@ allci1 = [report[k]["gt1_ci"] for k in report]; allci2 = [report[k]["gt2_ci"] fo
 flat1 = all(overlaps(a, b) for a in allci1 for b in allci1)
 flat2 = all(overlaps(a, b) for a in allci2 for b in allci2)
 print(f"\nFLAT? GT-1 all cells CI-overlap: {flat1} | GT-2: {flat2}")
-print("wrote results/geometric/march/config_sweep_val.json")
+print("wrote results/geometric/march/final/val_evaluation/config_sweep_val.json")
