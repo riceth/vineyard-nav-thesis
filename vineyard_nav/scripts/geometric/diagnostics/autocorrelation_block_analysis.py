@@ -9,10 +9,10 @@ B, SEED = 10000, 42
 SEEDS, PAIRS = [42, 43, 44], [("A", "B"), ("A", "C"), ("B", "C")]
 
 man = json.load(open(f"{PKG}/results/geometric/march/dataset_manifest.json"))
-# path position (cumulative m) per val-eligible frame within its pass
+# path position (cumulative m) per pooled val+test-eligible frame within its pass (D040)
 byp = collections.defaultdict(list)
 for f in man["frames"]:
-    if f["split"] == "val" and f["eligible"]: byp[f["pass_id"]].append(f)
+    if f["split"] in ("val", "test") and f["eligible"]: byp[f["pass_id"]].append(f)
 pos = {}
 for pid, fs in byp.items():
     fs = sorted(fs, key=lambda f: f["i"]); xy = np.array([[f["x"], f["y"]] for f in fs])
@@ -20,7 +20,7 @@ for pid, fs in byp.items():
     for f, d in zip(fs, cum): pos[f["i"]] = (pid, float(d))
 
 D = collections.defaultdict(dict)
-for ln in open(f"{PKG}/results/geometric/march/final/val_evaluation/line_fit_val_per_frame.csv").read().splitlines()[1:]:
+for ln in open(f"{PKG}/results/geometric/march/final/march_evaluation/line_fit_march_per_frame.csv").read().splitlines()[1:]:
     a, s, i, cls, off, hdg, *_ = ln.split(",")
     if cls == "two_row" and off and hdg: D[(a, int(s))][int(i)] = (float(off), float(hdg))
 
