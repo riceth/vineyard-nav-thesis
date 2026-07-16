@@ -28,7 +28,7 @@ from segmentation.unet_binary.model import UNetBinary
 from segmentation.unet_binary.dataset import IMAGENET_MEAN, IMAGENET_STD
 import projection_calibration as C
 from single_arm_dryrun import CONF, BLOB_FRAC, FRAME_PX
-from bag_config import parse_bag
+from bag_config import parse_bag, frames_for_scope
 exec(open(Path(__file__).resolve().parent / "row_model.py").read())
 
 B = parse_bag()
@@ -50,7 +50,7 @@ MODELS = [
     ("C", 44, "yolo", "phase_c_yolo_multiclass_seed44/weights/best.pt"),
 ]
 _TF = A.Compose([A.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD), ToTensorV2()])
-FRAMES = [f["i"] for f in MAN["frames"] if f["eligible"]]         # whole-bag: eligible only, no split
+FRAMES = frames_for_scope(MAN, B["scope"])   # eligible (in-row) or non_in_row (D041 category C)
 
 
 def yolo_base(model, img):
@@ -98,7 +98,7 @@ def estimate(base_pts):
 dev = torch.device("cuda")
 csv = ["arm,seed,i,cls,offset,heading,mL,mR,mc,n_base,adj,flags"]
 for (arm, seed, typ, ckpt) in MODELS:
-    print(f"[{B['bag']}][{arm} s{seed}] {len(FRAMES)} frames ...", flush=True)
+    print(f"[{B['bag']}/{B['scope']}][{arm} s{seed}] {len(FRAMES)} frames ...", flush=True)
     if typ == "yolo":
         m = YOLO(str(PKG / "results/runs" / ckpt))
         front = lambda im: yolo_base(m, im)

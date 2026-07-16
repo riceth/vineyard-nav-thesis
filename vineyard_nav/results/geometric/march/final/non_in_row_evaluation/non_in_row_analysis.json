@@ -1,0 +1,187 @@
+{
+  "config": {
+    "bag": "march",
+    "scope": "non_in_row",
+    "n_frames": 5841,
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "categories": "stationary (headland+stationary) / turn (moving, same flanking corridor) / transition (moving, different flanking corridor or bag edge)"
+  },
+  "F020_output_distribution": {
+    "category_counts": {
+      "stationary": 3946,
+      "transition": 1519,
+      "turn": 376
+    },
+    "per_arm_overall": {
+      "A": {
+        "two_row": 48.0,
+        "single_row": 26.8,
+        "none": 25.2,
+        "fitfail": 0.0,
+        "n": 17523
+      },
+      "B": {
+        "two_row": 52.2,
+        "single_row": 27.5,
+        "none": 20.3,
+        "fitfail": 0.0,
+        "n": 17523
+      },
+      "C": {
+        "two_row": 50.7,
+        "single_row": 27.2,
+        "none": 22.1,
+        "fitfail": 0.0,
+        "n": 17523
+      }
+    },
+    "per_category": {
+      "stationary": {
+        "A": {
+          "two_row": 44.9,
+          "single_row": 27.8,
+          "none": 27.3,
+          "fitfail": 0.0,
+          "n": 11838
+        },
+        "B": {
+          "two_row": 49.2,
+          "single_row": 28.0,
+          "none": 22.8,
+          "fitfail": 0.0,
+          "n": 11838
+        },
+        "C": {
+          "two_row": 48.0,
+          "single_row": 27.4,
+          "none": 24.6,
+          "fitfail": 0.0,
+          "n": 11838
+        }
+      },
+      "turn": {
+        "A": {
+          "two_row": 76.0,
+          "single_row": 22.0,
+          "none": 2.0,
+          "fitfail": 0.0,
+          "n": 1128
+        },
+        "B": {
+          "two_row": 80.5,
+          "single_row": 18.6,
+          "none": 0.9,
+          "fitfail": 0.0,
+          "n": 1128
+        },
+        "C": {
+          "two_row": 78.7,
+          "single_row": 19.6,
+          "none": 1.7,
+          "fitfail": 0.0,
+          "n": 1128
+        }
+      },
+      "transition": {
+        "A": {
+          "two_row": 49.0,
+          "single_row": 25.4,
+          "none": 25.5,
+          "fitfail": 0.0,
+          "n": 4557
+        },
+        "B": {
+          "two_row": 53.0,
+          "single_row": 28.4,
+          "none": 18.6,
+          "fitfail": 0.0,
+          "n": 4557
+        },
+        "C": {
+          "two_row": 50.5,
+          "single_row": 28.7,
+          "none": 20.8,
+          "fitfail": 0.0,
+          "n": 4557
+        }
+      }
+    }
+  },
+  "F021_driven_path_error": {
+    "metric_note": "driven_path_error = RMS lateral offset of the IPM-invalid predicted centreline vs base_link on non-in-row two_row outputs; NOT the in-row centreline_error_rms and not comparable to it. Conflations: (1) flat-ground IPM invalid on headland slopes; (2) row centreline undefined on turns; (3) turn geometry conflates with the error.",
+    "per_arm_overall": {
+      "A": {
+        "two_row_n": 8413,
+        "driven_path_error_rms_m": 0.399,
+        "driven_path_heading_rms_deg": 5.909
+      },
+      "B": {
+        "two_row_n": 9144,
+        "driven_path_error_rms_m": 0.429,
+        "driven_path_heading_rms_deg": 6.007
+      },
+      "C": {
+        "two_row_n": 8876,
+        "driven_path_error_rms_m": 0.431,
+        "driven_path_heading_rms_deg": 6.098
+      }
+    },
+    "per_category": {
+      "stationary": {
+        "A": {
+          "two_row_n": 5321,
+          "driven_path_error_rms_m": 0.398,
+          "driven_path_heading_rms_deg": 5.823
+        },
+        "B": {
+          "two_row_n": 5820,
+          "driven_path_error_rms_m": 0.433,
+          "driven_path_heading_rms_deg": 5.879
+        },
+        "C": {
+          "two_row_n": 5688,
+          "driven_path_error_rms_m": 0.449,
+          "driven_path_heading_rms_deg": 6.072
+        }
+      },
+      "turn": {
+        "A": {
+          "two_row_n": 857,
+          "driven_path_error_rms_m": 0.372,
+          "driven_path_heading_rms_deg": 6.648
+        },
+        "B": {
+          "two_row_n": 908,
+          "driven_path_error_rms_m": 0.407,
+          "driven_path_heading_rms_deg": 6.385
+        },
+        "C": {
+          "two_row_n": 888,
+          "driven_path_error_rms_m": 0.375,
+          "driven_path_heading_rms_deg": 6.451
+        }
+      },
+      "transition": {
+        "A": {
+          "two_row_n": 2235,
+          "driven_path_error_rms_m": 0.412,
+          "driven_path_heading_rms_deg": 5.808
+        },
+        "B": {
+          "two_row_n": 2416,
+          "driven_path_error_rms_m": 0.427,
+          "driven_path_heading_rms_deg": 6.162
+        },
+        "C": {
+          "two_row_n": 2300,
+          "driven_path_error_rms_m": 0.404,
+          "driven_path_heading_rms_deg": 6.023
+        }
+      }
+    }
+  }
+}

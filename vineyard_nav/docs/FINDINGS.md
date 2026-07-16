@@ -493,7 +493,7 @@ That mAP@50 shows lower cross-seed variance in Phase C (0.008) than Phase B (0.0
 
 ## Evaluation scope (Methodology framing)
 
-This work evaluates the pipeline on **7,857 in-row frames** per model — **47%** of the 16,656 total March-bag frames (D040 whole-bag pooling; D041 frame accounting). Non-in-row segments (headland manoeuvres, corridor transitions, stationary intervals) — **5,841 frames (35%)** — are characterised **separately** as deployment-gap behaviour with explicit metric caveats (a *driven-path error*, not the in-row centreline RMS; see the non-in-row characterisation and **D041**). Contaminated frames — **2,958 (18%)**, those overlapping the segmentation training set within ±1.0 s of a CP-0 exclusion interval — are excluded to prevent perception leakage. Headland exclusion is a **methodological-validity constraint**, not merely scoping: the inverse projective mapping assumes flat ground, which does not hold on headland slopes (`GEOMETRY_PIPELINE_SPEC.md` §7). Frame accounting closes exactly: 7,857 + 5,841 + 2,958 = 16,656 (D041, mutually exclusive and exhaustive under contamination-first ordering).
+This work evaluates the pipeline on **7,857 in-row frames** per model — **47%** of the 16,656 total March-bag frames (D040 whole-bag pooling; D041 frame accounting). Non-in-row segments (headland manoeuvres, corridor transitions, stationary intervals) — **5,841 frames (35%)** — are characterised **separately** as deployment-gap behaviour with explicit metric caveats (a *driven-path error*, not the in-row centreline RMS; realised in **F020** (output distribution) + **F021** (driven-path error); see **D041**). Contaminated frames — **2,958 (18%)**, those overlapping the segmentation training set within ±1.0 s of a CP-0 exclusion interval — are excluded to prevent perception leakage. Headland exclusion is a **methodological-validity constraint**, not merely scoping: the inverse projective mapping assumes flat ground, which does not hold on headland slopes (`GEOMETRY_PIPELINE_SPEC.md` §7). Frame accounting closes exactly: 7,857 + 5,841 + 2,958 = 16,656 (D041, mutually exclusive and exhaustive under contamination-first ordering).
 
 ---
 
@@ -807,3 +807,49 @@ trunk-only GT-1 0.204 [0.192, 0.216] overlaps agnostic 0.200 [0.189, 0.210] (GT-
 - ✗ extend the GT-2 significance to a general arm ranking (edge of metric resolution, mechanism-unattributed).
 
 **Citation map.** Ours: `final/test_evaluation/line_fit_test_report.json` (per-arm CIs, coverage, per-corridor); `final/test_evaluation/paired_crossarm_test.json` (paired CIs) *(both now under `superseded/march_val_test_split/test_evaluation/`)*. Paper: Polvara §5.3 (RTK yardstick). Confirms F013; tilt context F017; floor F012.
+
+### F020 — Non-in-row output distribution: the in-row pipeline invents a centreline on ~half of headland frames
+
+**Finding.** Driven over the 5,841 non-in-row (category-C, D041) frames — headland manoeuvres the in-row pipeline was never designed for — the pipeline **does not error and does not degrade to `none`**: it emits a **spurious `two_row` output on ~48–52% of frames** (A 48.0%, B 52.2%, C 50.7%), `single_row` on ~27%, and `none` on only ~20–25% (`fitfail` 0%). The spurious-two-row rate is **highest on turns (76–80%)** — where the robot, mid-U-turn, faces down a corridor and fits the adjacent rows — and ~45–53% on stationary row-end stops and corridor transitions. The rate is arm-consistent (≤ 4 pp spread; B highest, A lowest), so the degradation is a **pipeline property, not an arm one**.
+
+**Evidence.** `final/non_in_row_evaluation/non_in_row_analysis.json` (F020 block) + `final/non_in_row_evaluation/line_fit_per_frame.csv` (`line_fit_infer --scope non_in_row`, 9 models × 5,841 frames). Categories: **stationary 3,946** (headland ∧ stationary), **turn 376** (moving headland, same flanking corridor — row-end U-turn), **transition 1,519** (moving headland between corridors / bag edge). Per-category two_row%: stationary A 44.9 / B 49.2 / C 48.0; turn A 76.0 / B 80.5 / C 78.7; transition A 49.0 / B 53.0 / C 50.5.
+
+**Implication.** A real deployment needs a **state machine** (`in-row → row-follow controller`; `non-in-row → a different controller / stop`): the in-row pipeline's `two_row` output on headland is not a trustworthy centreline (F021). The ~50% spurious-two-row rate is the concrete measure of how often a naive "always trust the centreline" deployment would act on an invalid estimate — worst during turns.
+
+**Cross-references.** D041 (frame accounting; this realises category C); F013 (in-row headline — in-row two-row coverage ~81% is a *different task*, NOT comparable to this rate); F021 (the driven-path error on these two_row outputs); GEOMETRY_PIPELINE_SPEC.md §7 (headland edge case).
+
+**Writeup wording (A2):**
+
+**Fully defensible.** Driven over the 5,841 non-in-row frames (35% of the bag; D041), the in-row pipeline runs without error but emits a spurious `two_row` centreline on ~48–52% of frames (A 48.0 %, B 52.2 %, C 50.7 %), degrading to `single_row` (~27 %) or `none` (~20–25 %) otherwise — it does not refuse to output. The spurious-two-row rate is highest on row-end turns (76–80 %) and ~45–53 % on stationary and transition frames, and is arm-consistent (≤ 4 pp spread), so it is a pipeline property, not an arm difference. This characterises deployment-gap behaviour on the non-in-row stratum, evaluated separately from the in-row headline (F013) because it answers a different question with different metric semantics (F021). A characterisation of what an in-row centreline pipeline does when driven over non-in-row frames is not present in prior work on this platform; it is a contribution of the present work.
+
+**Candidate explanations.** The residual two_row on headland arises because opportunistic trunk/pole detections at corridor mouths (especially when a U-turn points the camera down a row) still project to two plausible sides and pass the row fit; the fit cannot know it is not in a row. Not investigated further (out of scope).
+
+**NOT defensible.**
+- ✗ compare the non-in-row two_row rate to the in-row two-row coverage as if they were the same metric (different task; F013 is in-row).
+- ✗ call any two_row output here a valid centreline (IPM-invalid; F021).
+- ✗ claim an arm "handles headland better" (≤ 4 pp spread; degradation is a shared pipeline property).
+
+**Citation map.** Ours: `final/non_in_row_evaluation/non_in_row_analysis.json` (F020 block), `final/non_in_row_evaluation/line_fit_per_frame.csv` (`--scope non_in_row`). D041 (category C). No paper support (contribution).
+
+### F021 — Driven-path error on non-in-row two_row outputs: ~2× the in-row error, IPM-invalid (a degradation characterisation)
+
+**Finding.** On the frames where the pipeline spuriously claims `two_row` over non-in-row frames (F020), the predicted centreline's RMS lateral offset relative to base_link — the **driven-path error** — is **~0.40–0.43 m** (A 0.399, B 0.429, C 0.431), roughly **2× the in-row centreline error** (F013 ~0.19 m), with an RMS heading of **~5.9–6.1°** (~2.4× the in-row ~2.5°). The magnitude is consistent across categories (stationary ~0.40–0.45 m, turn ~0.37–0.41 m, transition ~0.40–0.43 m) and across arms (≤ 0.05 m spread). **This is NOT the in-row `centreline_error_rms` and is not comparable to it**: it carries three conflations — (1) the flat-ground IPM projection is invalid on headland slopes; (2) the row centreline is undefined on a turn; (3) turn geometry conflates with the measured error. It is a degradation characterisation, not a performance measurement.
+
+**Evidence.** `final/non_in_row_evaluation/non_in_row_analysis.json` (F021 block): per-arm two_row_n (A 8,413 / B 9,144 / C 8,876), `driven_path_error_rms_m`, `driven_path_heading_rms_deg`; per category. The metric is the RMS of the pipeline's GT-1 offset over non-in-row two_row outputs — the same quantity that is centreline error in-row, but with **no true row to be error against** (the robot is not following a row).
+
+**Implication.** Quantifies the deployment-gap cost: if a naive deployment trusted the pipeline's centreline on the ~50% of non-in-row frames it calls two_row (F020), the lateral command error would be ~0.4 m — beyond any in-row tolerance — and it **cannot be reduced by a better perception arm** (all three arms produce ~0.4 m; the error is the projection/undefined-row breakdown, not perception). Reinforces the F020 state-machine implication: the controller must switch on the in-row/non-in-row state rather than trust the centreline unconditionally.
+
+**Cross-references.** F020 (the ~50% two_row rate these errors are computed on); F013 (in-row centreline error ~0.19 m — the comparable in-row headline, **NOT** the same measurement); D041 (frame accounting); D-F (driven-path GT-1 reference); GEOMETRY_PIPELINE_SPEC.md §7 (IPM validity on headland).
+
+**Writeup wording (A2):**
+
+**Fully defensible.** On the non-in-row frames the pipeline calls two_row (~50 %; F020), the predicted centreline lies ~0.40–0.43 m (RMS) laterally from base_link with ~5.9–6.1° RMS heading — about twice the in-row centreline offset error and 2.4× the in-row heading (F013). The magnitude is consistent across stationary, turn and transition categories and across arms. This driven-path error is a degradation characterisation, **not** the in-row `centreline_error_rms` and not comparable to it: it measures how far the spurious centreline lies from the robot's driven path, not how well any arm tracks a row (there is no row), and it conflates three effects — the flat-ground IPM projection is invalid on headland slopes, the centreline is undefined on a turn, and turn geometry contributes to the measured value. It confirms that the pipeline's non-in-row two_row outputs are not usable navigation estimates. This is a contribution of the present work.
+
+**Candidate explanations.** The ~0.4 m error is driven by the IPM breakdown on non-flat headland geometry and the absence of a true row to measure against; the relative contribution of the three conflations is not separable within this work (out of scope). The near-equality across arms indicates the error is dominated by the geometry/projection breakdown, not per-arm perception.
+
+**NOT defensible.**
+- ✗ report `driven_path_error` as an RMS comparable to the in-row `centreline_error_rms` (different measurement; three conflations).
+- ✗ rank arms on it (degradation metric; ≤ 0.05 m spread; conflated).
+- ✗ call it a navigation accuracy or a perception error (projection / undefined-row breakdown).
+
+**Citation map.** Ours: `final/non_in_row_evaluation/non_in_row_analysis.json` (F021 block). D041, D-F. No paper support (contribution).
