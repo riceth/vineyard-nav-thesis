@@ -48,6 +48,18 @@ def project_px(u640: float, v640: float, near_m: float = NEAR_M):
     return np.array([g[0], g[1]]) if (0.0 < g[0] < near_m) else None
 
 
+def project_ground(X: float, Y: float, Z: float = 0.0):
+    """Inverse of `project_px`: base_link point (X fwd, Y left, Z up) metres -> 640x640 (stretched)
+    pixel (u, v), or None if behind the image plane. Analytic inverse of the SAME K / R_BASE_OPT /
+    CAM_POS forward model — `project_px` is untouched. Used ONLY to draw fitted rows / centreline back
+    onto the raw image in the report figures (figures.py); not part of the metric pipeline."""
+    ray_opt = R_BASE_OPT.T @ (np.array([X, Y, Z]) - CAM_POS)    # base_link vector -> optical frame
+    if ray_opt[2] <= 1e-6:
+        return None                                             # behind the image plane
+    pix = K @ (ray_opt / ray_opt[2])                            # native 1920x1080 homogeneous pixel
+    return (float(pix[0] * 640.0 / W0), float(pix[1] * 640.0 / H0))
+
+
 # ---------- calibration validation (script entry) ----------
 _LIMITATION = (
     "Projection-measured corridor width (median 1.91 m, IQR [1.59, 2.45]) is ~22% narrower than "
