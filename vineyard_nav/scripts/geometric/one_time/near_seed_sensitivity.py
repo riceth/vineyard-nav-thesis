@@ -22,7 +22,7 @@ import sys, json, argparse, pickle, collections
 from pathlib import Path
 import numpy as np, cv2
 
-PKG = Path(__file__).resolve().parents[2]
+PKG = Path(__file__).resolve().parents[3]                     # one_time/ adds a level: geometric/one_time/<file>
 sys.path.insert(0, str(PKG)); sys.path.insert(0, str(PKG / "scripts" / "geometric"))
 import torch
 from ultralytics import YOLO
@@ -35,7 +35,7 @@ from single_arm_dryrun import CONF, BLOB_FRAC, FRAME_PX
 from bag_config import resolve, frames_for_scope
 
 RM = {}
-exec(open(Path(__file__).resolve().parent / "row_model.py").read(), RM)   # NEAR, FARMAX, fit_side_far, centre_linefit
+exec(open(Path(__file__).resolve().parent.parent / "row_model.py").read(), RM)   # ../row_model.py (in scripts/geometric/)
 FARMAX = RM["FARMAX"]
 
 ap = argparse.ArgumentParser()
