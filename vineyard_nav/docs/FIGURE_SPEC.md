@@ -103,7 +103,7 @@ The viewer sees a failure, then sees the same failure rejected. Fig 12 aggregate
 | 2b | `in_row/fig2b_forest_paired.png` | F013: paired cross-arm bootstrap forest — GT-1 all CIs include 0; GT-2 sub-noise-floor | `paired_crossarm.json` |
 | 3 | `in_row/fig3_tilt_sensor_common.png` | F017: camera vs LiDAR heading across 10 anchors × 5 corridors — both means positive (cam +1.86°, LiDAR +2.57°, diff −0.71°), sensor-common tilt | `lidar_crosscheck.json` |
 | 4 | `in_row/fig4_mechanism_10247_C.png` | F018: Phase-C class colours (blue trunks load-bearing near-field, yellow poles), class-agnostic fit | 10247, arm C |
-| 4b | `in_row/fig4b_abstention_13820.png` | **F024**: `single_row` — no centreline emitted; detected-but-unseeded left side beyond the 5 m near-seed window (D037) | 13820, arm A |
+| 4b | `in_row/fig4b_abstention_13820.png` | **F024** + **F025**: `single_row` — no centreline emitted (left side has only 1 detection *within* the 5 m near-seed window, D037 requires ≥2 to seed; right side has 6, fits); caption also cites the F025 sensitivity result (5 m near-optimal) | 13820, arm A |
 
 **Non-in-row (5) — F020 / F021:**
 
@@ -123,6 +123,18 @@ The viewer sees a failure, then sees the same failure rejected. Fig 12 aggregate
 | 10 | `mitigation/fig10_f023_3up.png` | F023: geometry filter catches; firing in-row-p99 threshold labelled | 423, 12801, 653 |
 | 11 | `mitigation/fig11_turn_blind_14987.png` | **F023 turn-blindness**: deep turn, F022 rejects (\|v_y\| collapse), F023 accepts (geometry within p99) | 14987 |
 | 12 | `mitigation/fig12_complementarity.png` | F022 ∪ F023 by category: F022-only / both / F023-only (tiny) / neither | `mitigation_analysis.json` |
+
+**Fig 4b caption (F024 + F025).** The PNG suptitle carries a short per-side count line + a two-line F025
+pointer (kept short so the tight bbox does not widen the canvas); the **full report caption** (LaTeX
+`\caption{}`) reads: *"cls == single_row: the pipeline abstains rather than extrapolating — the right
+side has 6 detections within the 5 m near-seed window and is fitted (red), while the left side has only
+1 within 5 m (9 beyond) and `fit_side_far` requires ≥ 2 to seed, so it is rejected `too_few_near_seed`
+and no centreline is emitted (F024) — a count criterion, not "all points beyond 5 m". F025 (near-seed
+sensitivity) confirms 5 m is empirically near-optimal: widening to 6 m recovers ~28% of abstained frames
+at ~4% RMS cost, but wider windows degrade the full-set metric via adjacent-row corruption (max
+existing-fit shift ~1.85 m at 6.5 m); production widening requires the D036/F014 adjacency-rejection
+guard first."* Wired via the `caption_extra` parameter of `plot_in_row_frame` (Fig 4b only; Figs 1/3/4
+unchanged).
 
 **Fig 3 (F017) — summary, not single-frame (C3).** F017 is an aggregate, *sensor-common* claim; no
 single frame can show arm-invariance or camera-vs-LiDAR agreement (a single frame such as 3998 arm A

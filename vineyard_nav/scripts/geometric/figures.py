@@ -262,7 +262,7 @@ def _load(bag, scope, frame):
 
 
 # ================= public per-frame plot functions =================
-def plot_in_row_frame(bag, frame, arm="A", seed=42, *, anatomy=False, near_seed=False, tag="in_row", fname=None):
+def plot_in_row_frame(bag, frame, arm="A", seed=42, *, anatomy=False, near_seed=False, caption_extra=None, tag="in_row", fname=None):
     B, img = _load(bag, "eligible", frame)
     base = frontend(arm, seed, img); o = fit_frame(base); assert_csv("eligible", B, arm, seed, frame, o)
     fig, ax = plt.subplots(1, 2, figsize=(10, 4.6))
@@ -273,6 +273,7 @@ def plot_in_row_frame(bag, frame, arm="A", seed=42, *, anatomy=False, near_seed=
     else:
         cap = f"frame {frame} · arm {arm} · {o['cls']} — no centreline emitted (in-row abstention, F024)"
     if anatomy: cap += "\nbase_link forward = red dotted · 2 m look-ahead = green star"
+    if caption_extra: cap += "\n" + caption_extra
     fig.suptitle(cap, y=1.02, fontsize=9)
     fig.tight_layout(); p = _out(bag, tag, fname or f"fig_{frame}_{arm}.png"); fig.savefig(p); plt.close(fig)
     return p
@@ -485,7 +486,10 @@ def build(bag, only=None):
         "2b": lambda: fig_forest(bag),
         "3":  lambda: fig_tilt_sensor(bag),
         "4":  lambda: plot_in_row_frame(bag, 10247, "C", fname="fig4_mechanism_10247_C.png"),
-        "4b": lambda: plot_in_row_frame(bag, 13820, "A", near_seed=True, fname="fig4b_abstention_13820.png"),
+        "4b": lambda: plot_in_row_frame(bag, 13820, "A", near_seed=True, fname="fig4b_abstention_13820.png",
+              caption_extra="Left side: 1 detection within the 5 m near-seed window (D037 requires >=2 to seed a fit) · right side: 6, fits\n"
+                            "F025: the 5 m near-seed window is empirically near-optimal — widening to 6 m recovers ~28% of abstentions\n"
+                            "at ~4% RMS cost; wider degrades the full-set metric via adjacent-row corruption (D036/F014 guard needed)"),
         "5":  lambda: plot_non_in_row_frame(bag, 6, "stationary", fname="fig5_stationary_6.png"),
         "5b": lambda: fig_dist_bars(bag),
         "6":  lambda: plot_non_in_row_frame(bag, 10111, "turn", fname="fig6_turn_10111.png"),
