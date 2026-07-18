@@ -1,7 +1,10 @@
-"""March-strand REPORT FIGURES (O012, Commit 9). Bag-parametrised, self-contained plotting module —
-the locked multi-bag template (April+ reuse without edit). Illustrates the complete strand narrative:
-in-row headline (F013/F017/F018) + in-row abstention (F024) -> non-in-row deployment gap (F020/F021)
--> mitigation (F022/F023).
+"""March-strand REPORT FIGURES. Bag-parametrised, self-contained plotting module — the locked
+multi-bag template (April+ reuse without edit). Illustrates the complete strand narrative: in-row
+headline (arm-invariance, sensor-common tilt, class-agnostic fit) + in-row abstention -> non-in-row
+deployment gap (spurious two_row + driven_path_error) -> mitigation (state gate + geometry filter).
+Captions on the rendered figures use content-language only (no finding/decision identifiers); the
+finding cross-references live in FIGURE_SPEC.md. (Note: `F020_output_distribution`, `F022_F023_causal`,
+and the `GT1`/`GT2` metric selectors below are committed-JSON access keys, not displayed text.)
 
   python3 figures.py --bag march            # regenerate the whole locked set (15 figures)
   python3 figures.py --bag march --only 4b  # one figure by id
@@ -48,6 +51,8 @@ COL = {"trunk": "#2b6cff", "pole": "#ffd21e", "binary": "#00d0d0", "row": "#d134
        "A": "#4477aa", "B": "#ee6677", "C": "#228833"}
 def cls_col(cls): return COL["trunk"] if cls == 0 else (COL["pole"] if cls == 1 else COL["binary"])
 LOOK = 2.0
+IMG_X0, IMG_X1 = 0.5, 9.0        # raw-image fitted-line drawn range (near field -> horizon), matches the bird's-eye
+ACCENT = {"state": "#2166ac", "geom": "#d95f02", "turnblind": "#8844aa"}   # odometry / perception / mixed-limit
 
 MODELS = {
     ("A", 42): ("unet", "phase_a_unet_binary_20260704_004105/checkpoints/best.pt"),
@@ -153,6 +158,16 @@ def _img_line(ax, m, c, x0, x1, style, lw=2.0, n=40, color=None, label=None):
     if len(us) >= 2: ax.plot(us, vs, style, lw=lw, color=color, label=label, zorder=4)
 
 
+def _img_polyline(ax, pts_xy, style, lw=1.8, color=None, zorder=4):
+    """Draw a base_link (X,Y) polyline (e.g. the driven path) back onto the raw image via project_ground."""
+    us, vs = [], []
+    for (X, Y) in pts_xy:
+        px = C.project_ground(X, Y)
+        if px and -20 <= px[0] <= 660 and -20 <= px[1] <= 660:
+            us.append(px[0]); vs.append(px[1])
+    if len(us) >= 2: ax.plot(us, vs, style, lw=lw, color=color, zorder=zorder)
+
+
 def _side_line(P, fit):
     """Display (m, c) for a fitted side + its inlier X-span (polyfit of the inliers, matching
     centre_linefit's per-side model)."""
@@ -177,14 +192,15 @@ def draw_combined(ax_img, ax_bev, img, base_cls, o, *, rows=True, centre=True,
         else:
             if fL.get("ok"): m, c, x0, x1 = _side_line(L, fL); lines["L"] = (m, c, x0, x1)
             if fR.get("ok"): m, c, x0, x1 = _side_line(R, fR); lines["R"] = (m, c, x0, x1)
-        for s, (m, c, x0, x1) in lines.items():
-            _img_line(ax_img, m, c, x0, x1, "-", lw=2.2, color=COL["row"])
+        for s, (m, c, x0, x1) in lines.items():           # image: draw near-field -> horizon (matches bird's-eye)
+            _img_line(ax_img, m, c, IMG_X0, IMG_X1, "-", lw=2.2, color=COL["row"])
     if centre and o["cls"] == "two_row":
         mL, cL, mR, cR = cl["lines"]; mc, cc = (mL + mR) / 2, (cL + cR) / 2
-        x0 = max(lines["L"][2], lines["R"][2]); x1 = min(lines["L"][3], lines["R"][3])
-        _img_line(ax_img, mc, cc, x0, max(x1, LOOK + 0.5), "-", lw=2.4, color=COL["centre"])
+        _img_line(ax_img, mc, cc, IMG_X0, IMG_X1, "-", lw=2.4, color=COL["centre"])
     if driven_ref:
         _img_line(ax_img, 0.0, 0.0, 0.3, LOOK + 0.5, ":", lw=1.8, color=COL["driven"])
+    if driven_path is not None and len(driven_path):     # driven trajectory (odometry) on the image
+        _img_polyline(ax_img, driven_path, ":", lw=2.0, color=COL["driven"])
     if look_marker and o["cls"] == "two_row":
         px = C.project_ground(LOOK, o["offset"])
         if px: ax_img.scatter([px[0]], [px[1]], marker="*", s=150, c=COL["centre"], edgecolors="k", zorder=6)
@@ -213,7 +229,7 @@ def draw_combined(ax_img, ax_bev, img, base_cls, o, *, rows=True, centre=True,
         dp = np.array(driven_path); ax_bev.plot(-dp[:, 1], dp[:, 0], ":", color=COL["driven"], lw=2.2, zorder=5)
     if near_seed:
         ax_bev.axhline(NEAR, color="0.35", ls="--", lw=1.0, zorder=2)
-        ax_bev.text(-3.9, NEAR + 0.12, "5 m near-seed window (D037)", ha="left", va="bottom", fontsize=7, color="0.3")
+        ax_bev.text(-3.9, NEAR + 0.12, "5 m near-seed window", ha="left", va="bottom", fontsize=7, color="0.3")
     ax_bev.axvline(0, color="0.6", lw=0.5); ax_bev.set_xlim(-4, 4); ax_bev.set_ylim(0, 10)
     ax_bev.set_xlabel("−Y  (right +, m)"); ax_bev.set_ylabel("X forward (m)")
     ax_bev.grid(alpha=0.3); ax_bev.set_title(title_bev)
@@ -265,15 +281,21 @@ def _load(bag, scope, frame):
 def plot_in_row_frame(bag, frame, arm="A", seed=42, *, anatomy=False, near_seed=False, caption_extra=None, tag="in_row", fname=None):
     B, img = _load(bag, "eligible", frame)
     base = frontend(arm, seed, img); o = fit_frame(base); assert_csv("eligible", B, arm, seed, frame, o)
+    dp = _driven_path(bag, frame, y_cap=1.5)              # in-row: straight-ahead driven trajectory, capped at any turn
     fig, ax = plt.subplots(1, 2, figsize=(10, 4.6))
-    draw_combined(ax[0], ax[1], img, base, o, driven_ref=anatomy, look_marker=anatomy, near_seed=near_seed,
+    draw_combined(ax[0], ax[1], img, base, o, driven_path=dp, look_marker=True, near_seed=near_seed,
                   title_img="raw frame + detections", title_bev="bird's-eye (base_link)")
     if o["cls"] == "two_row":
         cap = f"frame {frame} · arm {arm} · two_row · offset={o['offset']:+.3f} m, heading={o['heading']:+.2f}°  (centreline_error_rms convention)"
     else:
-        cap = f"frame {frame} · arm {arm} · {o['cls']} — no centreline emitted (in-row abstention, F024)"
-    if anatomy: cap += "\nbase_link forward = red dotted · 2 m look-ahead = green star"
+        cap = f"frame {frame} · arm {arm} · {o['cls']} — no centreline emitted (in-row abstention)"
     if caption_extra: cap += "\n" + caption_extra
+    if dp is not None and o["cls"] == "two_row":
+        cap += "\nred dotted = driven trajectory (odometry) · green = predicted centreline · lateral gap = this frame's offset (single frame, not the pooled RMS)"
+    elif dp is not None:
+        cap += "\nred dotted = driven trajectory (odometry) — robot driving in-row; the pipeline still abstained here"
+    else:
+        cap += "\n(driven path unavailable for this frame)"
     fig.suptitle(cap, y=1.02, fontsize=9)
     fig.tight_layout(); p = _out(bag, tag, fname or f"fig_{frame}_{arm}.png"); fig.savefig(p); plt.close(fig)
     return p
@@ -286,18 +308,23 @@ def plot_non_in_row_frame(bag, frame, category, arm="A", seed=42, *, driven=Fals
     fig, ax = plt.subplots(1, 2, figsize=(10, 4.6))
     draw_combined(ax[0], ax[1], img, base, o, driven_path=dp,
                   title_img="raw frame + detections", title_bev="bird's-eye (base_link)")
+    ctx_phrase = {"stationary": "robot stationary", "turn": "robot in headland manoeuvre",
+                  "transition": "robot in corridor transition"}.get(category, category)
     if o["cls"] == "two_row":
-        cap = f"frame {frame} · {category} · arm {arm} · HALLUCINATED offset={o['offset']:+.2f} m, heading={o['heading']:+.1f}°  (driven_path_error)"
+        cap = f"frame {frame} · {category} · arm {arm} · spurious two_row output · offset={o['offset']:+.2f} m, heading={o['heading']:+.1f}°  (driven_path_error)"
     else:
         cap = f"frame {frame} · {category} · arm {arm} · {o['cls']}"
-    if K: cap += f"  ·  v={K.get('speed',0):.2f} m/s, |v_y|={abs(K.get('vy',0)):.2f}"
-    if driven: cap += "\ngreen = hallucinated centreline · red dotted = actual driven path (odometry)"
+    cap += f"\n{ctx_phrase}" + (f"  ·  v={K.get('speed',0):.2f} m/s, |v_y|={abs(K.get('vy',0)):.2f}" if K else "")
+    if driven: cap += "\ngreen = spurious centreline · red dotted = actual driven path (odometry) — their divergence is the driven_path_error"
     fig.suptitle(cap, y=1.02, fontsize=9)
     fig.tight_layout(); p = _out(bag, "non_in_row", fname or f"fig_{frame}_{category}.png"); fig.savefig(p); plt.close(fig)
     return p
 
 
-def _driven_path(bag, frame, horizon=90):
+def _driven_path(bag, frame, horizon=220, x_max=9.0, y_cap=None):
+    """Future odometry poses transformed into the frame's base_link (X fwd, Y left). x_max caps the
+    forward reach; y_cap (in-row only) stops the path at a corridor-end turn so the reference stays the
+    straight-ahead driven trajectory. Returns None if fewer than 2 forward points are available."""
     c = ctx(bag); k = c["idx"].get(frame)
     if k is None: return None
     th = c["kin"][frame]["theta"]; x0, y0 = c["x"][k], c["y"][k]; ct, st = np.cos(th), np.sin(th)
@@ -305,8 +332,9 @@ def _driven_path(bag, frame, horizon=90):
     for j in range(k, min(k + horizon, len(c["x"]))):
         dx, dy = c["x"][j] - x0, c["y"][j] - y0
         X = ct * dx + st * dy; Y = -st * dx + ct * dy
-        if -0.5 < X < 10: path.append((X, Y))
-    return path
+        if X > x_max or (y_cap is not None and abs(Y) > y_cap): break     # exited forward range / turned
+        if X > -0.5: path.append((X, Y))
+    return path if len(path) >= 2 else None
 
 
 def plot_mitigation_frame(bag, frame, category, layer, arm="A", seed=42, *, fname=None):
@@ -325,23 +353,28 @@ def plot_mitigation_frame(bag, frame, category, layer, arm="A", seed=42, *, fnam
     draw_combined(ax[0], ax[1], img, base, o, title_img=f"frame {frame} · {category} · arm {arm}",
                   title_bev=f"bird's-eye · {o['cls']}")
     if layer == "f022":
-        banner = f"F022 state gate: {'REJECT' if f022_rej else 'ACCEPT'}" + (f'  ({why22})' if f022_rej else '')
+        banner = f"state gate: {'REJECT' if f022_rej else 'ACCEPT'}" + (f'  ({why22})' if f022_rej else '')
         col = COL["reject"] if f022_rej else COL["accept"]
     elif layer == "f023":
-        banner = f"F023 geometry filter: {'REJECT' if f023_rej else 'ACCEPT'}" + (f"  ({', '.join(firedk)})" if f023_rej else "")
+        banner = f"geometry filter: {'REJECT' if f023_rej else 'ACCEPT'}" + (f"  ({', '.join(firedk)})" if f023_rej else "")
         col = COL["reject"] if f023_rej else COL["accept"]
     else:  # turn_blind
-        banner = (f"F022 REJECT ({why22})   |   F023 ACCEPT (geometry within in-row p99: "
+        banner = (f"state gate REJECT ({why22})   |   geometry filter ACCEPT (geometry within in-row p99: "
                   f"|off|={abs(o['offset']):.2f} |hdg|={abs(o['heading']):.1f})")
         col = "#8844aa"
-    fig.suptitle(banner, color=col, fontsize=9, y=1.02)
-    fig.tight_layout(); p = _out(bag, "mitigation", fname or f"fig_{layer}_{frame}.png"); fig.savefig(p); plt.close(fig)
+    fig.suptitle(banner, color=col, fontsize=9, y=1.02); fig.tight_layout()
+    if layer == "turn_blind" and o["cls"] == "two_row":
+        foot = (f"Fundamental limit: this frame's geometry (|offset|={abs(o['offset']):.2f} m, |heading|={abs(o['heading']):.1f}°) is INSIDE the in-row p99 envelope (0.71 m / 6.7°) -> the geometry filter accepts it;\n"
+                "but the along-row velocity has collapsed (|v_y|<0.30) -> the state gate rejects it. Perception alone cannot resolve a clean-geometry turn without a state input.")
+        fig.text(0.5, -0.02, foot, ha="center", va="top", fontsize=8.5, color=ACCENT["turnblind"])
+    p = _out(bag, "mitigation", fname or f"fig_{layer}_{frame}.png"); fig.savefig(p); plt.close(fig)
     return p
 
 
 # ================= 3-up wrappers =================
 def plot_arm_invariance(bag, frame, seed=42):
     B = resolve(bag, "eligible"); img = cv2.imread(str(B["frames_dir"] / f"{frame:05d}.jpg"))
+    dp = _driven_path(bag, frame, y_cap=1.5)              # driven trajectory (frame-level, same for all arms)
     fig, ax = plt.subplots(1, 3, figsize=(12, 4.2))
     for j, arm in enumerate("ABC"):
         base = frontend(arm, seed, img); o = fit_frame(base); assert_csv("eligible", B, arm, seed, frame, o)
@@ -350,18 +383,22 @@ def plot_arm_invariance(bag, frame, seed=42):
         for (uc, v, cls) in base: ax[j].scatter([uc], [v], c=cls_col(cls), s=20, edgecolors="k", linewidths=0.3, zorder=3)
         if o["cls"] == "two_row":
             mL, cL, mR, cR = o["cl"]["lines"]; mc, cc = (mL + mR) / 2, (cL + cR) / 2
-            xL = o["L"][o["fL"]["inl"], 0]; xR = o["R"][o["fR"]["inl"], 0]
-            _img_line(ax[j], mL, cL, xL.min(), xL.max(), "-", lw=2, color=COL["row"])
-            _img_line(ax[j], mR, cR, xR.min(), xR.max(), "-", lw=2, color=COL["row"])
-            _img_line(ax[j], mc, cc, max(xL.min(), xR.min()), LOOK + 0.5, "-", lw=2.2, color=COL["centre"])
+            _img_line(ax[j], mL, cL, IMG_X0, IMG_X1, "-", lw=2, color=COL["row"])       # near field -> horizon
+            _img_line(ax[j], mR, cR, IMG_X0, IMG_X1, "-", lw=2, color=COL["row"])
+            _img_line(ax[j], mc, cc, IMG_X0, IMG_X1, "-", lw=2.2, color=COL["centre"])
+            px = C.project_ground(LOOK, o["offset"])
+            if px: ax[j].scatter([px[0]], [px[1]], marker="*", s=90, c=COL["centre"], edgecolors="k", zorder=6)
+        if dp is not None: _img_polyline(ax[j], dp, ":", lw=1.8, color=COL["driven"])    # driven trajectory (odometry)
         ax[j].set_title(f"arm {arm}  ·  offset={o['offset']:+.3f} m  hdg={o['heading']:+.2f}°", color=COL[arm])
-    fig.suptitle(f"F013 arm-invariance · frame {frame} (near-identical centrelines; GT-1 indistinguishable)", y=1.02)
+    dnote = "\nred dotted = driven trajectory (odometry); gap = per-frame offset (single frame, not the pooled RMS)" if dp is not None else ""
+    fig.suptitle(f"Arm-invariance · frame {frame} (near-identical centrelines; lateral offset indistinguishable across arms){dnote}", y=1.04)
     fig.tight_layout(); p = _out(bag, "in_row", f"fig2_arm_invariance_{frame}.png"); fig.savefig(p); plt.close(fig)
     return p
 
 
-def plot_mitigation_3up(bag, triples, layer, title, fname):
-    """triples: [(frame, category, arm), ...] -> a 1x3 image-panel row with verdict subtitles."""
+def plot_mitigation_3up(bag, triples, layer, title, fname, accent=None, footer=None):
+    """triples: [(frame, category, arm), ...] -> a 1x3 image-panel row with verdict subtitles.
+    accent colours the suptitle (mechanism cue); footer is a one-line summary statistic below the row."""
     c = ctx(bag); HR = c["HR_deg"]; B = resolve(bag, "non_in_row")
     fig, ax = plt.subplots(1, 3, figsize=(12, 4.4))
     for j, (frame, category, arm) in enumerate(triples):
@@ -371,7 +408,7 @@ def plot_mitigation_3up(bag, triples, layer, title, fname):
         for (uc, v, cls) in base: ax[j].scatter([uc], [v], c=cls_col(cls), s=18, edgecolors="k", linewidths=0.3, zorder=3)
         if o["cls"] == "two_row":
             mL, cL, mR, cR = o["cl"]["lines"]; mc, cc = (mL + mR) / 2, (cL + cR) / 2
-            _img_line(ax[j], mc, cc, 0.5, LOOK + 0.5, "-", lw=2.2, color=COL["centre"])
+            _img_line(ax[j], mc, cc, IMG_X0, IMG_X1, "-", lw=2.2, color=COL["centre"])   # near field -> horizon
         if layer == "f022":
             rej = (K["speed"] <= 0.10) or (abs(K["vy"]) <= 0.30) or (K["hr_deg"] >= HR)
             why = "speed<0.10" if K["speed"] <= 0.10 else ("|v_y|<0.30" if abs(K["vy"]) <= 0.30 else "hr>=%.0f deg/s" % HR)
@@ -386,7 +423,8 @@ def plot_mitigation_3up(bag, triples, layer, title, fname):
             rej = bool(fired); sub = f"{category}: REJECT ({','.join(fired)})" if rej else f"{category}: ACCEPT"
             col = COL["reject"] if rej else COL["accept"]
         ax[j].set_title(f"frame {frame} · {sub}", color=col, fontsize=8)
-    fig.suptitle(title, y=1.02); fig.tight_layout()
+    fig.suptitle(title, y=1.02, color=accent or "black"); fig.tight_layout()
+    if footer: fig.text(0.5, -0.015, footer, ha="center", va="top", fontsize=8.5, color=accent or "0.2")
     p = _out(bag, "mitigation", fname); fig.savefig(p); plt.close(fig)
     return p
 
@@ -396,7 +434,7 @@ def fig_forest(bag):
     d = json.load(open(resolve(bag, "eligible")["out_dir"] / "paired_crossarm.json"))["across_seed"]
     pairs = ["A-B", "A-C", "B-C"]
     fig, ax = plt.subplots(1, 2, figsize=(9, 3.4))
-    for a, metric, lab in ((ax[0], "GT1", "GT-1 lateral offset (m)"), (ax[1], "GT2", "GT-2 heading (°)")):
+    for a, metric, lab in ((ax[0], "GT1", "lateral offset (m)"), (ax[1], "GT2", "heading (°)")):
         for k, pr in enumerate(pairs):
             md = d[pr][metric]["mean_diff"]; lo, hi = d[pr][metric]["ci95"]
             exc = d[pr][metric]["ci_excludes_zero"]
@@ -404,14 +442,14 @@ def fig_forest(bag):
                        capsize=3, ms=5)
         a.axvline(0, color="k", lw=0.8, ls="--"); a.set_yticks(range(len(pairs))); a.set_yticklabels(pairs)
         a.set_xlabel(f"cross-arm Δ {lab}"); a.invert_yaxis(); a.grid(alpha=0.3, axis="x")
-        a.set_title(("F013: GT-1 — all CIs include 0" if metric == "GT1" else "GT-2 — sub-noise-floor Δ"))
-    fig.suptitle("F013 paired cross-arm bootstrap (moving-block, whole-bag) · blue = CI includes 0", y=1.03)
+        a.set_title(("Lateral offset — all CIs include 0" if metric == "GT1" else "Heading — sub-noise-floor difference"))
+    fig.suptitle("Paired cross-arm bootstrap (moving-block, whole-bag) · blue = CI includes 0", y=1.03)
     fig.tight_layout(); p = _out(bag, "in_row", "fig2b_forest_paired.png"); fig.savefig(p); plt.close(fig)
     return p
 
 
 def fig_tilt_sensor(bag):
-    """F017 sensor-common tilt (C3): camera vs LiDAR centreline heading across the 10 pooled anchors.
+    """Sensor-common tilt: camera vs LiDAR centreline heading across the 10 pooled anchors.
     Summary-integrity assertion (the summary-figure analog of the per-frame CSV assertion): the plotted
     per-anchor means must equal the committed JSON's mean fields."""
     d = json.load(open(resolve(bag, "eligible")["out_dir"] / "lidar_crosscheck.json"))
@@ -434,7 +472,7 @@ def fig_tilt_sensor(bag):
     ax.set_xticks(x); ax.set_xticklabels([f"c{c}" for c in cor])
     ax.set_xlabel("anchor (2 per corridor · all 5 corridors)"); ax.set_ylabel("centreline heading (°)")
     ax.set_xlim(-0.5, n + 1.4); ax.grid(alpha=0.3, axis="y"); ax.legend(loc="lower right", fontsize=7.5)
-    ax.set_title(f"F017 sensor-common tilt — camera vs LiDAR heading, 10 anchors × 5 corridors "
+    ax.set_title(f"Sensor-common tilt — camera vs LiDAR heading, 10 anchors × 5 corridors "
                  f"(cam {d['mean_cam_hdg']:+.2f}°, LiDAR {d['mean_lidar_hdg']:+.2f}°, diff {d['camera_minus_lidar']:+.2f}°)")
     fig.tight_layout(); p = _out(bag, "in_row", "fig3_tilt_sensor_common.png"); fig.savefig(p); plt.close(fig)
     return p
@@ -452,7 +490,7 @@ def fig_dist_bars(bag):
             ax.text(x, val + 1, f"{val:.0f}", ha="center", fontsize=7)
     ax.set_xticks(range(len(cats))); ax.set_xticklabels([f"{c}\n(n={d[c]['A']['n']//3})" for c in cats])
     ax.set_ylabel("spurious two_row  (% of frames)"); ax.set_ylim(0, 100); ax.legend()
-    ax.set_title("F020 non-in-row output distribution — spurious two_row rate by category")
+    ax.set_title("Non-in-row output distribution — spurious two_row rate by category")
     fig.tight_layout(); p = _out(bag, "non_in_row", "fig5b_output_distribution.png"); fig.savefig(p); plt.close(fig)
     return p
 
@@ -467,13 +505,23 @@ def fig_complementarity(bag):
         ei = np.mean([pc[c][a]["either_%"] for a in "ABC"])
         both = f22 + f23 - ei; segs.append((f22 - both, both, f23 - both, 100 - ei))  # f022-only, both, f023-only, neither
     segs = np.array(segs)
-    for k, (lab, col) in enumerate([("F022 only", COL["A"]), ("both", "#8844aa"),
-                                    ("F023 only", COL["B"]), ("neither", "0.8")]):
-        ax.bar(cats, segs[:, k], bottom=bottom, label=lab, color=col); bottom += segs[:, k]
+    for k, (lab, col) in enumerate([("state gate only", ACCENT["state"]), ("both", ACCENT["turnblind"]),
+                                    ("geometry filter only", ACCENT["geom"]), ("neither", "0.8")]):
+        ax.bar(cats, segs[:, k], bottom=bottom, label=lab, color=col)
+        for ci in range(len(cats)):
+            h = segs[ci, k]
+            if h >= 3.0:                                    # label only visible segments
+                ax.text(ci, bottom[ci] + h / 2, f"{h:.0f}", ha="center", va="center",
+                        fontsize=8.5, fontweight="bold", color=("0.25" if col == "0.8" else "white"))
+        bottom += segs[:, k]
     ax.set_ylabel("% of spurious non-in-row two_row"); ax.set_ylim(0, 100)
-    ax.legend(ncol=4, fontsize=7, loc="lower center", bbox_to_anchor=(0.5, -0.28))
-    ax.set_title("F022 & F023 (union) complementarity by category (mean over arms)")
-    fig.tight_layout(); p = _out(bag, "mitigation", "fig12_complementarity.png"); fig.savefig(p); plt.close(fig)
+    ax.legend(ncol=4, fontsize=7, loc="lower center", bbox_to_anchor=(0.5, -0.18))
+    ax.set_title("State gate + geometry filter (union) complementarity by category (mean over arms)")
+    fig.tight_layout()
+    fig.text(0.5, -0.06, "State gate does the primary work (state-gate-only 46-63% across categories); the geometry filter marginally extends coverage\n"
+                         "(union 96-100%); the ~0-4% residual is architectural - needs learned state classification / sensor fusion.",
+             ha="center", va="top", fontsize=8, color="0.2")
+    p = _out(bag, "mitigation", "fig12_complementarity.png"); fig.savefig(p); plt.close(fig)
     return p
 
 
@@ -485,20 +533,25 @@ def build(bag, only=None):
         "2":  lambda: plot_arm_invariance(bag, 7397),
         "2b": lambda: fig_forest(bag),
         "3":  lambda: fig_tilt_sensor(bag),
-        "4":  lambda: plot_in_row_frame(bag, 10247, "C", fname="fig4_mechanism_10247_C.png"),
+        "4":  lambda: plot_in_row_frame(bag, 10247, "C", fname="fig4_mechanism_10247_C.png",
+              caption_extra="Phase-C classes: trunks (blue) load-bearing in the near field; the row fit is class-agnostic"),
         "4b": lambda: plot_in_row_frame(bag, 13820, "A", near_seed=True, fname="fig4b_abstention_13820.png",
-              caption_extra="Left side: 1 detection within the 5 m near-seed window (D037 requires >=2 to seed a fit) · right side: 6, fits\n"
-                            "F025: the 5 m near-seed window is empirically near-optimal — widening to 6 m recovers ~28% of abstentions\n"
-                            "at ~4% RMS cost; wider degrades the full-set metric via adjacent-row corruption (D036/F014 guard needed)"),
+              caption_extra="Left side: 1 detection within the 5 m near-seed window (fit needs >=2 to seed) · right side: 6, fits\n"
+                            "the 5 m near-seed window is empirically near-optimal — widening to 6 m recovers ~28% of abstentions\n"
+                            "at ~4% RMS cost; wider degrades the full-set metric via adjacent-row corruption (adjacency guard needed)"),
         "5":  lambda: plot_non_in_row_frame(bag, 6, "stationary", fname="fig5_stationary_6.png"),
         "5b": lambda: fig_dist_bars(bag),
         "6":  lambda: plot_non_in_row_frame(bag, 10111, "turn", fname="fig6_turn_10111.png"),
         "7":  lambda: plot_non_in_row_frame(bag, 11264, "transition", fname="fig7_transition_11264.png"),
         "8":  lambda: plot_non_in_row_frame(bag, 11264, "transition", driven=True, fname="fig8_driven_path_11264.png"),
         "9":  lambda: plot_mitigation_3up(bag, [(6, "stationary", "A"), (10111, "turn", "A"), (11264, "transition", "A")],
-                                          "f022", "F022 state gate — reject per category (odometry: speed / |v_y| / heading-rate)", "fig9_f022_3up.png"),
+                                          "f022", "State gate — reject per category (odometry: speed / |v_y| / heading-rate)", "fig9_f022_3up.png",
+                                          accent=ACCENT["state"],
+                                          footer="State gate catches 98.4% of spurious non-in-row outputs at 1.2% in-row false-positive · arm-invariant · uses odometry only (speed, |v_y|, heading-rate) - no perception input."),
         "10": lambda: plot_mitigation_3up(bag, [(423, "stationary", "A"), (12801, "turn", "A"), (653, "transition", "A")],
-                                          "f023", "F023 geometry filter — off-nominal catches (firing in-row-p99 threshold labelled)", "fig10_f023_3up.png"),
+                                          "f023", "Geometry filter — off-nominal catches (firing in-row-p99 threshold labelled)", "fig10_f023_3up.png",
+                                          accent=ACCENT["geom"],
+                                          footer="Geometry filter catches ~40% via off-nominal geometry at ~3% in-row false-positive · perception-based, odometry-free (deployment fallback) · cannot resolve clean-geometry turns."),
         "11": lambda: plot_mitigation_frame(bag, 14987, "turn", "turn_blind", fname="fig11_turn_blind_14987.png"),
         "12": lambda: fig_complementarity(bag),
     }

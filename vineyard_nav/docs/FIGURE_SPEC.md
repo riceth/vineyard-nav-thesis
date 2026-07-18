@@ -26,6 +26,14 @@ python3 scripts/geometric/figures.py --bag march --only 4b  # one figure by id
   `single_row` figures carry neither (abstention — excluded from both, F024).
 - **Representative, not cherry-picked.** Frames chosen by explicit criteria (`scratchpad/
   figure_frame_select.py`, `single_row_select.py`).
+- **Content-language captions (LOCKED, Commit 12).** The **rendered PNG captions carry NO finding /
+  decision / open-item identifiers** (no `F###`, `D###`, `O###`, `GT-#`) — a report figure must stand
+  alone for a marker who never sees the working docs. Captions cite the mechanism or measurement
+  directly (e.g. "sensor-common tilt", "state gate", "geometry filter", "lateral offset"). The
+  finding cross-references live **here in the spec** (§5 *Shows* column = working-doc navigation; §5a =
+  the verbatim content-language PNG captions). Verification: `grep -E "F0|D0|O0|GT-"` over
+  `figures.py` returns only committed-JSON access keys (`F020_output_distribution`, `F022_F023_causal`,
+  `GT1`/`GT2` selectors) — **zero in any displayed string**.
 - **No git.** Edosa runs all git.
 
 ---
@@ -94,11 +102,15 @@ The viewer sees a failure, then sees the same failure rejected. Fig 12 aggregate
 
 ## 5. The locked figure set (15, as built)
 
+The **Shows** column is the **working-doc reference** (F-labels + cross-refs, for internal navigation
+only — these do **not** appear on the figures). The **verbatim content-language PNG captions** (what a
+marker actually sees) are recorded in **§5a**.
+
 **In-row (6) — F013 / F017 / F018 / F024:**
 
 | # | File | Shows | Frame(s) |
 |---|---|---|---|
-| 1 | `in_row/fig1_anatomy_10247.png` | Methodology anatomy: base_link fwd (red dotted), 2 m look-ahead (★), offset/heading, IPM bird's-eye | 10247, arm A |
+| 1 | `in_row/fig1_anatomy_10247.png` | Methodology anatomy: driven trajectory (red dotted, odometry) vs predicted centreline (green), 2 m look-ahead (★), offset/heading, IPM bird's-eye | 10247, arm A |
 | 2 | `in_row/fig2_arm_invariance_7397.png` | F013: 3-up A/B/C, near-identical centrelines (offset +0.157/+0.157/+0.156) | 7397 |
 | 2b | `in_row/fig2b_forest_paired.png` | F013: paired cross-arm bootstrap forest — GT-1 all CIs include 0; GT-2 sub-noise-floor | `paired_crossarm.json` |
 | 3 | `in_row/fig3_tilt_sensor_common.png` | F017: camera vs LiDAR heading across 10 anchors × 5 corridors — both means positive (cam +1.86°, LiDAR +2.57°, diff −0.71°), sensor-common tilt | `lidar_crosscheck.json` |
@@ -109,11 +121,11 @@ The viewer sees a failure, then sees the same failure rejected. Fig 12 aggregate
 
 | # | File | Shows | Frame(s) |
 |---|---|---|---|
-| 5 | `non_in_row/fig5_stationary_6.png` | F020: hallucinated two_row, stationary | 6 |
+| 5 | `non_in_row/fig5_stationary_6.png` | F020: spurious two_row, robot stationary | 6 |
 | 5b | `non_in_row/fig5b_output_distribution.png` | F020: spurious two_row rate by category×arm (turn spikes 76–80%) | `non_in_row_analysis.json` |
-| 6 | `non_in_row/fig6_turn_10111.png` | F020: hallucinated centreline mid-turn | 10111 |
-| 7 | `non_in_row/fig7_transition_11264.png` | F020: off-nominal hallucinated geometry (heading +13°) | 11264 |
-| 8 | `non_in_row/fig8_driven_path_11264.png` | F021: hallucinated centreline (green) vs actual driven path (red dotted, odometry) — `driven_path_error` | 11264 |
+| 6 | `non_in_row/fig6_turn_10111.png` | F020: spurious centreline, robot in headland manoeuvre | 10111 |
+| 7 | `non_in_row/fig7_transition_11264.png` | F020: off-nominal spurious geometry (heading +13°), robot in corridor transition | 11264 |
+| 8 | `non_in_row/fig8_driven_path_11264.png` | F021: spurious centreline (green) vs actual driven path (red dotted, odometry) — `driven_path_error` | 11264 |
 
 **Mitigation (4) — F022 / F023:**
 
@@ -124,9 +136,10 @@ The viewer sees a failure, then sees the same failure rejected. Fig 12 aggregate
 | 11 | `mitigation/fig11_turn_blind_14987.png` | **F023 turn-blindness**: deep turn, F022 rejects (\|v_y\| collapse), F023 accepts (geometry within p99) | 14987 |
 | 12 | `mitigation/fig12_complementarity.png` | F022 ∪ F023 by category: F022-only / both / F023-only (tiny) / neither | `mitigation_analysis.json` |
 
-**Fig 4b caption (F024 + F025).** The PNG suptitle carries a short per-side count line + a two-line F025
-pointer (kept short so the tight bbox does not widen the canvas); the **full report caption** (LaTeX
-`\caption{}`) reads: *"cls == single_row: the pipeline abstains rather than extrapolating — the right
+**Fig 4b caption (working-doc ref: F024 + F025).** The PNG suptitle carries a short per-side count line
++ a two-line near-optimal-window pointer, **content-language only** (no F/D labels — see §5a for the
+verbatim text); the **full report caption** (LaTeX `\caption{}`, which *may* carry F-labels as the
+working-doc report reference) reads: *"cls == single_row: the pipeline abstains rather than extrapolating — the right
 side has 6 detections within the 5 m near-seed window and is fitted (red), while the left side has only
 1 within 5 m (9 beyond) and `fit_side_far` requires ≥ 2 to seed, so it is rejected `too_few_near_seed`
 and no centreline is emitted (F024) — a count criterion, not "all points beyond 5 m". F025 (near-seed
@@ -148,6 +161,58 @@ Honest: in the flattest corridor (1) the camera heading dips slightly negative (
 LiDAR stays low-positive (+0.9°); both agree it is the flattest corridor. **Summary-integrity
 assertion** (the summary analog of the CSV assertion): the plotted per-anchor means equal the committed
 `lidar_crosscheck.json` mean fields.
+
+## 5a. Rendered PNG captions (content-language, verbatim — Commit 12)
+
+What actually appears on each figure (no F/D/O/GT identifiers). Per-frame numeric fields (offset,
+heading, kinematics) vary by frame; the fixed caption text is shown.
+
+| # | Rendered caption (verbatim) |
+|---|---|
+| 1 | `frame 10247 · arm A · two_row · offset=… m, heading=…°  (centreline_error_rms convention)` + line 2 `red dotted = driven trajectory (odometry) · green = predicted centreline · lateral gap = this frame's offset (single frame, not the pooled RMS)` (driven path on both panels; 2 m look-ahead green star) |
+| 2 | suptitle `Arm-invariance · frame 7397 (near-identical centrelines; lateral offset indistinguishable across arms)` + line 2 `red dotted = driven trajectory (odometry); gap = per-frame offset (single frame, not the pooled RMS)`; per-arm `arm A/B/C · offset=… hdg=…` (driven path + 2 m star per panel) |
+| 2b | suptitle `Paired cross-arm bootstrap (moving-block, whole-bag) · blue = CI includes 0`; panels `Lateral offset — all CIs include 0` / `Heading — sub-noise-floor difference`; axes `cross-arm Δ lateral offset (m)` / `cross-arm Δ heading (°)` |
+| 3 | `Sensor-common tilt — camera vs LiDAR heading, 10 anchors × 5 corridors (cam +1.86°, LiDAR +2.57°, diff −0.71°)`; legend `camera (line-fit centreline, mean of 9 models)` / `LiDAR (independent row-plane fit)` |
+| 4 | `frame 10247 · arm C · two_row · offset=… (centreline_error_rms convention)` + line 2 `Phase-C classes: trunks (blue) load-bearing in the near field; the row fit is class-agnostic` + line 3 `red dotted = driven trajectory (odometry) · green = predicted centreline · lateral gap = this frame's offset (single frame, not the pooled RMS)` |
+| 4b | `frame 13820 · arm A · single_row — no centreline emitted (in-row abstention)` + `Left side: 1 detection within the 5 m near-seed window (fit needs >=2 to seed) · right side: 6, fits` + `the 5 m near-seed window is empirically near-optimal — widening to 6 m recovers ~28% of abstentions / at ~4% RMS cost; wider degrades the full-set metric via adjacent-row corruption (adjacency guard needed)` + `red dotted = driven trajectory (odometry) — robot driving in-row; the pipeline still abstained here`; bird's-eye annotation `5 m near-seed window` |
+| 5 | `frame 6 · stationary · arm A · spurious two_row output · offset=… heading=…  (driven_path_error)` + line 2 `robot stationary  ·  v=… m/s, \|v_y\|=…` |
+| 5b | `Non-in-row output distribution — spurious two_row rate by category` |
+| 6 | `frame 10111 · turn · arm A · spurious two_row output · offset=… heading=…  (driven_path_error)` + line 2 `robot in headland manoeuvre  ·  v=… m/s, \|v_y\|=…` |
+| 7 | `frame 11264 · transition · arm A · spurious two_row output · offset=… heading=…  (driven_path_error)` + line 2 `robot in corridor transition  ·  v=… m/s, \|v_y\|=…` |
+| 8 | as Fig 7 + line 3 `green = spurious centreline · red dotted = actual driven path (odometry) — their divergence is the driven_path_error` (driven path on both panels) |
+| 9 | suptitle (**blue accent**) `State gate — reject per category (odometry: speed / \|v_y\| / heading-rate)`; panels `frame N · category: REJECT (reason)`; **footer** `State gate catches 98.4% of spurious non-in-row outputs at 1.2% in-row false-positive · arm-invariant · uses odometry only (speed, \|v_y\|, heading-rate) - no perception input.` |
+| 10 | suptitle (**orange accent**) `Geometry filter — off-nominal catches (firing in-row-p99 threshold labelled)`; panels `frame N · category: REJECT (threshold)`; **footer** `Geometry filter catches ~40% via off-nominal geometry at ~3% in-row false-positive · perception-based, odometry-free (deployment fallback) · cannot resolve clean-geometry turns.` |
+| 11 | banner (**purple**) `state gate REJECT (\|v_y\|<0.30)   \|   geometry filter ACCEPT (geometry within in-row p99: \|off\|=… \|hdg\|=…)`; panels `frame 14987 · turn · arm A` / `bird's-eye · two_row`; **footer** `Fundamental limit: this frame's geometry (\|offset\|=… m, \|heading\|=…°) is INSIDE the in-row p99 envelope (0.71 m / 6.7°) -> the geometry filter accepts it; but the along-row velocity has collapsed (\|v_y\|<0.30) -> the state gate rejects it. Perception alone cannot resolve a clean-geometry turn without a state input.` |
+| 12 | title `State gate + geometry filter (union) complementarity by category (mean over arms)`; **per-segment % labels** on each bar (state-gate-only 63/46/55, both 37/49/40, neither 0/3/4); legend `state gate only (blue) / both (purple) / geometry filter only (orange) / neither (grey)`; **footer** `State gate does the primary work (state-gate-only 46-63% across categories); the geometry filter marginally extends coverage (union 96-100%); the ~0-4% residual is architectural - needs learned state classification / sensor fusion.` |
+
+## 5b. Overlay enhancements (Commit 12b)
+
+- **Driven-path reference on in-row figures (1, 2, 4, 4b).** The odometry driven trajectory (future
+  base_link poses via `_driven_path`, in-row-capped at any corridor-end turn) is drawn **red dotted on
+  both the raw-image and bird's-eye panels** (previously only the bird's-eye, and only for non-in-row).
+  It gives the physical reference for the in-row error: the metric is the centreline's lateral offset
+  at the 2 m look-ahead against the driven-path reference (FINDINGS *Evaluation scope*; the driven path
+  ≈ base_link-forward for in-row driving). Fig 4b shows it even though the pipeline abstained (the robot
+  was driving in-row). **Caveat encoded in every caption:** the single-frame lateral gap is *this
+  frame's* offset, **not** the pooled ~0.19 m RMS.
+- **Full-length fits (all per-frame figures: 1, 2, 4, 4b, 5, 6, 7, 8, 9, 10, 11).** Fitted rows +
+  centreline on the raw-image panel are drawn over `IMG_X0..IMG_X1 = 0.5..9 m` (near field → horizon)
+  to match the bird's-eye extent, instead of the inlier X-span. Drawn-range fix (`draw_combined`,
+  `plot_arm_invariance`, `plot_mitigation_3up`); `project_ground` was already range-unlimited. Uniform
+  across every mitigation figure (9/10/11) too.
+- **`HALLUCINATED` → `spurious two_row output`** on Figs 5/6/7/8, with per-category robot-state context
+  (stationary / headland manoeuvre / corridor transition) — the pipeline detects real rows; the failure
+  is context (state), not fabrication.
+- **Mitigation narrative annotations (Figs 9/10/11/12).** Mechanism-colour accents on the
+  suptitle/banner — **state gate = blue (`#2166ac`, odometry), geometry filter = orange (`#d95f02`,
+  perception), turn-blindness/mixed = purple (`#8844aa`)** — plus a one-line summary-statistic footer
+  per figure, so a cold reader gets the through-line without the working docs: state gate does the
+  primary work (98.4% @ 1.2% FP, arm-invariant, odometry-only); geometry filter is the perception-only,
+  odometry-free ~40% @ ~3% fallback that cannot catch clean-geometry turns; turn-blindness is the
+  fundamental limit (clean-geometry turn is inside the in-row p99 so geometry accepts, but |v_y| has
+  collapsed so state rejects). Fig 12 gains per-segment percentage labels + mechanism-matched bar
+  colours + the primary-work / marginal-extension / architectural-residual summary. All content-language
+  (numbers from `mitigation_analysis.json`; no F/D/O identifiers).
 
 ---
 
