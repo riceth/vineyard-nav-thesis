@@ -4,7 +4,7 @@ Retired scripts, kept for audit; **not** part of the reproduction path.
 
 ## Row model — near-5 m Y-constant (D035)
 
-- `yconstant_val_eval.py` — the first CP-5 val evaluator, using the near-5 m
+- `yconstant_val_eval.py` — the original nine-model val evaluator, using the near-5 m
   Y-constant row model (D035). Superseded by the hybrid clustering + far-field
   extension + line-fit centreline pipeline (D036–D038). The current evaluator is
   the whole-bag pair `../line_fit_infer.py` + `../line_fit_eval.py`; the superseded
@@ -31,8 +31,9 @@ still resolve from this location; they are retained only as an audit trail. The
 val/test artefacts they produced live at
 `results/geometric/march/superseded/march_val_test_split/{val,test}_evaluation/`.
 
-**Note:** `single_arm_dryrun.py` (the CP-3 dry-run) is deliberately **not** here —
-it stays in the pipeline because the current drivers import shared constants
-(`CONF`, `BLOB_FRAC`, `FRAME_PX`, `side_valid`, `bin_centre`) from it. Only its
-*output* (the CP-3 report) is superseded. See `../README.md` for the module/output
+**Note:** `single_arm_dryrun.py` is deliberately **not** here. The **script** stays
+in the pipeline because the current drivers import shared constants (`CONF`,
+`BLOB_FRAC`, `FRAME_PX`, `side_valid`, `bin_centre`) from it. What is superseded is
+only the **report that script produced** — the near-5 m Y-constant row-model
+results — **not the script itself**. See `../README.md` for the module/output
 split.

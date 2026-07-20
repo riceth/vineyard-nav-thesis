@@ -1,6 +1,7 @@
 # Geometric strand — scripts
 
-Row-model pipeline for the in-row centreline evaluation (CP-0…CP-6). The flat
+Row-model pipeline for the in-row centreline evaluation, from bag frame
+extraction through to the committed centreline results. The flat
 `.py` files here are the **reproduction pipeline**; `diagnostics/` and
 `superseded/` are separated by role. Run any script as
 `python3 vineyard_nav/scripts/geometric/<path>/<name>.py`.
@@ -12,9 +13,9 @@ logic runs on march / april / … unchanged (e.g. `line_fit_infer.py --bag march
 Frames are selected on `eligible` alone — there is no val/test split in the
 pipeline logic.
 
-- `contamination_census.py`, `extract_frames.py`, `frame_manifest_build.py` — CP-0/CP-1 census, frame extraction, whole-bag manifest build. (`frame_manifest_build.py` — renamed from `dataset_split.py` in Commit 5 — writes a single canonical `split="eligible"` marker and a whole-bag Δs=1.5 m subsample; no val/test partitioning. D040/D041.)
-- `projection_calibration.py` — CP-2 image→ground IPM (shared `project_px`, imported by drivers).
-- `single_arm_dryrun.py` — CP-3 dry-run **and** the shared parameter/function module (`CONF`, `BLOB_FRAC`, `FRAME_PX`, `side_valid`, `bin_centre`) imported by every driver.
+- `contamination_census.py`, `extract_frames.py`, `frame_manifest_build.py` — contamination census, frame extraction, whole-bag manifest build. (`frame_manifest_build.py` — renamed from `dataset_split.py` in Commit 5 — writes a single canonical `split="eligible"` marker and a whole-bag Δs=1.5 m subsample; no val/test partitioning. D040/D041.)
+- `projection_calibration.py` — image→ground IPM projection (shared `project_px`, imported by drivers).
+- `single_arm_dryrun.py` — single-arm dry-run **and** the shared parameter/function module (`CONF`, `BLOB_FRAC`, `FRAME_PX`, `side_valid`, `bin_centre`) imported by every driver.
 - `row_model.py` — D036–D038 row model (`exec`'d by the drivers + figure scripts).
 - `bag_config.py` — per-bag path resolution (`--bag`); single source of manifest / frames / db3 / cache / output paths for the whole-bag scripts. Add a bag by adding one `BAGS` entry.
 - `block_lengths.py` — Analysis-H moving-block lengths, re-derived per bag; shared by the CI estimators (line-fit / paired / config) so they cannot drift.
@@ -37,7 +38,7 @@ pipeline logic.
 
 ## Module / output split — `single_arm_dryrun`
 The **module** `single_arm_dryrun.py` stays in the pipeline because the current
-drivers import shared constants/functions from it. Its **output** — the CP-3
+drivers import shared constants/functions from it. Its **output** — the
 dry-run report `results/geometric/march/single_arm_dryrun_report.json` (+ samples)
 — is the *superseded* near-5 m Y-constant row model. Module and output are split
 by role. (Result-side placement of that output is deferred to the pooling task and
