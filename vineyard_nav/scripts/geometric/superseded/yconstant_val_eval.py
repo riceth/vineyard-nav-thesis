@@ -33,8 +33,8 @@ torch.multiprocessing.set_sharing_strategy("file_system")
 from ultralytics import YOLO
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
-from segmentation.unet_binary.model import UNetBinary
-from segmentation.unet_binary.dataset import IMAGENET_MEAN, IMAGENET_STD
+from scripts.perception.segmentation.unet_binary.model import UNetBinary
+from scripts.perception.segmentation.unet_binary.dataset import IMAGENET_MEAN, IMAGENET_STD
 
 import projection_calibration as C
 from single_arm_dryrun import side_valid, bin_centre, NEAR_M, BINS, CONF, BLOB_FRAC, FRAME_PX

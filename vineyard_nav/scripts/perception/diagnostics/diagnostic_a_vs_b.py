@@ -28,9 +28,9 @@ from ultralytics import YOLO
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 
-from segmentation.unet_binary.model import UNetBinary
-from segmentation.unet_binary.dataset import IMAGENET_MEAN, IMAGENET_STD
-from segmentation.yolo_binary.visualize import (polygons_to_mask, yolo_lines_to_polygons,
+from scripts.perception.segmentation.unet_binary.model import UNetBinary
+from scripts.perception.segmentation.unet_binary.dataset import IMAGENET_MEAN, IMAGENET_STD
+from scripts.perception.segmentation.yolo_binary.visualize import (polygons_to_mask, yolo_lines_to_polygons,
                                                 overlay_mask, _banner)
 
 SEMANTICBLT = Path("/workspaces/dissertation/SemanticBLT.v1-2024-june.coco-segmentation")

@@ -18,7 +18,7 @@ import numpy as np
 
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO))
-from segmentation.yolo_binary.visualize import polygons_to_mask
+from scripts.perception.segmentation.yolo_binary.visualize import polygons_to_mask
 
 YD = REPO / "data/yolo_multiclass"
 OUT = REPO / "results/runs/phase_c_yolo_multiclass_labels_spotcheck"

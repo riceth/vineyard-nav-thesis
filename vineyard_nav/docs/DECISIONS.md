@@ -652,6 +652,49 @@ Reporting both makes the **effect of held commands on the metric visible** rathe
 
 ---
 
+## D045 — Repository reorganisation (Phase 1: `scripts/`) + path and invocation maps
+**Date:** 20 July 2026
+**Status:** LOCKED
+**Purpose.** `scripts/` was reorganised so that reusable pipeline code and one-time diagnostics are separable by folder, and so that all perception code (including the segmentation package) sits under `scripts/perception/`. **Historical path citations elsewhere in this file, in `FINDINGS.md`, `STATUS.md` and the phase specs are left exactly as written** (additive-preservation); this entry is the single authoritative map that makes them resolvable. A reproducer needs **both** maps below — one to *locate* files, one to *run* them.
+
+**(a) Path map (old → new).**
+
+| Old path | New path |
+|---|---|
+| `segmentation/**` (whole package) | `scripts/perception/segmentation/**` |
+| `scripts/perception/pipeline/coco_to_yolo.py` | `scripts/perception/coco_to_yolo.py` |
+| `scripts/perception/pipeline/resplit_dataset.py` | `scripts/perception/resplit_dataset.py` |
+| `scripts/perception/diagnostics/blob_overlap_6799.py` | `scripts/perception/blob_overlap_6799.py` |
+| `scripts/perception/diagnostics/phase_b_conf_sweep.py` | `scripts/perception/phase_b_conf_sweep.py` |
+| `scripts/perception/diagnostics/median_conf_sweep.py` | `scripts/perception/median_conf_sweep.py` |
+| `evaluation/bootstrap.py` | `scripts/perception/bootstrap.py` |
+| `scripts/utilities/inspect_bag.py` | `scripts/perception/diagnostics/inspect_bag.py` |
+| `analysis/blt_analysis.py`, `analysis/blt_report.py`, `analysis/output/` | `scripts/perception/diagnostics/` |
+| `geometry/`, `control/` (empty `__init__.py` only), `notebooks/`, `evaluation/` | **deleted** (dead stubs, zero importers) |
+
+`scripts/geometric/` and `scripts/control/` are unchanged. New empty `scripts/__init__.py` and `scripts/perception/__init__.py` make the tree importable for `-m` invocation.
+
+**(b) Invocation map (old → new).** Still run from `vineyard_nav/`:
+
+| Old command | New command |
+|---|---|
+| `python -m segmentation.unet_binary.train` | `python -m scripts.perception.segmentation.unet_binary.train` |
+| `python -m segmentation.yolo_binary.train` | `python -m scripts.perception.segmentation.yolo_binary.train` |
+| `python -m segmentation.yolo_multiclass.train` | `python -m scripts.perception.segmentation.yolo_multiclass.train` |
+| (same pattern for each arm's `.evaluate` / `.visualize`) | `python -m scripts.perception.segmentation.<arm>.<entry>` |
+
+**(c) Import map.** `from segmentation.<arm>.<mod> import …` → `from scripts.perception.segmentation.<arm>.<mod> import …` (24 sites / 15 files). The **canonical dotted path is the only supported form**: a `sys.path`-based alias was rejected because the same module reachable under two top-level names can be instantiated twice in one process (distinct module objects, duplicated state). Cross-subpackage imports *inside* the package are relative (`from ..yolo_binary.visualize import …`).
+
+**Rationale.** (1) Segmentation is perception work; keeping it a sibling of `scripts/` obscured that. (2) `pipeline/` was a redundant nesting level once `diagnostics/` carries the reusable-vs-one-time distinction. (3) Two scripts sitting in `diagnostics/` are in fact reproduction-critical — `blob_overlap_6799.py` is DECISIONS' own *"Regeneration recipe"* for the F007/O009 artefacts, and `phase_b_conf_sweep.py` selected the locked operating point conf\* = 0.25 (D030); `median_conf_sweep.py` is cited in D030's supplementary note, so under the "every claim backed by a committed script" rule it must stay runnable, not archived.
+
+**Verification performed.** All three arms' `python -m …train --help` resolve; canonical imports load; `compileall` clean over `scripts/`; and re-running `state_gate_native.py`, `line_fit_eval.py`, `command_generator.py` reproduced their committed artefacts **byte-identically** (md5).
+
+**Scope note.** This is Phase 1 (`scripts/` only). The `results/` tree is **unchanged** and its restructure is deferred to Phase 2, which must additionally resolve: bag-level nesting (`results/<strand>/<bag>/…`, on which `bag_config.resolve()` depends), the mixed content of the gitignored `results/runs/`, the spec-locked control artefact paths (`PID_PIPELINE_SPEC.md` §3/§6 — which would need their own additive amendments, not silent moves), and `superseded/` + `cache/` as first-class categories alongside `final/` + `diagnostics/`.
+
+**Cross-references.** D020 (`bootstrap.py`), D025/O005 (`coco_to_yolo.py`), D028 (`resplit_dataset.py`), D030 (`phase_b_conf_sweep.py`, `median_conf_sweep.py`), O003/O009 + F007 (`blob_overlap_6799.py`), PHASE_A/B/C_SPEC (directory layouts, unedited — resolve via map (a)).
+
+---
+
 ## Open items
 
 ### O001 — Threshold T range (Phase C)

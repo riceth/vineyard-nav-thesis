@@ -34,7 +34,7 @@ torch.multiprocessing.set_sharing_strategy("file_system")
 
 from ultralytics import YOLO
 
-from segmentation.yolo_binary.visualize import (polygons_to_mask, yolo_lines_to_polygons,
+from ..yolo_binary.visualize import (polygons_to_mask, yolo_lines_to_polygons,
                                                 save_gt_pred_panel)
 
 REPO = Path("/workspaces/dissertation/vineyard_nav")

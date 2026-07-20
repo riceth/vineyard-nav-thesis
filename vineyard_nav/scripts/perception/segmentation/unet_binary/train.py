@@ -10,7 +10,7 @@ Run directory layout (PHASE_A_SPEC section 2):
     checkpoints/{best.pt,final.pt}  tensorboard/  metrics.csv
     config_snapshot.yaml  git_commit.txt  predictions/
 
-Smoke run (PHASE_A_SPEC 8.3): `python -m segmentation.unet_binary.train --smoke`
+Smoke run (PHASE_A_SPEC 8.3): `python -m scripts.perception.segmentation.unet_binary.train --smoke`
 runs 2 epochs on 50 train + 10 val samples and prints AMP diagnostics
 (backward-pass timing, per-iteration finite-loss checks, GradScaler scale).
 """

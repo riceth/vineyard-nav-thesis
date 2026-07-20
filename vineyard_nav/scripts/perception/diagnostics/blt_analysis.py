@@ -18,7 +18,7 @@ import cv2
 import pandas as pd
 
 ROOT = "/workspaces/dissertation/SemanticBLT.v1-2024-june.coco-segmentation"
-OUT = "/workspaces/dissertation/analysis/output"
+OUT = "/workspaces/dissertation/vineyard_nav/scripts/perception/diagnostics/output"
 SPLITS = ["train", "valid", "test"]
 
 # Real classes (Roboflow category 0 'trunks-trees-poles-sky-pipes' is an unused placeholder)

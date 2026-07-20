@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
-"""Phase C YOLOv11-seg MULTICLASS training (PHASE_C_SPEC section 6).
+"""Phase B YOLOv11-seg binary training (PHASE_B_SPEC section 6).
 
-Faithful copy of segmentation/yolo_binary/train.py — IDENTICAL training logic,
-differing only in the default config path (Phase C multiclass). Keeping the code
-identical (rather than importing across Phase B's committed module) guarantees the
-B <-> C comparison isolates class structure, not training procedure (D021, D025),
-while respecting "do not touch Phase B files". Decisions: D023 (YOLOv11-seg),
-D013 (augmentation parity), D016 (reproducibility). No test-set access (rule 5).
+Fine-tunes yolo11n-seg from COCO-pretrained weights on the binary YOLO labels
+produced by scripts/perception/pipeline/coco_to_yolo.py (O005). Decisions: D023 (YOLOv11-seg via
+ultralytics), D013 (augmentation parity), D016 (reproducibility). No test-set
+access here (rule 5).
 
-Smoke run: `python -m segmentation.yolo_multiclass.train --smoke` runs 2 epochs on
-a 10% subsample to check no-OOM + healthy loss before the full 100-epoch run.
+Smoke run (PHASE_B_SPEC 6.4): `python -m scripts.perception.segmentation.yolo_binary.train --smoke`
+runs 2 epochs on a 10% subsample (fraction=0.1) to check no-OOM + healthy loss
+before committing to the full 100-epoch run.
 """
 
 from __future__ import annotations
@@ -50,8 +49,8 @@ def git_commit() -> str:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Phase C YOLOv11-seg multiclass training.")
-    ap.add_argument("--config", default=str(REPO / "configs/phase_c_yolo_multiclass_train.yaml"))
+    ap = argparse.ArgumentParser(description="Phase B YOLOv11-seg binary training.")
+    ap.add_argument("--config", default=str(REPO / "configs/phase_b_yolo_binary_train.yaml"))
     ap.add_argument("--smoke", action="store_true",
                     help="2 epochs on a 10% subsample (no-OOM / loss sanity check).")
     args = ap.parse_args()
@@ -71,7 +70,7 @@ def main() -> None:
     data_path = (REPO / cfg["data"]) if not os.path.isabs(cfg["data"]) else Path(cfg["data"])
     train_args["data"] = str(data_path)
     # Make 'project' absolute too: a relative project gets nested under ultralytics'
-    # default runs/segment/ root, not the repo's results/runs/ (PHASE_C_SPEC §2).
+    # default runs/segment/ root, not the repo's results/runs/ (PHASE_B_SPEC §2).
     if not os.path.isabs(train_args["project"]):
         train_args["project"] = str(REPO / train_args["project"])
 

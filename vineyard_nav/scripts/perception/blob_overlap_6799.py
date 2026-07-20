@@ -23,9 +23,9 @@ import sys, json, itertools
 from pathlib import Path
 import numpy as np, cv2, torch
 torch.multiprocessing.set_sharing_strategy("file_system")
-REPO = Path(__file__).resolve().parents[3]; sys.path.insert(0, str(REPO))
+REPO = Path(__file__).resolve().parents[2]; sys.path.insert(0, str(REPO))
 from ultralytics import YOLO
-from segmentation.yolo_binary.visualize import polygons_to_mask
+from scripts.perception.segmentation.yolo_binary.visualize import polygons_to_mask
 
 FN = "color_image_6799_png.rf.f15c54ed282871cb6b824e4e111ec031.jpg"
 IMG = REPO / "data/yolo_binary/images/test" / FN          # same 6799 frame across data dirs
