@@ -6,7 +6,7 @@ The reproduction path is `scripts/perception/README.md`.
 
 Run from `vineyard_nav/` as `python3 scripts/perception/diagnostics/<name>.py`.
 
-## Scene-6799 forensics (the F007 blob failure)
+## Scene-6799 forensics — the whole-frame false mask
 
 Investigated why YOLO foreground IoU collapses on one canopy test scene. Diagnostic only —
 locked checkpoints, no retraining, no committed test metric.

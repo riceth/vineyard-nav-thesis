@@ -15,26 +15,29 @@ The geometric strand must have run first — this strand reads
 
 ## Reproduce, in order
 
-**Step 1 — Validate the native state gate (D042, F026)**
+**Step 1 — Validate the native state gate**
 ```bash
 python3 scripts/control/state_gate_native.py --bag march
 ```
-Re-derives the F022 runtime state gate on native bag twist and validates it.
+Re-derives the runtime check that decides whether the robot is actually driving along a row — and
+so whether its centreline should be trusted — this time from the robot's own measured velocity
+rather than from positions differenced offline, then measures how often it accepts and rejects
+correctly.
 → `results/geometric/<bag>/final/mitigation_evaluation/state_gate_native.json`
 Exports `load_native_signals` · `fit_forward_floor` · `native_gate`, which Step 2 imports.
 
-**Step 2 — Generate the command stream (P-1a, P-2a, P-5a, P-6, D043)**
+**Step 2 — Generate the command stream**
 ```bash
 python3 scripts/control/centreline_adapter.py --bag march     # optional: stream summary only
 python3 scripts/control/command_generator.py  --bag march
 ```
-`centreline_adapter.py` is a **library** (P-1a: 9 independent arm × seed streams); running it
+`centreline_adapter.py` is a **library** (9 independent arm × seed streams); running it
 directly just prints per-stream frame/abstention counts. `command_generator.py` wires the full
 stack — gate → PID → hold-last → ramp — and writes the command stream.
 → `results/geometric/<bag>/final/command_evaluation/command_per_frame.csv`
 → `results/geometric/<bag>/final/command_evaluation/command_summary.json`
 
-**Step 3 — Run the k-fold degeneracy check (P-4/4b, F027)**
+**Step 3 — Run the k-fold degeneracy check**
 ```bash
 python3 scripts/control/gain_kfold.py --bag march
 ```
@@ -48,11 +51,12 @@ against a stale command stream invalidates that check (it compares two different
 
 - **Gains are first-principles, not tuned.** `command_generator.derive_gains()` computes Kp/Kψ from
   the locked design point (ζ = 1.0, settling distance 20 m); Kd = Ki = 0. `derive_ramp_rate()`
-  likewise derives the P-6 slew limit. Changing `ZETA` / `D_SETTLE_M` changes all of them.
-- `gain_kfold.py` is **evidence for F027 (the tracking objective is degenerate), not a tuning step** —
+  likewise derives the slew limit. Changing `ZETA` / `D_SETTLE_M` changes all of them.
+- `gain_kfold.py` is **evidence that the tracking objective is degenerate, not a tuning step** —
   it does not produce usable gains, by design.
 - Both `command_per_frame.csv` outputs are produced with and without the ramp layer
-  (`omega_cmd` vs `omega_cmd_ramp`), per P-6.
+  (`omega_cmd` vs `omega_cmd_ramp`), so the smoothing can be measured rather than silently
+  absorbing perception jitter.
 
 ## Re-running on another bag
 

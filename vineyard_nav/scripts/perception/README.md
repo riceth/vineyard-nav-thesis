@@ -6,16 +6,18 @@ Phase B YOLO binary, Phase C YOLO multiclass). The flat `.py` files here are the
 `segmentation/` is the importable model package.
 
 **Run every command from `vineyard_nav/`.** Training and evaluation use `python -m` module
-invocation — the package path moved in **D045** (`segmentation.…` → `scripts.perception.segmentation.…`).
+invocation — the package path moved (`segmentation.…` → `scripts.perception.segmentation.…`).
 
 ## Reproduce, in order
 
-**1. Scene-level split (D028)** → writes `data/splits/resplit_70_20_10.json`
+**1. Scene-level split** — splits by *scene*, not by image, so augmented copies of the same scene
+cannot land on both sides of the split and inflate the scores
+→ writes `data/splits/resplit_70_20_10.json`
 ```bash
 python3 scripts/perception/resplit_dataset.py
 ```
 
-**2. COCO → YOLO labels (O005 / D025)** — consumes step 1's split manifest
+**2. COCO → YOLO labels** — consumes step 1's split manifest
 ```bash
 python3 scripts/perception/coco_to_yolo.py --mode binary
 python3 scripts/perception/coco_to_yolo.py --mode multiclass
@@ -39,12 +41,14 @@ python3 -m scripts.perception.segmentation.yolo_binary.evaluate --run-dir result
 ```
 Also emits `test_per_frame_metrics.csv`, which step 6 consumes.
 
-**5. Operating point (D030)** — selects `conf* = 0.25` for the YOLO arms
+**5. Operating point** — selects `conf* = 0.25` for the YOLO arms
 ```bash
 python3 scripts/perception/phase_b_conf_sweep.py
 ```
 
-**6. Bootstrap CIs (D020)** — consumes the per-frame CSV from step 4
+**6. Bootstrap confidence intervals** — resamples the test scenes to put an uncertainty range on
+each score, so small differences between arms are not over-read. Consumes the per-frame CSV
+from step 4.
 ```bash
 python3 scripts/perception/bootstrap.py \
   --per-frame-csv results/runs/<run>/test_per_frame_metrics.csv \
@@ -53,9 +57,12 @@ python3 scripts/perception/bootstrap.py \
 
 ## Also reusable (cited by the write-up, run as needed)
 
-- `median_conf_sweep.py` — supplementary median-based conf sweep (D030 note in DECISIONS.md).
-- `blob_overlap_6799.py --runs <run> <run> …` — regenerates the F007 / O009 cross-seed blob-overlap
-  comparison on test scene 6799.
+- `median_conf_sweep.py` — repeats the step-5 sweep using the median rather than the mean per-frame
+  score, so the operating point is not driven by a few catastrophic frames.
+- `blob_overlap_6799.py --runs <run> <run> …` — on one canopy test scene, several YOLO runs emit a
+  single huge false mask covering most of the frame. This regenerates the overlap comparison showing
+  those failures land in near-identical places across seeds and arms, i.e. it is a reproducible
+  architecture/scene interaction rather than a random bad run.
 
 ## `segmentation/` (package, not scripts)
 

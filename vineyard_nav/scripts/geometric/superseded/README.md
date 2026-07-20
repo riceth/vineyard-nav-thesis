@@ -2,20 +2,22 @@
 
 Retired scripts, kept for audit; **not** part of the reproduction path.
 
-## Row model — near-5 m Y-constant (D035)
+## Row model — near-5 m Y-constant
 
-- `yconstant_val_eval.py` — the original nine-model val evaluator, using the near-5 m
-  Y-constant row model (D035). Superseded by the hybrid clustering + far-field
-  extension + line-fit centreline pipeline (D036–D038). The current evaluator is
+- `yconstant_val_eval.py` — the original nine-model val evaluator, which modelled each row as a
+  constant lateral position across the near 5 m instead of fitting a sloped line. Superseded
+  by the current row model, which seeds on the densest near-field cluster, extends the fit to
+  agreeing far-field detections, and fits a sloped line per row. The current evaluator is
   the whole-bag pair `../line_fit_infer.py` + `../line_fit_eval.py`; the superseded
   output it produced lives at
   `results/geometric/march/superseded/yconstant_val_evaluation/`.
 
-## Val/test-split evaluators — superseded by the whole-bag pipeline (D040)
+## Val/test-split evaluators — superseded by the whole-bag pipeline
 
-The 11 scripts below were the per-split (val / test) March evaluators. Under
-**D040** the val/test split was pooled into a single whole-bag evaluation, and
-these were consolidated into the bag-agnostic pooled scripts in `../` (`--bag`):
+The 11 scripts below were the per-split (val / test) March evaluators. The split was dropped and
+every in-row frame pooled into a single evaluation — the split had served its purpose (locking the
+configuration without leakage) and pooling gives a larger sample and tighter confidence intervals.
+They were consolidated into the bag-agnostic pooled scripts in `../` (`--bag`):
 
 | Superseded (per-split) | Replaced by (whole-bag) |
 |---|---|
