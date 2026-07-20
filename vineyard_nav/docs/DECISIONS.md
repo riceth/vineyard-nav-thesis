@@ -134,6 +134,8 @@ For Phases B and C: ultralytics defaults, with augmentation intensity aligned to
 Statistical treatment: bootstrap CIs over per-frame metric differences for pairwise comparisons. Effect sizes alongside point estimates. No p-values.
 **Rationale:** Cross-arm comparability lives at the geometry and control levels where all arms feed identical pipelines. Perception metrics are internal to each arm.
 
+> **Amendment (19 July 2026, additive — the original D014 text above is unchanged).** D014's **"teleoperator commands" / "teleoperator trajectory"** language is **imprecise** and should be read with this correction going forward. The March bag carries `/current_node` and `/closest_node` (`std_msgs/String`, the topological-navigation stack), indicating the BLT run was **very likely under existing autonomous navigation, not hand-teleoperation**. The command-level strand's evaluation reference (`/odometry/base_raw.twist.angular.z`) should therefore be described as **"executed yaw-rate from the BLT autonomy run,"** not "teleoperator commands." (The geometric-strand phrase "teleoperator trajectory" is already footnoted *"driven-path in current terminology; BLT autonomous, Polvara 2024"* at strands 1–2 above and at D031/D-F; this amendment extends the same correction to strand 3.) See **D042** (native-twist signal source) and **PID_PIPELINE_SPEC.md**.
+
 ---
 
 ## D015 — Logging: TensorBoard + CSV
@@ -594,6 +596,59 @@ C sub-splits into **3,946 row-end stops** (`headland ∧ stationary`) + **1,895 
 **Documentation trail.** CP-0 contamination criteria (`GEOMETRY_PIPELINE_SPEC.md` §2, D-C); CP-1 eligibility criteria (`GEOMETRY_PIPELINE_SPEC.md` §3, §7, D-D — locked 11 Jul 2026); pooling scope (D040); operational cite-ready counts (`GEOMETRY_PIPELINE_SPEC.md` §3); non-in-row characterisation (Commit 6, F020+ as they land).
 
 **Cross-references.** D033 (CP-1 pass-level split of the eligible set); D040 (whole-bag pooling); CP-0 contamination census; `GEOMETRY_PIPELINE_SPEC.md` §3 (operational reference).
+
+---
+
+## D042 — PID state-gate signal source: native bag twist (supersedes F022's pose-finite-difference *for the control strand*)
+**Date:** 19 July 2026
+**Status:** LOCKED (signal-source decision). **Gate thresholds and rejection/FP rates are NOT yet validated** on the native signal — see the carry-over caveat below.
+**Refines:** F022 (state gate, `mitigation_analysis.py`); D014 command-level strand (+ its 19 Jul 2026 amendment). **Feeds:** `PID_PIPELINE_SPEC.md` §1, §3. **Does not alter** the March geometric strand — F022's numbers stand as the *geometric-strand* mitigation result.
+
+**Decision.** For the PID/control strand the state gate reads the robot's **native measured twist from the bag**, rather than re-deriving velocity from `/robot_pose` position replay (F022's approach in `mitigation_analysis.py`):
+- **Primary signals** — `/odometry/base_raw` (`nav_msgs/Odometry`), field `twist.twist`: `linear.x` (v_x, forward), `linear.y` (v_y, lateral), `angular.z` (yaw-rate). Frame `base_link`; frame-synced 1:1 with each camera frame (timestamps byte-identical to the RGB topic — verified).
+- **Cross-check** — `/imu/data.angular_velocity.z` (independent measured yaw-rate), read alongside and used to sanity-check the odometry yaw-rate (agreement reported; disagreement flagged), in the spirit of F017's sensor-common cross-check.
+
+**Rationale.** A real onboard controller reads the measured body twist directly from the base/odometry EKF; it does not have access to an offline, whole-trajectory, 15-sample **centred** (i.e. **non-causal** — it peeks at future frames) finite-difference of a GPS-fused global position. Native twist is therefore **more representative of deployed behaviour**, is causal, and is the signal F022's pose-difference gate was only a proxy for.
+
+**Carry-over caveat (must be honoured before the native gate is used as validated).** F022's validated numbers — **98.4 % non-in-row rejection, 1.2 % in-row false-positive**, at HR_THRESH = in-row p99 = **22.1 deg/s** — were derived on the **pose-finite-difference** signal and **do NOT transfer automatically** to native twist (different noise, bias, latency, scaling). Therefore, before use:
+1. Re-fit the equivalent gate thresholds (`v_min`, `|v_y|` floor, heading-rate ceiling) against the native signal, using F022's in-row-p99 methodology (or an explicitly documented variant).
+2. Re-derive and re-validate the **non-in-row rejection rate** and the **in-row false-positive rate** on the native signal.
+3. Report the result as a **new finding (F026, or the next available number — D044)**, presented **alongside the original F022** so the two signal sources are directly comparable. Until that finding lands, the native-twist gate is **not** treated as validated.
+
+**Cross-references.** F022 (superseded *for the control strand only*; stands for the geometric strand); F017 (sensor-common cross-check precedent); D043 (the other control-strand runtime layer); D044 (findings numbering); `PID_PIPELINE_SPEC.md` §1, §3.
+
+> **Amendment (20 July 2026, additive — the D042 decision above stands; this corrects the gate's *predicate*, per the CP-P1 result F026).** The native gate was scoped as F022's three predicates re-fitted (speed, along-row `|v_y|`, heading-rate). CP-P1 showed this rests on a **world-frame-vs-body-frame error**: `/odometry/base_raw.twist.linear.y` is **body-lateral slip** (~0.05 m/s in-row), **not** the world-frame along-row velocity F022's `v_y` measured — a literal `|v_y| > 0.30` keep-predicate retains only **1.5%** of in-row frames. In the base_link body frame F022's "moving" and "moving-along-row" predicates **both collapse to forward `v_x`**, and the turn predicate is **inactive** (on native signals it adds **zero** marginal non-in-row rejection and only in-row false positives — so keeping it "for F022 parity" is not a real justification). **The locked native gate is therefore a single forward-speed predicate: `v_x > V_MIN`** (V_MIN = in-row p1 of `v_x` = **0.30 m/s**), turn predicate **dropped**. **Validated performance (F026): 97.5–97.6 % non-in-row rejection at 0.9 % in-row FP**, arm-invariant — reproducing F022's 98.4 % / 1.2 % on the deployable causal signal (the ~0.8 pp rejection shortfall is the transition category, a genuine body-frame limitation, not tuning). The odom yaw-rate is additionally an unreliable standalone signal (disagrees with the IMU gyro — F026), but the locked gate does not use it. See **F026** and `PID_PIPELINE_SPEC.md` §3.
+
+---
+
+## D043 — F024 abstention handling: hold-last-command + dual-metric evaluation
+**Date:** 19 July 2026
+**Status:** LOCKED
+**Refines:** F024 (in-row abstention, `single_row_analysis.py`). **Feeds:** `PID_PIPELINE_SPEC.md` §6 (hold logic + span flagging), §7 (dual-metric definition).
+
+**Decision (controller behaviour).** When the pipeline emits **no centreline** for a frame (`cls != two_row` — i.e. `single_row` or `none`, the F024 abstention set, **12.8–13.9 %** of in-row frames), the controller **holds its last valid commanded yaw-rate** (the most recent command produced from a `two_row` frame). "Hold-last" is the **actual runtime behaviour to implement**, not merely an evaluation convenience. *(Forward-linear-velocity handling during a hold, and any hold-duration safety cap, are open sub-questions for the spec — not decided here.)*
+
+**Decision (evaluation).** Command-level tracking and smoothness metrics are computed **twice** over the same in-row frame stream:
+1. **Inclusive** — over **all** in-row frames, including held-command frames.
+2. **Exclusive** — over **only** the frames where the pipeline produced a fresh centreline (held frames removed).
+
+Reporting both makes the **effect of held commands on the metric visible** rather than silently absorbed (a held command can flatter a smoothness metric and distort a tracking metric). Both are documented as **two views of the same finding**, not competing findings — the difference between them *is* the quantified command-level cost of abstention.
+
+**Rationale.** F024 established that abstention is evidence-based conservatism (not failure) and is arm-consistent (≤1.1 pp spread). Hold-last is the minimal safe response that neither fabricates a centreline nor stops dead mid-row. Inclusive-vs-exclusive reporting keeps the command-level comparison honest and cross-arm-fair — all arms abstain at similar rates, so the dual metric stays comparable across arms.
+
+**Cross-references.** F024 (abstention characterisation); D042 (the other runtime layer); D044 (findings numbering); `PID_PIPELINE_SPEC.md` §6, §7.
+
+---
+
+## D044 — PID/control-strand findings numbering
+**Date:** 19 July 2026
+**Status:** LOCKED
+
+**Decision.** PID/control-strand findings **continue the main `F0xx` series in `FINDINGS.md`** (next available number; the first is expected to be **F026**, under D042's re-validation requirement). There is **no separate `PID_FINDINGS.md` file**. This mirrors how the geometric-strand findings (F010–F025) were tracked: one findings file, one monotonic series, with the four-part writeup discipline.
+
+**Rationale.** A single findings series keeps cross-strand references simple (e.g. a control finding citing F013's centreline RMS or F022's gate) and keeps the marker-facing narrative in one place. Separate files fragment the audit trail with no benefit.
+
+**Cross-references.** `FINDINGS.md` (F010–F025 geometric strand); D042 (expects F026); D043; `PID_PIPELINE_SPEC.md`.
 
 ---
 
