@@ -1,0 +1,136 @@
+{
+  "config": {
+    "bag": "march",
+    "finding": "F026",
+    "signal_source": "native /odometry/base_raw.twist (D042) + /imu/data cross-check",
+    "locked_gate": "v_x > V_MIN  [single body-frame forward-speed predicate; turn predicate dropped]",
+    "threshold_construction": "V_MIN = in-row p1 of v_x (F022 in-row-percentile methodology)",
+    "n_in_row_frames": 7857,
+    "n_non_in_row_frames": 5841,
+    "frame_correction_note": "D042/\u00a73 corrected 20 Jul 2026 (F026): F022's three world-frame predicates collapse to one native body-frame forward-speed predicate; body v_y is lateral slip (see spec3_check); the turn predicate is dropped (see turn_predicate_decomposition)."
+  },
+  "F026_locked_gate": {
+    "gate": "v_x > V_MIN",
+    "V_MIN_ms": 0.296,
+    "non_in_row_rejection": {
+      "per_arm": {
+        "A": {
+          "n": 8413,
+          "reject_%": 97.5
+        },
+        "B": {
+          "n": 9144,
+          "reject_%": 97.6
+        },
+        "C": {
+          "n": 8876,
+          "reject_%": 97.6
+        }
+      },
+      "per_category": {
+        "stationary": {
+          "A": 100.0,
+          "B": 100.0,
+          "C": 100.0
+        },
+        "turn": {
+          "A": 96.6,
+          "B": 96.4,
+          "C": 96.6
+        },
+        "transition": {
+          "A": 91.9,
+          "B": 92.2,
+          "C": 92.0
+        }
+      }
+    },
+    "in_row_FP": {
+      "per_arm": {
+        "A": {
+          "n": 19166,
+          "reject_%": 0.9
+        },
+        "B": {
+          "n": 19234,
+          "reject_%": 0.9
+        },
+        "C": {
+          "n": 19049,
+          "reject_%": 0.9
+        }
+      }
+    }
+  },
+  "turn_predicate_decomposition": {
+    "note": "Adding a turn predicate `& (|yaw| < in-row p99)` on top of the forward-speed floor adds ZERO non-in-row rejection (headland pivots already fail the v_x floor) and only in-row false positives -> the turn predicate is dropped from the locked gate.",
+    "odom_yaw": {
+      "source": "/odometry/base_raw.twist.angular.z",
+      "HR_THRESH_deg_s": 13.394,
+      "added_nonrow_frame_rejections": 0,
+      "added_inrow_frame_FP": 72,
+      "two_predicate_non_in_row_rejection_%": {
+        "A": 97.5,
+        "B": 97.6,
+        "C": 97.6
+      },
+      "two_predicate_in_row_FP_%": {
+        "A": 1.8,
+        "B": 1.8,
+        "C": 1.8
+      }
+    },
+    "imu_yaw": {
+      "source": "/imu/data.angular_velocity.z",
+      "HR_THRESH_deg_s": 3.469,
+      "added_nonrow_frame_rejections": 0,
+      "added_inrow_frame_FP": 77,
+      "two_predicate_non_in_row_rejection_%": {
+        "A": 97.5,
+        "B": 97.6,
+        "C": 97.6
+      },
+      "two_predicate_in_row_FP_%": {
+        "A": 1.7,
+        "B": 1.7,
+        "C": 1.8
+      }
+    }
+  },
+  "sensor_crosscheck_odom_vs_imu": {
+    "corr_moving": -0.43,
+    "abs_corr_moving": 0.425,
+    "mean_abs_diff_deg_s": 2.054,
+    "max_abs_diff_deg_s": 51.29,
+    "odom_inrow_p99_deg_s": 13.39,
+    "imu_inrow_p99_deg_s": 3.47,
+    "odom_inrow_max_deg_s": 103.4,
+    "imu_inrow_max_deg_s": 7.6,
+    "note": "Unlike F017 (camera + LiDAR AGREE on tilt), odom twist yaw-rate and the IMU gyro DISAGREE: signed correlation is near-zero/negative and odom carries a heavy noise tail in-row (max >100 deg/s vs IMU ~8). The locked gate does not use yaw at all, so it is unaffected; but /odometry/base_raw.twist.angular.z is not a reliable standalone yaw-rate on this bag."
+  },
+  "spec3_frame_error_check": {
+    "literal_vy_gt_030_inrow_retained_pct": 1.5,
+    "native_vy_inrow_mean_ms": 0.05,
+    "native_vx_inrow_mean_ms": 0.769,
+    "note": "A literal reading of the original PID_PIPELINE_SPEC.md \u00a73 ('native |v_y| replaces the finite-difference v_y') retains only ~1.5% of in-row frames -> body v_y is lateral slip, not along-row velocity. \u00a73 corrected to forward v_x."
+  },
+  "F022_reference": {
+    "signal": "pose-finite-difference (offline, 15-sample centred \u2014 non-causal)",
+    "gate": "speed>0.10 & |along-row v_y|>0.30 & |heading-rate|<22.1deg/s (3 world-frame predicates)",
+    "non_in_row_rejection_%": {
+      "A": 98.4,
+      "B": 98.5,
+      "C": 98.4
+    },
+    "in_row_FP_%": {
+      "A": 1.2,
+      "B": 1.2,
+      "C": 1.2
+    },
+    "per_category_%": {
+      "stationary": 100.0,
+      "turn": "95.1-95.3",
+      "transition": "95.7-96.0"
+    }
+  }
+}
