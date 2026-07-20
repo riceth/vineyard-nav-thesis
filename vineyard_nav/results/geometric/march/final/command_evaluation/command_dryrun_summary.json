@@ -1,0 +1,153 @@
+{
+  "status": "CP-P2 DRY RUN \u2014 plumbing/wiring check; gains are PLACEHOLDERS, not tuned (CP-P3). NOT a finding.",
+  "config": {
+    "bag": "march",
+    "streams": "P-1a: 9 independent (arm x seed) streams, per-pass state reset",
+    "gate": "P-5a locked native gate v_x > 0.296 m/s (D042/F026)",
+    "pid": "P-2a weighted-sum on offset(m)+heading(deg)",
+    "PLACEHOLDER_gains": {
+      "Kp": 0.04,
+      "Kpsi": 0.0015,
+      "Kd": 0.01,
+      "Ki": 0.003
+    },
+    "sign_convention": "+1 corrective (FLAGGED for CP-P3)",
+    "anti_windup": "conditional integration (freeze integral on saturation, P-6)",
+    "omega_max_rad_s": 0.06055,
+    "omega_max_source": "IMU-gyro in-row p99 (F026: odom yaw-rate noise-inflated, unreliable)",
+    "omega_max_odom_rad_s_for_reference": 0.23377,
+    "ramp_rate_rad_s2": 0.3,
+    "ramp_note": "toggleable P-6 layer; omega_cmd (off) + omega_cmd_ramp (on)",
+    "executed_yaw_reference": "omega_exec_odom (spec \u00a77a) + omega_exec_imu (F026 alternative) both logged"
+  },
+  "per_stream": {
+    "A_42": {
+      "n": 7857,
+      "fresh": 6314,
+      "held": 1543,
+      "held_abstain": 1489,
+      "held_state_gate": 79,
+      "held_both": 25,
+      "hold_spans": 203,
+      "max_hold_run": 143,
+      "mean_hold_run": 7.6,
+      "saturated_frames": 138,
+      "ramp_changed_frames": 386
+    },
+    "A_43": {
+      "n": 7857,
+      "fresh": 6387,
+      "held": 1470,
+      "held_abstain": 1413,
+      "held_state_gate": 79,
+      "held_both": 22,
+      "hold_spans": 209,
+      "max_hold_run": 147,
+      "mean_hold_run": 7.03,
+      "saturated_frames": 124,
+      "ramp_changed_frames": 414
+    },
+    "A_44": {
+      "n": 7857,
+      "fresh": 6298,
+      "held": 1559,
+      "held_abstain": 1503,
+      "held_state_gate": 79,
+      "held_both": 23,
+      "hold_spans": 207,
+      "max_hold_run": 140,
+      "mean_hold_run": 7.53,
+      "saturated_frames": 150,
+      "ramp_changed_frames": 426
+    },
+    "B_42": {
+      "n": 7857,
+      "fresh": 6253,
+      "held": 1604,
+      "held_abstain": 1547,
+      "held_state_gate": 79,
+      "held_both": 22,
+      "hold_spans": 295,
+      "max_hold_run": 141,
+      "mean_hold_run": 5.44,
+      "saturated_frames": 155,
+      "ramp_changed_frames": 428
+    },
+    "B_43": {
+      "n": 7857,
+      "fresh": 6395,
+      "held": 1462,
+      "held_abstain": 1407,
+      "held_state_gate": 79,
+      "held_both": 24,
+      "hold_spans": 261,
+      "max_hold_run": 122,
+      "mean_hold_run": 5.6,
+      "saturated_frames": 190,
+      "ramp_changed_frames": 497
+    },
+    "B_44": {
+      "n": 7857,
+      "fresh": 6415,
+      "held": 1442,
+      "held_abstain": 1383,
+      "held_state_gate": 79,
+      "held_both": 20,
+      "hold_spans": 319,
+      "max_hold_run": 136,
+      "mean_hold_run": 4.52,
+      "saturated_frames": 236,
+      "ramp_changed_frames": 529
+    },
+    "C_42": {
+      "n": 7857,
+      "fresh": 6289,
+      "held": 1568,
+      "held_abstain": 1510,
+      "held_state_gate": 79,
+      "held_both": 21,
+      "hold_spans": 289,
+      "max_hold_run": 129,
+      "mean_hold_run": 5.43,
+      "saturated_frames": 159,
+      "ramp_changed_frames": 434
+    },
+    "C_43": {
+      "n": 7857,
+      "fresh": 6306,
+      "held": 1551,
+      "held_abstain": 1492,
+      "held_state_gate": 79,
+      "held_both": 20,
+      "hold_spans": 281,
+      "max_hold_run": 130,
+      "mean_hold_run": 5.52,
+      "saturated_frames": 182,
+      "ramp_changed_frames": 502
+    },
+    "C_44": {
+      "n": 7857,
+      "fresh": 6280,
+      "held": 1577,
+      "held_abstain": 1520,
+      "held_state_gate": 79,
+      "held_both": 22,
+      "hold_spans": 290,
+      "max_hold_run": 136,
+      "mean_hold_run": 5.44,
+      "saturated_frames": 222,
+      "ramp_changed_frames": 475
+    }
+  },
+  "overall": {
+    "n": 70713,
+    "fresh": 56937,
+    "held": 13776,
+    "held_abstain": 13264,
+    "held_state_gate": 711,
+    "held_both": 199,
+    "hold_spans": 2354,
+    "saturated_frames": 1556,
+    "ramp_changed_frames": 4091
+  }
+}
