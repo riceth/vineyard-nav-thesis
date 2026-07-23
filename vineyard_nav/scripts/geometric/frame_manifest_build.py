@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """CP-1 frame-manifest builder (GEOMETRY_PIPELINE_SPEC.md §3; D033 passes; D040 whole-bag; D041).
+Bag-parametrised.
 
-Pairs every kg_march_23 bag camera frame with its /robot_pose, flags contamination (CP-0
+Pairs every bag camera frame with its /robot_pose, flags contamination (CP-0
 exclusion intervals), stationary (smoothed v < V_MIN) and headland (not in an in-row pass),
 assigns each in-row frame a corridor and a PASS id (individual corridor traversal), and marks
 the Delta_s = 1.5 m spatial-independence subsample. Under the whole-bag treatment (D040) there is
@@ -10,22 +11,20 @@ subsample is a single greedy pass over ALL eligible frames (not per-split). The 
 evaluated whole-bag dataset (D041); pass-level structure (D033) is retained for the block-bootstrap.
 
 Deterministic, read-only w.r.t. dataset/bag. Writes:
-  results/geometric/march/dataset_manifest.json    (all 16,656 frames + flags/marker/subsample)
-  results/geometric/march/manifest_summary.json     (whole-bag counts per pass / per corridor)
+  results/geometric/{bag}/dataset_manifest.json    (all bag frames + flags/marker/subsample)
+  results/geometric/{bag}/manifest_summary.json     (whole-bag counts per pass / per corridor)
 
-Run:  python3 vineyard_nav/scripts/geometric/frame_manifest_build.py
+Run:  python3 scripts/geometric/frame_manifest_build.py --bag april
 """
 from __future__ import annotations
-import sqlite3, json, collections
+import sys, sqlite3, json, collections
 from pathlib import Path
 import numpy as np
 from rosbags.typesys import Stores, get_typestore
 
 GIT = Path(__file__).resolve().parents[3]; PKG = Path(__file__).resolve().parents[2]
-DB3 = GIT / "kg_march_23_ros2" / "kg_march_23_ros2.db3"
-CP0 = PKG / "results/geometric/march/contamination_census_exclusions.json"
-OUT = PKG / "results/geometric/march/dataset_manifest.json"
-SUMMARY = PKG / "results/geometric/march/manifest_summary.json"
+sys.path.insert(0, str(PKG / "scripts" / "geometric"))
+from bag_config import parse_bag
 CAM = "/front/zed_node/rgb/image_rect_color/compressed"
 TS = get_typestore(Stores.ROS2_HUMBLE)
 
@@ -33,6 +32,16 @@ V_MIN, VY_INROW, PASS_MIN_Y, DS_SUB = 0.10, 0.30, 10.0, 1.5
 
 
 def main() -> None:
+    B = parse_bag()
+    bag, DB3, CP0 = B["bag"], B["db3"], B["census"]
+    OUT, SUMMARY = B["manifest"], B["manifest_summary"]
+    if not DB3.exists():
+        raise SystemExit(f"ROS2 bag not found: {DB3}\n"
+                         f"Convert it first:  python3 scripts/geometric/convert_bag.py --bag {bag}")
+    if not CP0.exists():
+        raise SystemExit(f"CP-0 census not found: {CP0}\n"
+                         f"Run it first:  python3 scripts/geometric/contamination_census.py --bag {bag}")
+
     con = sqlite3.connect(str(DB3)); cur = con.cursor()
     tid = cur.execute("SELECT id FROM topics WHERE name=?", (CAM,)).fetchone()[0]
     cam = np.array([r[0] for r in cur.execute(
@@ -79,7 +88,11 @@ def main() -> None:
     for pid, (a, b, xm) in enumerate(passes):
         corridor[a:b] = int(np.argmin([abs(xm - c) for c in centres]))
         pass_id[a:b] = pid
-    assert len(passes) == 11, f"expected 11 passes, got {len(passes)}"
+    exp = B["expected_passes"]
+    if exp is not None:
+        assert len(passes) == exp, f"[{bag}] expected {exp} in-row passes, got {len(passes)}"
+    else:
+        print(f"[{bag}] {len(passes)} in-row passes detected (no expected count configured for this bag)")
 
     # contamination (CP-0)
     contaminated = np.zeros(N, bool)
@@ -124,7 +137,7 @@ def main() -> None:
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps({
-        "meta": {"checkpoint": "CP-1", "bag": "kg_march_23", "frames": N,
+        "meta": {"checkpoint": "CP-1", "bag": B["src_bag"].stem, "frames": N,
                  "eval_unit": "whole-bag eligible (D040)", "params": {"v_min": V_MIN, "vy_inrow": VY_INROW,
                  "pass_min_y_m": PASS_MIN_Y, "subsample_ds_m": DS_SUB}},
         "summary": summ,

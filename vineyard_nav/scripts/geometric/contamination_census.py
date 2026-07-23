@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""CP-0 — March-bag contamination census (GEOMETRY_PIPELINE_SPEC.md §2, §9).
+"""CP-0 — per-bag contamination census (GEOMETRY_PIPELINE_SPEC.md §2, §9). Bag-parametrised.
 
-Locates every unique March-labelled SemanticBLT scene inside the kg_march_23 bag by
+Locates every unique SemanticBLT scene labelled from THIS bag's month inside the bag by
 content frame-matching, so the corresponding bag frames can be EXCLUDED from the
 geometric-strand evaluation set (they are training/val/test data the models have
 seen). Produces the per-scene match table + the merged ±w exclusion intervals.
@@ -25,12 +25,15 @@ Method (robust to Roboflow augmentation of train scenes):
      merge overlaps.
 
 Deterministic; read-only w.r.t. the dataset and bag. Uses the ROS2 `.db3` (fast: pulls
-only the camera topic). Writes results/geometric/march/contamination_census_exclusions.json.
+only the camera topic). Writes results/geometric/{bag}/contamination_census_exclusions.json.
 
-Run:  python3 vineyard_nav/scripts/geometric/contamination_census.py
+A bag whose month has NO labelled scenes (`scene_prefix` None, or zero matches) is valid and
+yields an empty exclusion list — that bag simply has no perception-training contamination.
+
+Run:  python3 scripts/geometric/contamination_census.py --bag april
 """
 from __future__ import annotations
-import sqlite3, glob, json, re, time, datetime, collections
+import sys, sqlite3, glob, json, re, time, datetime, collections
 from pathlib import Path
 import numpy as np
 import cv2
@@ -38,10 +41,10 @@ from rosbags.typesys import Stores, get_typestore
 
 GIT_ROOT = Path(__file__).resolve().parents[3]          # /workspaces/dissertation
 PKG = Path(__file__).resolve().parents[2]               # vineyard_nav
+sys.path.insert(0, str(PKG / "scripts" / "geometric"))
+from bag_config import parse_bag
 DATASET = GIT_ROOT / "SemanticBLT.v1-2024-june.coco-segmentation"
-DB3 = GIT_ROOT / "kg_march_23_ros2" / "kg_march_23_ros2.db3"
 CAM = "/front/zed_node/rgb/image_rect_color/compressed"
-OUT = PKG / "results" / "geometric" / "march" / "contamination_census_exclusions.json"
 
 COARSE = 10          # coarse-bank stride (frames)
 FINE = 30            # fine local search half-width (frames)
@@ -62,18 +65,25 @@ def _img_descs(path: str) -> list[np.ndarray]:
 
 
 def main() -> None:
-    # 1. unique March scenes -> all version file paths
+    B = parse_bag()
+    bag, prefix, DB3, OUT = B["bag"], B["scene_prefix"], B["db3"], B["census"]
+    if not DB3.exists():
+        raise SystemExit(f"ROS2 bag not found: {DB3}\n"
+                         f"Convert it first:  python3 scripts/geometric/convert_bag.py --bag {bag}")
+
+    # 1. unique scenes labelled from THIS bag's month -> all version file paths
     scene_files: dict[str, list[str]] = collections.defaultdict(list)
     scene_split: dict[str, str] = {}
-    for split in ("train", "valid", "test"):
-        coco = json.load(open(DATASET / split / "_annotations.coco.json"))
-        for im in coco["images"]:
-            base = re.sub(r"_png\.rf\..*", "", im["file_name"])
-            if base.startswith("march"):
-                scene_files[base].append(str(DATASET / split / im["file_name"]))
-                scene_split[base] = split
-    march = sorted(scene_files)
-    print(f"unique March scenes: {len(march)} "
+    if prefix:
+        for split in ("train", "valid", "test"):
+            coco = json.load(open(DATASET / split / "_annotations.coco.json"))
+            for im in coco["images"]:
+                base = re.sub(r"_png\.rf\..*", "", im["file_name"])
+                if base.startswith(prefix):
+                    scene_files[base].append(str(DATASET / split / im["file_name"]))
+                    scene_split[base] = split
+    scenes = sorted(scene_files)
+    print(f"[{bag}] unique '{prefix}'-labelled scenes: {len(scenes)} "
           f"({dict(collections.Counter(scene_split.values()))})", flush=True)
 
     # 2. bag front-camera frame ids + timestamps, coarse descriptor bank
@@ -96,6 +106,26 @@ def main() -> None:
         cache[i] = d
         return d
 
+    # No labelled scenes from this month => no perception-training contamination. Write a valid
+    # empty census (so CP-1 can consume it unconditionally) and skip the expensive descriptor bank.
+    if not scenes:
+        OUT.parent.mkdir(parents=True, exist_ok=True)
+        OUT.write_text(json.dumps({
+            "meta": {"checkpoint": "CP-0",
+                     "generated": datetime.datetime.now().isoformat(timespec="seconds"),
+                     "bag": bag, "src_bag": B["src_bag"].name, "db3": str(DB3.relative_to(GIT_ROOT)),
+                     "camera_topic": CAM, "bag_frames": N, "scene_prefix": prefix,
+                     "note": ("no SemanticBLT scenes are labelled from this bag's month, so no bag "
+                              "frames were seen in perception training — exclusion list is empty "
+                              "by construction, not by failure.")},
+            "summary": {"unique_scenes": 0, "located": 0, "truly_unlocated": 0,
+                        "n_merged_intervals": 0, "excluded_frames": 0,
+                        "excluded_pct_of_bag": 0.0, "eligible_frames_after_exclusion": N},
+            "per_scene": [], "merged_exclusion_intervals_frames": []}, indent=2))
+        print(f"CP-0 [{bag}]: no '{prefix}'-labelled scenes -> empty exclusion list ({N} bag frames)")
+        print(f"saved -> {OUT.relative_to(GIT_ROOT)}")
+        return
+
     t_start = time.time()
     coarse_idx = list(range(0, N, COARSE))
     bank = np.stack([bagdesc(i) for i in coarse_idx])
@@ -103,7 +133,7 @@ def main() -> None:
 
     # 3. match each scene over all versions + flips
     results = []
-    for k, base in enumerate(march):
+    for k, base in enumerate(scenes):
         best = (-1.0, -1, None)  # corr, frame, via
         for path in scene_files[base]:
             for via, td in zip(("plain", "flip"), _img_descs(path)):
@@ -118,7 +148,7 @@ def main() -> None:
                         "corr": round(corr, 3), "matched_via": via,
                         "confidence": "high" if corr >= CORR_HI else "low"})
         if k % 25 == 0:
-            print(f"  matched {k+1}/{len(march)} ({time.time()-t_start:.0f}s)", flush=True)
+            print(f"  matched {k+1}/{len(scenes)} ({time.time()-t_start:.0f}s)", flush=True)
 
     # 4. exclusion windows (frame intervals) over ALL located scenes
     dt_frame = (tss[-1] - tss[0]) / 1e9 / (N - 1)
@@ -136,7 +166,8 @@ def main() -> None:
     out = {
         "meta": {
             "checkpoint": "CP-0", "generated": datetime.datetime.now().isoformat(timespec="seconds"),
-            "bag": "kg_march_23.bag", "db3": str(DB3.relative_to(GIT_ROOT)),
+            "bag": bag, "src_bag": B["src_bag"].name, "db3": str(DB3.relative_to(GIT_ROOT)),
+            "scene_prefix": prefix,
             "camera_topic": CAM, "bag_frames": N,
             "params": {"coarse_stride": COARSE, "fine_halfwidth": FINE,
                        "window_sec": W_SEC, "window_frames_each_side": wf,
@@ -146,7 +177,7 @@ def main() -> None:
                      "verified correct — treated as located."),
         },
         "summary": {
-            "unique_march_scenes": len(results), "located": len(results), "truly_unlocated": 0,
+            "unique_scenes": len(results), "located": len(results), "truly_unlocated": 0,
             "high_confidence": sum(r["confidence"] == "high" for r in results),
             "low_confidence_verified": sum(r["confidence"] == "low" for r in results),
             "by_split": dict(collections.Counter(r["split"] for r in results)),
@@ -164,7 +195,7 @@ def main() -> None:
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(out, indent=2))
     s = out["summary"]
-    print(f"\nCP-0: {s['located']}/{s['unique_march_scenes']} located "
+    print(f"\nCP-0 [{bag}]: {s['located']}/{s['unique_scenes']} located "
           f"(high {s['high_confidence']}, low-verified {s['low_confidence_verified']}); "
           f"{s['n_merged_intervals']} intervals, {s['excluded_frames']} frames "
           f"({s['excluded_pct_of_bag']}% of bag); span {s['t_offset_span_min']} min")

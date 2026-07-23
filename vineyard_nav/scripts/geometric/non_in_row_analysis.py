@@ -52,6 +52,16 @@ def category(i):
 cat = {i: category(i) for i in frames_for_scope(MAN, "non_in_row")}
 catcount = collections.Counter(cat.values())
 
+# This analysis is defined over the NON-IN-ROW stratum (cat, above, is hardcoded to it), but PF is
+# resolved from --scope. Running without `--scope non_in_row` points PF at the in-row CSV, whose
+# frame indices are DISJOINT from cat (D041) — every row is skipped and the result is empty/garbage.
+# Fail loudly rather than silently analyse the wrong file. (Sixth single-bag-shaped footgun; D046f.)
+if B["scope"] != "non_in_row":
+    raise SystemExit(
+        f"non_in_row_analysis requires --scope non_in_row (got '{B['scope']}'): this analysis is "
+        f"defined over the non-in-row stratum, but --scope resolves the per-frame CSV path. Re-run "
+        f"with:  python3 scripts/geometric/non_in_row_analysis.py --bag {B['bag']} --scope non_in_row")
+
 # --- parse the non-in-row per-frame CSV -------------------------------------------------------
 cls_by = collections.defaultdict(collections.Counter)      # (arm, cat) -> cls counts (all seeds)
 two = collections.defaultdict(list)                        # (arm, cat) -> [(offset, heading)] two_row

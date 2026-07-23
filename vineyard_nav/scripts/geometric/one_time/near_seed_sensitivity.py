@@ -97,8 +97,18 @@ def project_sides(base_pts):
 
 
 def build_cache():
-    cache = {}
+    # RESUME-SAFE (revised 23 Jul 2026 after three real dev-container drops lost ~90 min of caching;
+    # the earlier fail-loud-only version refused a partial cache and forced --refresh, discarding
+    # completed streams). A per-stream save leaves finished streams on disk; on restart we rebuild
+    # ONLY the missing streams. Safety property preserved: a partial cache is never SWEPT as if
+    # complete -- it is detected and repaired here before any sweep, never accepted wholesale.
+    cache = {} if (A_.refresh or not CACHE.exists()) else pickle.load(open(CACHE, "rb"))
+    if cache:
+        print(f"resuming from {len(cache)} cached frame-models", flush=True)
     for (arm, seed, typ, ckpt) in MODELS:
+        if all((arm, seed, fi) in cache for fi in FRAMES):
+            print(f"[cache {arm} s{seed}] already complete — skipping", flush=True)
+            continue
         print(f"[cache {arm} s{seed}] {len(FRAMES)} frames ...", flush=True)
         if typ == "yolo":
             m = YOLO(str(PKG / "results/runs" / ckpt)); front = lambda im: yolo_base(m, im)
@@ -112,7 +122,7 @@ def build_cache():
             cache[(arm, seed, fi)] = project_sides(front(img))
         del m; torch.cuda.empty_cache()
         CACHE.parent.mkdir(parents=True, exist_ok=True)
-        pickle.dump(cache, open(CACHE, "wb"))        # incremental save (survives a late crash)
+        pickle.dump(cache, open(CACHE, "wb"))       # per-stream save = the resume point
         print(f"  cached {arm} s{seed} (total {len(cache)} frame-models)", flush=True)
     return cache
 
@@ -120,6 +130,13 @@ def build_cache():
 if CACHE.exists() and not A_.refresh:
     print(f"loading base-point cache {CACHE}")
     cache = pickle.load(open(CACHE, "rb"))
+    want = {(arm, seed, fi) for (arm, seed, _, _) in MODELS for fi in FRAMES}
+    missing = want - set(cache)
+    if missing:
+        # Partial cache (interrupted run): repair the missing streams, never sweep it as complete.
+        print(f"cache INCOMPLETE ({len(cache)}/{len(want)} frame-models, {len(missing)} missing) — "
+              f"written by an interrupted run; rebuilding only the missing streams", flush=True)
+        cache = build_cache()
 else:
     cache = build_cache()
 

@@ -301,6 +301,7 @@ def main():
         "sim_equivalence_check": verify,
         "kfold": out}
     OUT = B["out_dir"].parent / "command_evaluation" / "gain_kfold.json"
+    OUT.parent.mkdir(parents=True, exist_ok=True)   # own the output dir — don't rely on command_generator having run first
     OUT.write_text(json.dumps(report, indent=2))
 
     # ---- console ------------------------------------------------------------------------------

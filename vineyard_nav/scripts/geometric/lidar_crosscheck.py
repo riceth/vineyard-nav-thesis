@@ -7,6 +7,11 @@ extrinsic) vs the camera line-fit heading (per-frame CSV, mean across all 9 mode
 arm-independent) on anchor frames spanning all corridors: PER_CORR mid-pass anchors per corridor,
 drawn from the Phase C seed-42 two_row frames. Confirms F017 (row tilt is sensor-common, not a
 camera artefact) on the whole bag.
+
+Anchors are sampled at the TRUE midpoint of one traversal per corridor (see the selection block
+below). Row-exit frames are avoided deliberately: near the end of a pass the LiDAR return count
+falls to roughly a third of its mid-row value and the camera row-fit destabilises, so a heading
+measured there is not a fair test of sensor agreement.
 """
 import sys
 import sqlite3
@@ -32,9 +37,11 @@ TS = {f["i"]: int(f["timestamp_ns"]) for f in MAN["frames"]}
 CORR = {f["i"]: f["corridor"] for f in MAN["frames"]}
 PF = str(B["per_frame_csv"])
 OUT = B["lidar"]
+PASS = {f["i"]: f["pass_id"] for f in MAN["frames"]}
 CORRIDORS = sorted(set(f["corridor"] for f in MAN["frames"] if f["eligible"]))   # all eligible corridors
 PER_CORR = 2                  # mid-pass anchors per corridor
-PC2_TOPIC_ID = 28             # Ouster PointCloud2 topic id (march bag; per-bag lookup for other bags)
+PC2_TOPIC = "/os_cloud_node/points"     # Ouster PointCloud2; resolved by NAME (topic ids are per-bag)
+PC2_TOPIC_ID = cur.execute("SELECT id FROM topics WHERE name=?", (PC2_TOPIC,)).fetchone()[0]
 
 # camera heading per frame = mean across 9 models; anchors = seed-42 arm-C two_row frames
 camh = collections.defaultdict(list)
@@ -45,12 +52,23 @@ for ln in open(PF).read().splitlines()[1:]:
         camh[int(i)].append(float(hdg))
         if a == "C" and s == "42":
             c42.add(int(i))
+# Anchors: PER_CORR frames at the TRUE midpoint of a single traversal, one traversal per corridor.
+# A corridor is usually driven several times, so the corridor's frame list is a CONCATENATION of
+# passes; indexing into that concatenation (the previous `fs[len(fs)//3]`) does not give a mid-pass
+# frame and can land near a row EXIT, where both sensors degrade — LiDAR returns thin out and the
+# camera row-fit becomes unstable (cross-model heading SD roughly doubles past 90% of a pass). That
+# produced two spurious camera sign-flips per bag in both march and april. Group by pass first, take
+# the corridor's LONGEST traversal (most representative), and sample its true middle.
 anchors = []
 for cc in CORRIDORS:
-    fs = sorted(i for i in c42 if CORR.get(i) == cc)
-    if not fs:
+    by_pass = collections.defaultdict(list)
+    for i in sorted(i for i in c42 if CORR.get(i) == cc):
+        by_pass[PASS[i]].append(i)
+    if not by_pass:
         continue
-    anchors += fs[len(fs) // 3: len(fs) // 3 + PER_CORR]   # mid-pass frames per corridor
+    fs = max(by_pass.values(), key=len)                    # longest single traversal of this corridor
+    mid = max(0, (len(fs) - PER_CORR) // 2)
+    anchors += fs[mid: mid + PER_CORR]                     # true mid-pass frames
 
 ids = cur.execute("SELECT id,timestamp FROM messages WHERE topic_id=?", (PC2_TOPIC_ID,)).fetchall()
 ids_ts = np.array([t for _, t in ids])
