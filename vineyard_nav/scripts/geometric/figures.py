@@ -525,34 +525,71 @@ def fig_complementarity(bag):
     return p
 
 
+# ================= per-bag representative frames =================
+# The 4 data-driven figures (2b forest, 3 tilt, 5b distribution, 12 complementarity) read JSON
+# artefacts and take no frames. The other 11 render a SPECIFIC frame curated as a representative
+# example. Those frame indices are BAG-SPECIFIC — march 10247 is a different scene from april 10247,
+# and may not even be eligible/in the right category — so they live in this per-bag registry, not
+# hardcoded in build(). Each april frame was curated against the SAME criterion its march counterpart
+# was chosen for (see the review record when it was locked). `footer`/`caption` also carry per-bag
+# stats (F022 closure, F025 recovery) so a march number never appears on an april figure.
+# Adding a bag = adding one FRAMES entry, same discipline as bag_config.BAGS.
+FRAMES = {
+    "march": {
+        "anatomy": 10247, "arm_invariance": 7397, "mechanism": 10247, "abstention": 13820,
+        "stationary": 6, "turn": 10111, "transition": 11264,
+        "f023_triple": (423, 12801, 653), "turn_blind": 14987,
+        "abstention_caption": ("Left side: 1 detection within the 5 m near-seed window (fit needs >=2 to seed) · right side: 6, fits\n"
+                               "the 5 m near-seed window is empirically near-optimal — widening to 6 m recovers ~28% of abstentions\n"
+                               "at ~4% RMS cost; wider degrades the full-set metric via adjacent-row corruption (adjacency guard needed)"),
+        "f022_footer": "State gate catches 98.4% of spurious non-in-row outputs at 1.2% in-row false-positive · arm-invariant · uses odometry only (speed, |v_y|, heading-rate) - no perception input.",
+        "f023_footer": "Geometry filter catches ~40% via off-nominal geometry at ~3% in-row false-positive · perception-based, odometry-free (deployment fallback) · cannot resolve clean-geometry turns.",
+    },
+    "april": {
+        # Curated 23 Jul 2026 against march's criteria; near-seed split for the abstention frame
+        # verified numerically (failing side R: 1 within 5 m / 11 beyond — mirrors march 13820's 1/9).
+        "anatomy": 19491, "arm_invariance": 13467, "mechanism": 19491, "abstention": 17967,
+        "stationary": 546, "turn": 15707, "transition": 624,
+        "f023_triple": (3692, 16834, 18924), "turn_blind": 15705,
+        "abstention_caption": ("Right side: 1 detection within the 5 m near-seed window (fit needs >=2 to seed) · left side: 4, fits\n"
+                               "the 5 m near-seed window is empirically near-optimal — widening to 6 m recovers ~26% of abstentions\n"
+                               "at <5% RMS cost; wider degrades the full-set metric via adjacent-row corruption (adjacency guard needed)"),
+        "f022_footer": "State gate catches 88-92% of spurious non-in-row outputs (100% stationary / ~88% turn / ~70% transition) at 0.9% in-row false-positive · arm-invariant per category · uses odometry only - no perception input.",
+        "f023_footer": "Geometry filter catches ~27-43% via off-nominal geometry at ~3% in-row false-positive · perception-based, odometry-free (deployment fallback) · cannot resolve clean-geometry turns.",
+    },
+}
+
+
 # ================= locked figure set =================
 def build(bag, only=None):
+    if bag not in FRAMES:
+        raise SystemExit(f"figures.py: no representative-frame registry for bag '{bag}'. The 11 "
+                         f"frame-specific figures need curated per-bag frames (march's are not valid "
+                         f"for another bag). Add a FRAMES['{bag}'] entry (see the march entry) before "
+                         f"generating. Known: {sorted(FRAMES)}.")
+    fr = FRAMES[bag]
     done = []
     F = {
-        "1":  lambda: plot_in_row_frame(bag, 10247, "A", anatomy=True, fname="fig1_anatomy_10247.png"),
-        "2":  lambda: plot_arm_invariance(bag, 7397),
+        "1":  lambda: plot_in_row_frame(bag, fr["anatomy"], "A", anatomy=True, fname=f"fig1_anatomy_{fr['anatomy']}.png"),
+        "2":  lambda: plot_arm_invariance(bag, fr["arm_invariance"]),
         "2b": lambda: fig_forest(bag),
         "3":  lambda: fig_tilt_sensor(bag),
-        "4":  lambda: plot_in_row_frame(bag, 10247, "C", fname="fig4_mechanism_10247_C.png",
+        "4":  lambda: plot_in_row_frame(bag, fr["mechanism"], "C", fname=f"fig4_mechanism_{fr['mechanism']}_C.png",
               caption_extra="Phase-C classes: trunks (blue) load-bearing in the near field; the row fit is class-agnostic"),
-        "4b": lambda: plot_in_row_frame(bag, 13820, "A", near_seed=True, fname="fig4b_abstention_13820.png",
-              caption_extra="Left side: 1 detection within the 5 m near-seed window (fit needs >=2 to seed) · right side: 6, fits\n"
-                            "the 5 m near-seed window is empirically near-optimal — widening to 6 m recovers ~28% of abstentions\n"
-                            "at ~4% RMS cost; wider degrades the full-set metric via adjacent-row corruption (adjacency guard needed)"),
-        "5":  lambda: plot_non_in_row_frame(bag, 6, "stationary", fname="fig5_stationary_6.png"),
+        "4b": lambda: plot_in_row_frame(bag, fr["abstention"], "A", near_seed=True, fname=f"fig4b_abstention_{fr['abstention']}.png",
+              caption_extra=fr["abstention_caption"]),
+        "5":  lambda: plot_non_in_row_frame(bag, fr["stationary"], "stationary", fname=f"fig5_stationary_{fr['stationary']}.png"),
         "5b": lambda: fig_dist_bars(bag),
-        "6":  lambda: plot_non_in_row_frame(bag, 10111, "turn", fname="fig6_turn_10111.png"),
-        "7":  lambda: plot_non_in_row_frame(bag, 11264, "transition", fname="fig7_transition_11264.png"),
-        "8":  lambda: plot_non_in_row_frame(bag, 11264, "transition", driven=True, fname="fig8_driven_path_11264.png"),
-        "9":  lambda: plot_mitigation_3up(bag, [(6, "stationary", "A"), (10111, "turn", "A"), (11264, "transition", "A")],
+        "6":  lambda: plot_non_in_row_frame(bag, fr["turn"], "turn", fname=f"fig6_turn_{fr['turn']}.png"),
+        "7":  lambda: plot_non_in_row_frame(bag, fr["transition"], "transition", fname=f"fig7_transition_{fr['transition']}.png"),
+        "8":  lambda: plot_non_in_row_frame(bag, fr["transition"], "transition", driven=True, fname=f"fig8_driven_path_{fr['transition']}.png"),
+        "9":  lambda: plot_mitigation_3up(bag, [(fr["stationary"], "stationary", "A"), (fr["turn"], "turn", "A"), (fr["transition"], "transition", "A")],
                                           "f022", "State gate — reject per category (odometry: speed / |v_y| / heading-rate)", "fig9_f022_3up.png",
-                                          accent=ACCENT["state"],
-                                          footer="State gate catches 98.4% of spurious non-in-row outputs at 1.2% in-row false-positive · arm-invariant · uses odometry only (speed, |v_y|, heading-rate) - no perception input."),
-        "10": lambda: plot_mitigation_3up(bag, [(423, "stationary", "A"), (12801, "turn", "A"), (653, "transition", "A")],
+                                          accent=ACCENT["state"], footer=fr["f022_footer"]),
+        "10": lambda: plot_mitigation_3up(bag, [(fr["f023_triple"][0], "stationary", "A"), (fr["f023_triple"][1], "turn", "A"), (fr["f023_triple"][2], "transition", "A")],
                                           "f023", "Geometry filter — off-nominal catches (firing in-row-p99 threshold labelled)", "fig10_f023_3up.png",
-                                          accent=ACCENT["geom"],
-                                          footer="Geometry filter catches ~40% via off-nominal geometry at ~3% in-row false-positive · perception-based, odometry-free (deployment fallback) · cannot resolve clean-geometry turns."),
-        "11": lambda: plot_mitigation_frame(bag, 14987, "turn", "turn_blind", fname="fig11_turn_blind_14987.png"),
+                                          accent=ACCENT["geom"], footer=fr["f023_footer"]),
+        "11": lambda: plot_mitigation_frame(bag, fr["turn_blind"], "turn", "turn_blind", fname=f"fig11_turn_blind_{fr['turn_blind']}.png"),
         "12": lambda: fig_complementarity(bag),
     }
     ids = [only] if only else list(F)
