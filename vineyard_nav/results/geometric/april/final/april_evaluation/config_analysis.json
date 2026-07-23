@@ -1,0 +1,402 @@
+{
+  "config": {
+    "bag": "april",
+    "n_frames": 8889,
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "T_grid": [
+      1,
+      2,
+      3,
+      5,
+      8,
+      12
+    ],
+    "upstream": "line-fit locked (D035-D038); conf 0.25, 15% blob guard",
+    "boot_iters": 10000,
+    "block_lengths": {
+      "L_GT1": 11,
+      "L_GT2": 28,
+      "threshold": 0.1,
+      "fallback_m": 1.5,
+      "reduction": "conservative_max_across_pairs",
+      "per_pair": {
+        "A-B": {
+          "n_all": 6241,
+          "mean_spacing_m": 0.07,
+          "GT1": {
+            "decorr_m": 0.38,
+            "used_fallback": false,
+            "block_m": 0.76,
+            "L": 11
+          },
+          "GT2": {
+            "decorr_m": 0.97,
+            "used_fallback": false,
+            "block_m": 1.94,
+            "L": 28
+          }
+        },
+        "A-C": {
+          "n_all": 6167,
+          "mean_spacing_m": 0.0713,
+          "GT1": {
+            "decorr_m": 0.38,
+            "used_fallback": false,
+            "block_m": 0.76,
+            "L": 11
+          },
+          "GT2": {
+            "decorr_m": 0.97,
+            "used_fallback": false,
+            "block_m": 1.94,
+            "L": 27
+          }
+        },
+        "B-C": {
+          "n_all": 6198,
+          "mean_spacing_m": 0.0715,
+          "GT1": {
+            "decorr_m": 0.07,
+            "used_fallback": false,
+            "block_m": 0.14,
+            "L": 2
+          },
+          "GT2": {
+            "decorr_m": 0.38,
+            "used_fallback": false,
+            "block_m": 0.76,
+            "L": 11
+          }
+        }
+      }
+    },
+    "note": "class-agnostic locked (F018); re-reported per bag, not re-selected"
+  },
+  "cells": {
+    "agnostic": {
+      "two_row_pct": 76.5,
+      "single_pct": 16.5,
+      "none_pct": 7.1,
+      "mean_base": 26.9,
+      "gt1_rms": 0.1579,
+      "gt1_ci": [
+        0.1454,
+        0.1605
+      ],
+      "gt2_rms": 2.211,
+      "gt2_ci": [
+        2.0797,
+        2.2802
+      ],
+      "n_two_row_frames": 6387
+    },
+    "trunk_T1": {
+      "two_row_pct": 62.9,
+      "single_pct": 23.7,
+      "none_pct": 13.4,
+      "mean_base": 15.4,
+      "gt1_rms": 0.1613,
+      "gt1_ci": [
+        0.1492,
+        0.1694
+      ],
+      "gt2_rms": 2.307,
+      "gt2_ci": [
+        2.1752,
+        2.4054
+      ],
+      "n_two_row_frames": 5129
+    },
+    "trunk_T2": {
+      "two_row_pct": 63.1,
+      "single_pct": 24.4,
+      "none_pct": 12.5,
+      "mean_base": 15.5,
+      "gt1_rms": 0.1613,
+      "gt1_ci": [
+        0.1491,
+        0.1693
+      ],
+      "gt2_rms": 2.307,
+      "gt2_ci": [
+        2.1754,
+        2.4051
+      ],
+      "n_two_row_frames": 5133
+    },
+    "trunk_T3": {
+      "two_row_pct": 65.5,
+      "single_pct": 24.1,
+      "none_pct": 10.4,
+      "mean_base": 15.9,
+      "gt1_rms": 0.16,
+      "gt1_ci": [
+        0.1482,
+        0.168
+      ],
+      "gt2_rms": 2.306,
+      "gt2_ci": [
+        2.1796,
+        2.4068
+      ],
+      "n_two_row_frames": 5299
+    },
+    "trunk_T5": {
+      "two_row_pct": 69.0,
+      "single_pct": 21.8,
+      "none_pct": 9.2,
+      "mean_base": 16.9,
+      "gt1_rms": 0.1592,
+      "gt1_ci": [
+        0.1476,
+        0.1669
+      ],
+      "gt2_rms": 2.293,
+      "gt2_ci": [
+        2.1731,
+        2.386
+      ],
+      "n_two_row_frames": 5620
+    },
+    "trunk_T8": {
+      "two_row_pct": 73.8,
+      "single_pct": 18.2,
+      "none_pct": 8.1,
+      "mean_base": 20.2,
+      "gt1_rms": 0.1581,
+      "gt1_ci": [
+        0.1451,
+        0.1629
+      ],
+      "gt2_rms": 2.261,
+      "gt2_ci": [
+        2.1348,
+        2.3298
+      ],
+      "n_two_row_frames": 6023
+    },
+    "trunk_T12": {
+      "two_row_pct": 76.1,
+      "single_pct": 16.7,
+      "none_pct": 7.2,
+      "mean_base": 25.2,
+      "gt1_rms": 0.1575,
+      "gt1_ci": [
+        0.1449,
+        0.16
+      ],
+      "gt2_rms": 2.219,
+      "gt2_ci": [
+        2.0904,
+        2.2879
+      ],
+      "n_two_row_frames": 6331
+    },
+    "pole_T1": {
+      "two_row_pct": 0.6,
+      "single_pct": 10.3,
+      "none_pct": 89.1,
+      "mean_base": 11.7,
+      "gt1_rms": 0.2276,
+      "gt1_ci": [
+        null,
+        null
+      ],
+      "gt2_rms": 2.616,
+      "gt2_ci": [
+        null,
+        null
+      ],
+      "n_two_row_frames": 1
+    },
+    "pole_T2": {
+      "two_row_pct": 0.6,
+      "single_pct": 11.0,
+      "none_pct": 88.4,
+      "mean_base": 11.7,
+      "gt1_rms": 0.2276,
+      "gt1_ci": [
+        null,
+        null
+      ],
+      "gt2_rms": 2.616,
+      "gt2_ci": [
+        null,
+        null
+      ],
+      "n_two_row_frames": 1
+    },
+    "pole_T3": {
+      "two_row_pct": 0.9,
+      "single_pct": 14.8,
+      "none_pct": 84.3,
+      "mean_base": 12.0,
+      "gt1_rms": 0.1635,
+      "gt1_ci": [
+        null,
+        null
+      ],
+      "gt2_rms": 2.047,
+      "gt2_ci": [
+        null,
+        null
+      ],
+      "n_two_row_frames": 2
+    },
+    "pole_T5": {
+      "two_row_pct": 6.8,
+      "single_pct": 34.9,
+      "none_pct": 58.3,
+      "mean_base": 14.6,
+      "gt1_rms": 0.1066,
+      "gt1_ci": [
+        0.053,
+        0.0885
+      ],
+      "gt2_rms": 2.13,
+      "gt2_ci": [
+        1.7966,
+        2.203
+      ],
+      "n_two_row_frames": 111
+    },
+    "pole_T8": {
+      "two_row_pct": 52.0,
+      "single_pct": 34.9,
+      "none_pct": 13.1,
+      "mean_base": 23.4,
+      "gt1_rms": 0.14,
+      "gt1_ci": [
+        0.1243,
+        0.1436
+      ],
+      "gt2_rms": 2.203,
+      "gt2_ci": [
+        2.0178,
+        2.2996
+      ],
+      "n_two_row_frames": 2611
+    },
+    "pole_T12": {
+      "two_row_pct": 75.6,
+      "single_pct": 17.3,
+      "none_pct": 7.1,
+      "mean_base": 26.8,
+      "gt1_rms": 0.1564,
+      "gt1_ci": [
+        0.1438,
+        0.1584
+      ],
+      "gt2_rms": 2.229,
+      "gt2_ci": [
+        2.0906,
+        2.3031
+      ],
+      "n_two_row_frames": 6160
+    },
+    "trunk_only": {
+      "two_row_pct": 62.9,
+      "single_pct": 23.6,
+      "none_pct": 13.5,
+      "mean_base": 15.3,
+      "gt1_rms": 0.1613,
+      "gt1_ci": [
+        0.1492,
+        0.1694
+      ],
+      "gt2_rms": 2.307,
+      "gt2_ci": [
+        2.1752,
+        2.4054
+      ],
+      "n_two_row_frames": 5129
+    },
+    "pole_only": {
+      "two_row_pct": 0.6,
+      "single_pct": 10.3,
+      "none_pct": 89.1,
+      "mean_base": 11.7,
+      "gt1_rms": 0.2276,
+      "gt1_ci": [
+        null,
+        null
+      ],
+      "gt2_rms": 2.616,
+      "gt2_ci": [
+        null,
+        null
+      ],
+      "n_two_row_frames": 1
+    }
+  },
+  "argmin_summary": {
+    "GT1": {
+      "argmin": "pole_T12",
+      "argmin_rms": 0.1564,
+      "overlaps_agnostic": true,
+      "locked": "agnostic"
+    },
+    "GT2": {
+      "argmin": "agnostic",
+      "argmin_rms": 2.211,
+      "overlaps_agnostic": true,
+      "locked": "agnostic"
+    },
+    "viable_regime": {
+      "coverage_floor_pct": 70.0,
+      "viable_cells": [
+        "agnostic",
+        "trunk_T8",
+        "trunk_T12",
+        "pole_T12"
+      ],
+      "excluded_cells": [
+        {
+          "cell": "trunk_T1",
+          "two_row_pct": 62.9
+        },
+        {
+          "cell": "trunk_T2",
+          "two_row_pct": 63.1
+        },
+        {
+          "cell": "trunk_T3",
+          "two_row_pct": 65.5
+        },
+        {
+          "cell": "trunk_T5",
+          "two_row_pct": 69.0
+        },
+        {
+          "cell": "pole_T1",
+          "two_row_pct": 0.6
+        },
+        {
+          "cell": "pole_T2",
+          "two_row_pct": 0.6
+        },
+        {
+          "cell": "pole_T3",
+          "two_row_pct": 0.9
+        },
+        {
+          "cell": "pole_T5",
+          "two_row_pct": 6.8
+        },
+        {
+          "cell": "pole_T8",
+          "two_row_pct": 52.0
+        }
+      ],
+      "rationale": "F018 viable-regime definition: argmin/tie-break evaluated only over cells with two_row coverage >= 70%. Sub-viable pole cells are single-frame artefacts (pole_T1/T2/T3, n_2r ~ 1) or survivorship on easy frames (pole_T8 ~46%), not comparable RMS estimates."
+    },
+    "flat_gt1_viable_all_overlap": true,
+    "flat_gt2_viable_all_overlap": true,
+    "agnostic_locked": true,
+    "pause_flag": false
+  }
+}

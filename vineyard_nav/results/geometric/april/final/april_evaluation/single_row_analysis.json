@@ -1,0 +1,126 @@
+{
+  "config": {
+    "bag": "april",
+    "near_seed_window_m": 5.0,
+    "far_max_m": 10.0,
+    "note": "F024 in-row abstention. class_mix = per-arm mean+/-SD across seeds 42/43/44 from the committed CSV. mechanism = failing-side rejection reason from fit_side_far, re-run on every single_row frame (all 9 models). single_row emits NO centreline; D-G tier-2 half-spacing fallback (SPEC \u00a710) specified but NOT implemented."
+  },
+  "class_mix_pct": {
+    "A": {
+      "two_row": [
+        77.4,
+        0.42
+      ],
+      "single_row": [
+        14.9,
+        0.24
+      ],
+      "none": [
+        7.7,
+        0.21
+      ],
+      "fitfail": [
+        0.0,
+        0.0
+      ]
+    },
+    "B": {
+      "two_row": [
+        78.1,
+        0.96
+      ],
+      "single_row": [
+        15.1,
+        0.72
+      ],
+      "none": [
+        6.7,
+        0.43
+      ],
+      "fitfail": [
+        0.0,
+        0.0
+      ]
+    },
+    "C": {
+      "two_row": [
+        76.6,
+        0.17
+      ],
+      "single_row": [
+        16.4,
+        0.24
+      ],
+      "none": [
+        7.0,
+        0.16
+      ],
+      "fitfail": [
+        0.0,
+        0.0
+      ]
+    }
+  },
+  "single_row_mechanism": {
+    "A": {
+      "n_frames_reprocessed": 3969,
+      "not_reproduced": 0,
+      "failing_side_reason_pct": {
+        "too_few_near_seed": 72.7,
+        "too_few_total": 20.3,
+        "abs_y_too_large": 4.9,
+        "horizontal_cluster": 2.1
+      },
+      "failing_row_detected_pct": 98.2,
+      "seen_breakdown_pct": {
+        "seen_far_only": 70.9,
+        "seen_near": 27.3,
+        "not_seen": 1.8
+      },
+      "fit_side": {
+        "L_fit": 1812,
+        "R_fit": 2157
+      }
+    },
+    "B": {
+      "n_frames_reprocessed": 4030,
+      "not_reproduced": 0,
+      "failing_side_reason_pct": {
+        "too_few_near_seed": 71.2,
+        "too_few_total": 17.4,
+        "horizontal_cluster": 5.8,
+        "abs_y_too_large": 5.6
+      },
+      "failing_row_detected_pct": 98.4,
+      "seen_breakdown_pct": {
+        "seen_far_only": 69.6,
+        "seen_near": 28.8,
+        "not_seen": 1.6
+      },
+      "fit_side": {
+        "R_fit": 2184,
+        "L_fit": 1846
+      }
+    },
+    "C": {
+      "n_frames_reprocessed": 4377,
+      "not_reproduced": 0,
+      "failing_side_reason_pct": {
+        "too_few_near_seed": 72.8,
+        "too_few_total": 16.4,
+        "abs_y_too_large": 5.7,
+        "horizontal_cluster": 5.2
+      },
+      "failing_row_detected_pct": 99.0,
+      "seen_breakdown_pct": {
+        "seen_far_only": 71.8,
+        "seen_near": 27.2,
+        "not_seen": 1.0
+      },
+      "fit_side": {
+        "R_fit": 2325,
+        "L_fit": 2052
+      }
+    }
+  }
+}

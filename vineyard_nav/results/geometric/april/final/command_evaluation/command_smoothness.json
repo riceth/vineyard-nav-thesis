@@ -1,0 +1,1690 @@
+{
+  "status": "CP-P4 \u2014 D014 strand-3 command smoothness on the locked P-4c command stream (F028).",
+  "config": {
+    "bag": "april",
+    "source_csv": "results/geometric/april/final/command_evaluation/command_per_frame.csv",
+    "metrics": "RMS(dw) + jitter SD(dw) + saturation rate (\u00a77b; = PHASE_C_SPEC \u00a7232)",
+    "units": "dw reported as rad/s per frame (\u00a77b literal) and rad/s^2 (comparable to the locked P-6 ramp limit 0.033743 rad/s^2)",
+    "views": {
+      "inclusive": "all consecutive within-pass pairs (held counted)",
+      "exclusive": "pairs where BOTH frames are fresh",
+      "hold_exit": "held->fresh pairs \u2014 the command jump on leaving a hold"
+    },
+    "delta_scope": "within-pass only (controller state resets per pass)",
+    "block_length_L": 28,
+    "block_lengths_source": {
+      "L_GT1": 11,
+      "L_GT2": 28,
+      "threshold": 0.1,
+      "fallback_m": 1.5,
+      "reduction": "conservative_max_across_pairs",
+      "per_pair": {
+        "A-B": {
+          "n_all": 6241,
+          "mean_spacing_m": 0.07,
+          "GT1": {
+            "decorr_m": 0.38,
+            "used_fallback": false,
+            "block_m": 0.76,
+            "L": 11
+          },
+          "GT2": {
+            "decorr_m": 0.97,
+            "used_fallback": false,
+            "block_m": 1.94,
+            "L": 28
+          }
+        },
+        "A-C": {
+          "n_all": 6167,
+          "mean_spacing_m": 0.0713,
+          "GT1": {
+            "decorr_m": 0.38,
+            "used_fallback": false,
+            "block_m": 0.76,
+            "L": 11
+          },
+          "GT2": {
+            "decorr_m": 0.97,
+            "used_fallback": false,
+            "block_m": 1.94,
+            "L": 27
+          }
+        },
+        "B-C": {
+          "n_all": 6198,
+          "mean_spacing_m": 0.0715,
+          "GT1": {
+            "decorr_m": 0.07,
+            "used_fallback": false,
+            "block_m": 0.14,
+            "L": 2
+          },
+          "GT2": {
+            "decorr_m": 0.38,
+            "used_fallback": false,
+            "block_m": 0.76,
+            "L": 11
+          }
+        }
+      }
+    },
+    "block_length_caveat": "L is reused from block_lengths.py as \u00a77c directs, but it was derived from the offset/heading series. Differencing whitens a series, so the true block length for dw is likely SHORTER \u2014 these CIs are therefore CONSERVATIVE (wider), not anti-conservative. Documented, not resolved.",
+    "subsample_n": 293,
+    "boot_B": 2000,
+    "block_boot_B": 10000,
+    "seed": 42,
+    "not_recomputed": "\u00a77a tracking-vs-executed-yaw-rate is NOT recomputed \u2014 F027 already reported it and demoted it to a caveated diagnostic. The \u00a78 dead-reckoning trajectory cross-check is SKIPPED: it compares our predicted path against a path driven by GPS/topological navigation, so it inherits F027's invalidity and would add no new information."
+  },
+  "per_stream": {
+    "A_42": {
+      "omega_cmd": {
+        "inclusive": {
+          "n_pairs": 8877,
+          "rms_dw_rad_s_per_frame": 0.00634499,
+          "jitter_sd_dw_rad_s_per_frame": 0.00634498,
+          "rms_dw_rad_s2": 0.097498,
+          "saturation_rate_pct": 0.079,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.0053348,
+            0.0116553,
+            293
+          ]
+        },
+        "exclusive": {
+          "n_pairs": 6614,
+          "rms_dw_rad_s_per_frame": 0.00664461,
+          "jitter_sd_dw_rad_s_per_frame": 0.00664456,
+          "rms_dw_rad_s2": 0.102857,
+          "saturation_rate_pct": 0.073,
+          "n_frames_for_saturation": 6850,
+          "ci_rms_dw_subsample": [
+            0.00498439,
+            0.01266663,
+            216
+          ]
+        },
+        "hold_exit": {
+          "n_pairs": 227,
+          "rms_dw_rad_s_per_frame": 0.01696899,
+          "jitter_sd_dw_rad_s_per_frame": 0.01692293,
+          "rms_dw_rad_s2": 0.251957,
+          "saturation_rate_pct": 0.079,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            null,
+            null,
+            5
+          ]
+        },
+        "_pair_composition": {
+          "n_total_pairs": 8877,
+          "n_exclusive": 6614,
+          "n_hold_exit": 227,
+          "n_zero_by_construction": 2036,
+          "pct_zero_by_construction": 22.94,
+          "note": "fresh->held and held->held repeat the previous command, so dw = 0 exactly; they deflate the inclusive view."
+        }
+      },
+      "omega_cmd_ramp": {
+        "inclusive": {
+          "n_pairs": 8877,
+          "rms_dw_rad_s_per_frame": 0.00191302,
+          "jitter_sd_dw_rad_s_per_frame": 0.00191301,
+          "rms_dw_rad_s2": 0.027407,
+          "saturation_rate_pct": 0.079,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00174849,
+            0.0019782,
+            293
+          ]
+        },
+        "exclusive": {
+          "n_pairs": 6614,
+          "rms_dw_rad_s_per_frame": 0.00209614,
+          "jitter_sd_dw_rad_s_per_frame": 0.00209608,
+          "rms_dw_rad_s2": 0.030128,
+          "saturation_rate_pct": 0.073,
+          "n_frames_for_saturation": 6850,
+          "ci_rms_dw_subsample": [
+            0.00190406,
+            0.00213654,
+            216
+          ]
+        },
+        "hold_exit": {
+          "n_pairs": 227,
+          "rms_dw_rad_s_per_frame": 0.00235987,
+          "jitter_sd_dw_rad_s_per_frame": 0.00235503,
+          "rms_dw_rad_s2": 0.032999,
+          "saturation_rate_pct": 0.079,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            null,
+            null,
+            5
+          ]
+        },
+        "_pair_composition": {
+          "n_total_pairs": 8877,
+          "n_exclusive": 6614,
+          "n_hold_exit": 227,
+          "n_zero_by_construction": 2036,
+          "pct_zero_by_construction": 22.94,
+          "note": "fresh->held and held->held repeat the previous command, so dw = 0 exactly; they deflate the inclusive view."
+        }
+      },
+      "hold_spans": {
+        "n_spans": 233,
+        "n_held_frames": 2039,
+        "mean_len": 8.75,
+        "median_len": 2,
+        "p95_len": 48,
+        "max_len": 133,
+        "max_len_seconds": 9.0,
+        "pct_frames_in_spans_over_1s": 16.13,
+        "pct_frames_in_spans_over_5s": 8.13
+      }
+    },
+    "A_43": {
+      "omega_cmd": {
+        "inclusive": {
+          "n_pairs": 8877,
+          "rms_dw_rad_s_per_frame": 0.00674247,
+          "jitter_sd_dw_rad_s_per_frame": 0.00674247,
+          "rms_dw_rad_s2": 0.104106,
+          "saturation_rate_pct": 0.067,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00541897,
+            0.01168003,
+            293
+          ]
+        },
+        "exclusive": {
+          "n_pairs": 6629,
+          "rms_dw_rad_s_per_frame": 0.00687943,
+          "jitter_sd_dw_rad_s_per_frame": 0.00687922,
+          "rms_dw_rad_s2": 0.106301,
+          "saturation_rate_pct": 0.073,
+          "n_frames_for_saturation": 6869,
+          "ci_rms_dw_subsample": [
+            0.0053802,
+            0.0126358,
+            217
+          ]
+        },
+        "hold_exit": {
+          "n_pairs": 231,
+          "rms_dw_rad_s_per_frame": 0.01971969,
+          "jitter_sd_dw_rad_s_per_frame": 0.01965893,
+          "rms_dw_rad_s2": 0.303682,
+          "saturation_rate_pct": 0.067,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            null,
+            null,
+            7
+          ]
+        },
+        "_pair_composition": {
+          "n_total_pairs": 8877,
+          "n_exclusive": 6629,
+          "n_hold_exit": 231,
+          "n_zero_by_construction": 2017,
+          "pct_zero_by_construction": 22.72,
+          "note": "fresh->held and held->held repeat the previous command, so dw = 0 exactly; they deflate the inclusive view."
+        }
+      },
+      "omega_cmd_ramp": {
+        "inclusive": {
+          "n_pairs": 8877,
+          "rms_dw_rad_s_per_frame": 0.00197101,
+          "jitter_sd_dw_rad_s_per_frame": 0.00197101,
+          "rms_dw_rad_s2": 0.028044,
+          "saturation_rate_pct": 0.067,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00183724,
+            0.0020811,
+            293
+          ]
+        },
+        "exclusive": {
+          "n_pairs": 6629,
+          "rms_dw_rad_s_per_frame": 0.00215197,
+          "jitter_sd_dw_rad_s_per_frame": 0.00215195,
+          "rms_dw_rad_s2": 0.030752,
+          "saturation_rate_pct": 0.073,
+          "n_frames_for_saturation": 6869,
+          "ci_rms_dw_subsample": [
+            0.00200511,
+            0.00223554,
+            217
+          ]
+        },
+        "hold_exit": {
+          "n_pairs": 231,
+          "rms_dw_rad_s_per_frame": 0.00235873,
+          "jitter_sd_dw_rad_s_per_frame": 0.00235864,
+          "rms_dw_rad_s2": 0.033671,
+          "saturation_rate_pct": 0.067,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            null,
+            null,
+            7
+          ]
+        },
+        "_pair_composition": {
+          "n_total_pairs": 8877,
+          "n_exclusive": 6629,
+          "n_hold_exit": 231,
+          "n_zero_by_construction": 2017,
+          "pct_zero_by_construction": 22.72,
+          "note": "fresh->held and held->held repeat the previous command, so dw = 0 exactly; they deflate the inclusive view."
+        }
+      },
+      "hold_spans": {
+        "n_spans": 237,
+        "n_held_frames": 2020,
+        "mean_len": 8.52,
+        "median_len": 2,
+        "p95_len": 41,
+        "max_len": 126,
+        "max_len_seconds": 8.53,
+        "pct_frames_in_spans_over_1s": 14.97,
+        "pct_frames_in_spans_over_5s": 7.35
+      }
+    },
+    "A_44": {
+      "omega_cmd": {
+        "inclusive": {
+          "n_pairs": 8877,
+          "rms_dw_rad_s_per_frame": 0.00617539,
+          "jitter_sd_dw_rad_s_per_frame": 0.00617539,
+          "rms_dw_rad_s2": 0.095436,
+          "saturation_rate_pct": 0.652,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00450808,
+            0.00966614,
+            293
+          ]
+        },
+        "exclusive": {
+          "n_pairs": 6529,
+          "rms_dw_rad_s_per_frame": 0.00658573,
+          "jitter_sd_dw_rad_s_per_frame": 0.00658555,
+          "rms_dw_rad_s2": 0.101442,
+          "saturation_rate_pct": 0.103,
+          "n_frames_for_saturation": 6784,
+          "ci_rms_dw_subsample": [
+            0.0051863,
+            0.01139585,
+            215
+          ]
+        },
+        "hold_exit": {
+          "n_pairs": 246,
+          "rms_dw_rad_s_per_frame": 0.01500053,
+          "jitter_sd_dw_rad_s_per_frame": 0.01496434,
+          "rms_dw_rad_s2": 0.235687,
+          "saturation_rate_pct": 0.652,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            null,
+            null,
+            5
+          ]
+        },
+        "_pair_composition": {
+          "n_total_pairs": 8877,
+          "n_exclusive": 6529,
+          "n_hold_exit": 246,
+          "n_zero_by_construction": 2102,
+          "pct_zero_by_construction": 23.68,
+          "note": "fresh->held and held->held repeat the previous command, so dw = 0 exactly; they deflate the inclusive view."
+        }
+      },
+      "omega_cmd_ramp": {
+        "inclusive": {
+          "n_pairs": 8877,
+          "rms_dw_rad_s_per_frame": 0.00196268,
+          "jitter_sd_dw_rad_s_per_frame": 0.00196264,
+          "rms_dw_rad_s2": 0.028048,
+          "saturation_rate_pct": 0.652,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00182244,
+            0.00204588,
+            293
+          ]
+        },
+        "exclusive": {
+          "n_pairs": 6529,
+          "rms_dw_rad_s_per_frame": 0.00215822,
+          "jitter_sd_dw_rad_s_per_frame": 0.00215818,
+          "rms_dw_rad_s2": 0.030923,
+          "saturation_rate_pct": 0.103,
+          "n_frames_for_saturation": 6784,
+          "ci_rms_dw_subsample": [
+            0.00204673,
+            0.00227661,
+            215
+          ]
+        },
+        "hold_exit": {
+          "n_pairs": 246,
+          "rms_dw_rad_s_per_frame": 0.00240342,
+          "jitter_sd_dw_rad_s_per_frame": 0.002397,
+          "rms_dw_rad_s2": 0.034057,
+          "saturation_rate_pct": 0.652,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            null,
+            null,
+            5
+          ]
+        },
+        "_pair_composition": {
+          "n_total_pairs": 8877,
+          "n_exclusive": 6529,
+          "n_hold_exit": 246,
+          "n_zero_by_construction": 2102,
+          "pct_zero_by_construction": 23.68,
+          "note": "fresh->held and held->held repeat the previous command, so dw = 0 exactly; they deflate the inclusive view."
+        }
+      },
+      "hold_spans": {
+        "n_spans": 252,
+        "n_held_frames": 2105,
+        "mean_len": 8.35,
+        "median_len": 2,
+        "p95_len": 38,
+        "max_len": 139,
+        "max_len_seconds": 9.41,
+        "pct_frames_in_spans_over_1s": 16.8,
+        "pct_frames_in_spans_over_5s": 6.86
+      }
+    },
+    "B_42": {
+      "omega_cmd": {
+        "inclusive": {
+          "n_pairs": 8877,
+          "rms_dw_rad_s_per_frame": 0.00673891,
+          "jitter_sd_dw_rad_s_per_frame": 0.00673891,
+          "rms_dw_rad_s2": 0.104623,
+          "saturation_rate_pct": 0.664,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00410365,
+            0.01122629,
+            293
+          ]
+        },
+        "exclusive": {
+          "n_pairs": 6427,
+          "rms_dw_rad_s_per_frame": 0.00692762,
+          "jitter_sd_dw_rad_s_per_frame": 0.00692758,
+          "rms_dw_rad_s2": 0.105453,
+          "saturation_rate_pct": 0.089,
+          "n_frames_for_saturation": 6776,
+          "ci_rms_dw_subsample": [
+            0.00441835,
+            0.00697567,
+            208
+          ]
+        },
+        "hold_exit": {
+          "n_pairs": 340,
+          "rms_dw_rad_s_per_frame": 0.01668796,
+          "jitter_sd_dw_rad_s_per_frame": 0.01668355,
+          "rms_dw_rad_s2": 0.274914,
+          "saturation_rate_pct": 0.664,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00504352,
+            0.04625548,
+            13
+          ]
+        },
+        "_pair_composition": {
+          "n_total_pairs": 8877,
+          "n_exclusive": 6427,
+          "n_hold_exit": 340,
+          "n_zero_by_construction": 2110,
+          "pct_zero_by_construction": 23.77,
+          "note": "fresh->held and held->held repeat the previous command, so dw = 0 exactly; they deflate the inclusive view."
+        }
+      },
+      "omega_cmd_ramp": {
+        "inclusive": {
+          "n_pairs": 8877,
+          "rms_dw_rad_s_per_frame": 0.00197833,
+          "jitter_sd_dw_rad_s_per_frame": 0.00197833,
+          "rms_dw_rad_s2": 0.027264,
+          "saturation_rate_pct": 0.664,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00176877,
+            0.00199675,
+            293
+          ]
+        },
+        "exclusive": {
+          "n_pairs": 6427,
+          "rms_dw_rad_s_per_frame": 0.00217286,
+          "jitter_sd_dw_rad_s_per_frame": 0.00217285,
+          "rms_dw_rad_s2": 0.029823,
+          "saturation_rate_pct": 0.089,
+          "n_frames_for_saturation": 6776,
+          "ci_rms_dw_subsample": [
+            0.0019787,
+            0.00221286,
+            208
+          ]
+        },
+        "hold_exit": {
+          "n_pairs": 340,
+          "rms_dw_rad_s_per_frame": 0.00237195,
+          "jitter_sd_dw_rad_s_per_frame": 0.00237166,
+          "rms_dw_rad_s2": 0.033476,
+          "saturation_rate_pct": 0.664,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00213122,
+            0.00255941,
+            13
+          ]
+        },
+        "_pair_composition": {
+          "n_total_pairs": 8877,
+          "n_exclusive": 6427,
+          "n_hold_exit": 340,
+          "n_zero_by_construction": 2110,
+          "pct_zero_by_construction": 23.77,
+          "note": "fresh->held and held->held repeat the previous command, so dw = 0 exactly; they deflate the inclusive view."
+        }
+      },
+      "hold_spans": {
+        "n_spans": 346,
+        "n_held_frames": 2113,
+        "mean_len": 6.11,
+        "median_len": 2,
+        "p95_len": 22,
+        "max_len": 127,
+        "max_len_seconds": 8.6,
+        "pct_frames_in_spans_over_1s": 14.26,
+        "pct_frames_in_spans_over_5s": 5.31
+      }
+    },
+    "B_43": {
+      "omega_cmd": {
+        "inclusive": {
+          "n_pairs": 8877,
+          "rms_dw_rad_s_per_frame": 0.00725565,
+          "jitter_sd_dw_rad_s_per_frame": 0.00725564,
+          "rms_dw_rad_s2": 0.110875,
+          "saturation_rate_pct": 0.596,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00389599,
+            0.0090034,
+            293
+          ]
+        },
+        "exclusive": {
+          "n_pairs": 6633,
+          "rms_dw_rad_s_per_frame": 0.00769352,
+          "jitter_sd_dw_rad_s_per_frame": 0.00769348,
+          "rms_dw_rad_s2": 0.118849,
+          "saturation_rate_pct": 0.086,
+          "n_frames_for_saturation": 6949,
+          "ci_rms_dw_subsample": [
+            0.00430633,
+            0.01022895,
+            221
+          ]
+        },
+        "hold_exit": {
+          "n_pairs": 307,
+          "rms_dw_rad_s_per_frame": 0.01560037,
+          "jitter_sd_dw_rad_s_per_frame": 0.01559481,
+          "rms_dw_rad_s2": 0.224239,
+          "saturation_rate_pct": 0.596,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.0027087,
+            0.00676389,
+            13
+          ]
+        },
+        "_pair_composition": {
+          "n_total_pairs": 8877,
+          "n_exclusive": 6633,
+          "n_hold_exit": 307,
+          "n_zero_by_construction": 1937,
+          "pct_zero_by_construction": 21.82,
+          "note": "fresh->held and held->held repeat the previous command, so dw = 0 exactly; they deflate the inclusive view."
+        }
+      },
+      "omega_cmd_ramp": {
+        "inclusive": {
+          "n_pairs": 8877,
+          "rms_dw_rad_s_per_frame": 0.00201881,
+          "jitter_sd_dw_rad_s_per_frame": 0.00201879,
+          "rms_dw_rad_s2": 0.027542,
+          "saturation_rate_pct": 0.596,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00175667,
+            0.00198724,
+            293
+          ]
+        },
+        "exclusive": {
+          "n_pairs": 6633,
+          "rms_dw_rad_s_per_frame": 0.00219416,
+          "jitter_sd_dw_rad_s_per_frame": 0.00219416,
+          "rms_dw_rad_s2": 0.029792,
+          "saturation_rate_pct": 0.086,
+          "n_frames_for_saturation": 6949,
+          "ci_rms_dw_subsample": [
+            0.0018949,
+            0.0021464,
+            221
+          ]
+        },
+        "hold_exit": {
+          "n_pairs": 307,
+          "rms_dw_rad_s_per_frame": 0.00233519,
+          "jitter_sd_dw_rad_s_per_frame": 0.00233391,
+          "rms_dw_rad_s2": 0.033263,
+          "saturation_rate_pct": 0.596,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.0015558,
+            0.00247057,
+            13
+          ]
+        },
+        "_pair_composition": {
+          "n_total_pairs": 8877,
+          "n_exclusive": 6633,
+          "n_hold_exit": 307,
+          "n_zero_by_construction": 1937,
+          "pct_zero_by_construction": 21.82,
+          "note": "fresh->held and held->held repeat the previous command, so dw = 0 exactly; they deflate the inclusive view."
+        }
+      },
+      "hold_spans": {
+        "n_spans": 313,
+        "n_held_frames": 1940,
+        "mean_len": 6.2,
+        "median_len": 2,
+        "p95_len": 22,
+        "max_len": 120,
+        "max_len_seconds": 8.12,
+        "pct_frames_in_spans_over_1s": 13.33,
+        "pct_frames_in_spans_over_5s": 5.04
+      }
+    },
+    "B_44": {
+      "omega_cmd": {
+        "inclusive": {
+          "n_pairs": 8877,
+          "rms_dw_rad_s_per_frame": 0.00759295,
+          "jitter_sd_dw_rad_s_per_frame": 0.00759295,
+          "rms_dw_rad_s2": 0.121709,
+          "saturation_rate_pct": 0.022,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00394526,
+            0.00984795,
+            293
+          ]
+        },
+        "exclusive": {
+          "n_pairs": 6607,
+          "rms_dw_rad_s_per_frame": 0.00762022,
+          "jitter_sd_dw_rad_s_per_frame": 0.00762008,
+          "rms_dw_rad_s2": 0.122473,
+          "saturation_rate_pct": 0.029,
+          "n_frames_for_saturation": 6958,
+          "ci_rms_dw_subsample": [
+            0.00441933,
+            0.01137673,
+            222
+          ]
+        },
+        "hold_exit": {
+          "n_pairs": 341,
+          "rms_dw_rad_s_per_frame": 0.01938433,
+          "jitter_sd_dw_rad_s_per_frame": 0.01934724,
+          "rms_dw_rad_s2": 0.308209,
+          "saturation_rate_pct": 0.022,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.0012972,
+            0.00683509,
+            11
+          ]
+        },
+        "_pair_composition": {
+          "n_total_pairs": 8877,
+          "n_exclusive": 6607,
+          "n_hold_exit": 341,
+          "n_zero_by_construction": 1929,
+          "pct_zero_by_construction": 21.73,
+          "note": "fresh->held and held->held repeat the previous command, so dw = 0 exactly; they deflate the inclusive view."
+        }
+      },
+      "omega_cmd_ramp": {
+        "inclusive": {
+          "n_pairs": 8877,
+          "rms_dw_rad_s_per_frame": 0.00201306,
+          "jitter_sd_dw_rad_s_per_frame": 0.00201306,
+          "rms_dw_rad_s2": 0.027288,
+          "saturation_rate_pct": 0.022,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00179628,
+            0.00201595,
+            293
+          ]
+        },
+        "exclusive": {
+          "n_pairs": 6607,
+          "rms_dw_rad_s_per_frame": 0.00214861,
+          "jitter_sd_dw_rad_s_per_frame": 0.0021486,
+          "rms_dw_rad_s2": 0.029367,
+          "saturation_rate_pct": 0.029,
+          "n_frames_for_saturation": 6958,
+          "ci_rms_dw_subsample": [
+            0.00195885,
+            0.00218267,
+            222
+          ]
+        },
+        "hold_exit": {
+          "n_pairs": 341,
+          "rms_dw_rad_s_per_frame": 0.00235751,
+          "jitter_sd_dw_rad_s_per_frame": 0.00235331,
+          "rms_dw_rad_s2": 0.032744,
+          "saturation_rate_pct": 0.022,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00125121,
+            0.0024279,
+            11
+          ]
+        },
+        "_pair_composition": {
+          "n_total_pairs": 8877,
+          "n_exclusive": 6607,
+          "n_hold_exit": 341,
+          "n_zero_by_construction": 1929,
+          "pct_zero_by_construction": 21.73,
+          "note": "fresh->held and held->held repeat the previous command, so dw = 0 exactly; they deflate the inclusive view."
+        }
+      },
+      "hold_spans": {
+        "n_spans": 348,
+        "n_held_frames": 1931,
+        "mean_len": 5.55,
+        "median_len": 2,
+        "p95_len": 21,
+        "max_len": 120,
+        "max_len_seconds": 8.12,
+        "pct_frames_in_spans_over_1s": 12.55,
+        "pct_frames_in_spans_over_5s": 2.68
+      }
+    },
+    "C_42": {
+      "omega_cmd": {
+        "inclusive": {
+          "n_pairs": 8877,
+          "rms_dw_rad_s_per_frame": 0.00731021,
+          "jitter_sd_dw_rad_s_per_frame": 0.0073102,
+          "rms_dw_rad_s2": 0.115863,
+          "saturation_rate_pct": 0.112,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00571423,
+            0.0121348,
+            293
+          ]
+        },
+        "exclusive": {
+          "n_pairs": 6410,
+          "rms_dw_rad_s_per_frame": 0.00757361,
+          "jitter_sd_dw_rad_s_per_frame": 0.0075732,
+          "rms_dw_rad_s2": 0.118497,
+          "saturation_rate_pct": 0.059,
+          "n_frames_for_saturation": 6765,
+          "ci_rms_dw_subsample": [
+            0.00574475,
+            0.01353866,
+            213
+          ]
+        },
+        "hold_exit": {
+          "n_pairs": 346,
+          "rms_dw_rad_s_per_frame": 0.01756116,
+          "jitter_sd_dw_rad_s_per_frame": 0.0175184,
+          "rms_dw_rad_s2": 0.290308,
+          "saturation_rate_pct": 0.112,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00523444,
+            0.03225385,
+            8
+          ]
+        },
+        "_pair_composition": {
+          "n_total_pairs": 8877,
+          "n_exclusive": 6410,
+          "n_hold_exit": 346,
+          "n_zero_by_construction": 2121,
+          "pct_zero_by_construction": 23.89,
+          "note": "fresh->held and held->held repeat the previous command, so dw = 0 exactly; they deflate the inclusive view."
+        }
+      },
+      "omega_cmd_ramp": {
+        "inclusive": {
+          "n_pairs": 8877,
+          "rms_dw_rad_s_per_frame": 0.00186878,
+          "jitter_sd_dw_rad_s_per_frame": 0.00186874,
+          "rms_dw_rad_s2": 0.026951,
+          "saturation_rate_pct": 0.112,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00169903,
+            0.0019198,
+            293
+          ]
+        },
+        "exclusive": {
+          "n_pairs": 6410,
+          "rms_dw_rad_s_per_frame": 0.00205238,
+          "jitter_sd_dw_rad_s_per_frame": 0.00205238,
+          "rms_dw_rad_s2": 0.029604,
+          "saturation_rate_pct": 0.059,
+          "n_frames_for_saturation": 6765,
+          "ci_rms_dw_subsample": [
+            0.00189958,
+            0.0021259,
+            213
+          ]
+        },
+        "hold_exit": {
+          "n_pairs": 346,
+          "rms_dw_rad_s_per_frame": 0.00233358,
+          "jitter_sd_dw_rad_s_per_frame": 0.00233323,
+          "rms_dw_rad_s2": 0.033355,
+          "saturation_rate_pct": 0.112,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.0017937,
+            0.00279741,
+            8
+          ]
+        },
+        "_pair_composition": {
+          "n_total_pairs": 8877,
+          "n_exclusive": 6410,
+          "n_hold_exit": 346,
+          "n_zero_by_construction": 2121,
+          "pct_zero_by_construction": 23.89,
+          "note": "fresh->held and held->held repeat the previous command, so dw = 0 exactly; they deflate the inclusive view."
+        }
+      },
+      "hold_spans": {
+        "n_spans": 352,
+        "n_held_frames": 2124,
+        "mean_len": 6.03,
+        "median_len": 2,
+        "p95_len": 21,
+        "max_len": 127,
+        "max_len_seconds": 8.6,
+        "pct_frames_in_spans_over_1s": 13.58,
+        "pct_frames_in_spans_over_5s": 5.12
+      }
+    },
+    "C_43": {
+      "omega_cmd": {
+        "inclusive": {
+          "n_pairs": 8877,
+          "rms_dw_rad_s_per_frame": 0.00710911,
+          "jitter_sd_dw_rad_s_per_frame": 0.00710908,
+          "rms_dw_rad_s2": 0.114093,
+          "saturation_rate_pct": 0.596,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00334874,
+            0.00745069,
+            293
+          ]
+        },
+        "exclusive": {
+          "n_pairs": 6455,
+          "rms_dw_rad_s_per_frame": 0.00725362,
+          "jitter_sd_dw_rad_s_per_frame": 0.00725344,
+          "rms_dw_rad_s2": 0.115495,
+          "saturation_rate_pct": 0.074,
+          "n_frames_for_saturation": 6767,
+          "ci_rms_dw_subsample": [
+            0.00358554,
+            0.00852202,
+            212
+          ]
+        },
+        "hold_exit": {
+          "n_pairs": 303,
+          "rms_dw_rad_s_per_frame": 0.01896743,
+          "jitter_sd_dw_rad_s_per_frame": 0.01889479,
+          "rms_dw_rad_s2": 0.311755,
+          "saturation_rate_pct": 0.596,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00438417,
+            0.01156956,
+            10
+          ]
+        },
+        "_pair_composition": {
+          "n_total_pairs": 8877,
+          "n_exclusive": 6455,
+          "n_hold_exit": 303,
+          "n_zero_by_construction": 2119,
+          "pct_zero_by_construction": 23.87,
+          "note": "fresh->held and held->held repeat the previous command, so dw = 0 exactly; they deflate the inclusive view."
+        }
+      },
+      "omega_cmd_ramp": {
+        "inclusive": {
+          "n_pairs": 8877,
+          "rms_dw_rad_s_per_frame": 0.00198313,
+          "jitter_sd_dw_rad_s_per_frame": 0.00198292,
+          "rms_dw_rad_s2": 0.027159,
+          "saturation_rate_pct": 0.596,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00176054,
+            0.00197776,
+            293
+          ]
+        },
+        "exclusive": {
+          "n_pairs": 6455,
+          "rms_dw_rad_s_per_frame": 0.00216988,
+          "jitter_sd_dw_rad_s_per_frame": 0.00216987,
+          "rms_dw_rad_s2": 0.029688,
+          "saturation_rate_pct": 0.074,
+          "n_frames_for_saturation": 6767,
+          "ci_rms_dw_subsample": [
+            0.00194993,
+            0.00218067,
+            212
+          ]
+        },
+        "hold_exit": {
+          "n_pairs": 303,
+          "rms_dw_rad_s_per_frame": 0.00236948,
+          "jitter_sd_dw_rad_s_per_frame": 0.00236455,
+          "rms_dw_rad_s2": 0.033811,
+          "saturation_rate_pct": 0.596,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00185422,
+            0.00261288,
+            10
+          ]
+        },
+        "_pair_composition": {
+          "n_total_pairs": 8877,
+          "n_exclusive": 6455,
+          "n_hold_exit": 303,
+          "n_zero_by_construction": 2119,
+          "pct_zero_by_construction": 23.87,
+          "note": "fresh->held and held->held repeat the previous command, so dw = 0 exactly; they deflate the inclusive view."
+        }
+      },
+      "hold_spans": {
+        "n_spans": 309,
+        "n_held_frames": 2122,
+        "mean_len": 6.87,
+        "median_len": 2,
+        "p95_len": 29,
+        "max_len": 123,
+        "max_len_seconds": 8.33,
+        "pct_frames_in_spans_over_1s": 15.84,
+        "pct_frames_in_spans_over_5s": 5.93
+      }
+    },
+    "C_44": {
+      "omega_cmd": {
+        "inclusive": {
+          "n_pairs": 8877,
+          "rms_dw_rad_s_per_frame": 0.00673241,
+          "jitter_sd_dw_rad_s_per_frame": 0.0067324,
+          "rms_dw_rad_s2": 0.103231,
+          "saturation_rate_pct": 0.709,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00336756,
+            0.00817268,
+            293
+          ]
+        },
+        "exclusive": {
+          "n_pairs": 6386,
+          "rms_dw_rad_s_per_frame": 0.00707044,
+          "jitter_sd_dw_rad_s_per_frame": 0.00707039,
+          "rms_dw_rad_s2": 0.107949,
+          "saturation_rate_pct": 0.089,
+          "n_frames_for_saturation": 6735,
+          "ci_rms_dw_subsample": [
+            0.00385208,
+            0.00975424,
+            209
+          ]
+        },
+        "hold_exit": {
+          "n_pairs": 340,
+          "rms_dw_rad_s_per_frame": 0.01563461,
+          "jitter_sd_dw_rad_s_per_frame": 0.01563379,
+          "rms_dw_rad_s2": 0.243643,
+          "saturation_rate_pct": 0.709,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00267997,
+            0.0081129,
+            8
+          ]
+        },
+        "_pair_composition": {
+          "n_total_pairs": 8877,
+          "n_exclusive": 6386,
+          "n_hold_exit": 340,
+          "n_zero_by_construction": 2151,
+          "pct_zero_by_construction": 24.23,
+          "note": "fresh->held and held->held repeat the previous command, so dw = 0 exactly; they deflate the inclusive view."
+        }
+      },
+      "omega_cmd_ramp": {
+        "inclusive": {
+          "n_pairs": 8877,
+          "rms_dw_rad_s_per_frame": 0.00195139,
+          "jitter_sd_dw_rad_s_per_frame": 0.00195132,
+          "rms_dw_rad_s2": 0.026794,
+          "saturation_rate_pct": 0.709,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00172438,
+            0.00196444,
+            293
+          ]
+        },
+        "exclusive": {
+          "n_pairs": 6386,
+          "rms_dw_rad_s_per_frame": 0.00214878,
+          "jitter_sd_dw_rad_s_per_frame": 0.00214872,
+          "rms_dw_rad_s2": 0.029295,
+          "saturation_rate_pct": 0.089,
+          "n_frames_for_saturation": 6735,
+          "ci_rms_dw_subsample": [
+            0.00191668,
+            0.00216647,
+            209
+          ]
+        },
+        "hold_exit": {
+          "n_pairs": 340,
+          "rms_dw_rad_s_per_frame": 0.00229579,
+          "jitter_sd_dw_rad_s_per_frame": 0.00229575,
+          "rms_dw_rad_s2": 0.033206,
+          "saturation_rate_pct": 0.709,
+          "n_frames_for_saturation": 8889,
+          "ci_rms_dw_subsample": [
+            0.00149864,
+            0.00225948,
+            8
+          ]
+        },
+        "_pair_composition": {
+          "n_total_pairs": 8877,
+          "n_exclusive": 6386,
+          "n_hold_exit": 340,
+          "n_zero_by_construction": 2151,
+          "pct_zero_by_construction": 24.23,
+          "note": "fresh->held and held->held repeat the previous command, so dw = 0 exactly; they deflate the inclusive view."
+        }
+      },
+      "hold_spans": {
+        "n_spans": 346,
+        "n_held_frames": 2154,
+        "mean_len": 6.23,
+        "median_len": 2,
+        "p95_len": 25,
+        "max_len": 127,
+        "max_len_seconds": 8.6,
+        "pct_frames_in_spans_over_1s": 14.49,
+        "pct_frames_in_spans_over_5s": 5.93
+      }
+    }
+  },
+  "per_arm_mean_sd_across_seeds": {
+    "A": {
+      "omega_cmd": {
+        "inclusive": {
+          "rms_dw_rad_s_per_frame": [
+            0.00642095,
+            0.00023766
+          ],
+          "jitter_sd_dw_rad_s_per_frame": [
+            0.00642095,
+            0.00023766
+          ],
+          "rms_dw_rad_s2": [
+            0.09901333,
+            0.00369814
+          ],
+          "saturation_rate_pct": [
+            0.266,
+            0.27298718
+          ]
+        },
+        "exclusive": {
+          "rms_dw_rad_s_per_frame": [
+            0.00670326,
+            0.00012687
+          ],
+          "jitter_sd_dw_rad_s_per_frame": [
+            0.00670311,
+            0.00012684
+          ],
+          "rms_dw_rad_s2": [
+            0.10353333,
+            0.00204051
+          ],
+          "saturation_rate_pct": [
+            0.083,
+            0.01414214
+          ]
+        },
+        "hold_exit": {
+          "rms_dw_rad_s_per_frame": [
+            0.01722974,
+            0.00193539
+          ],
+          "jitter_sd_dw_rad_s_per_frame": [
+            0.01718207,
+            0.0019253
+          ],
+          "rms_dw_rad_s2": [
+            0.26377533,
+            0.02898948
+          ],
+          "saturation_rate_pct": [
+            0.266,
+            0.27298718
+          ]
+        }
+      },
+      "omega_cmd_ramp": {
+        "inclusive": {
+          "rms_dw_rad_s_per_frame": [
+            0.0019489,
+            2.56e-05
+          ],
+          "jitter_sd_dw_rad_s_per_frame": [
+            0.00194889,
+            2.56e-05
+          ],
+          "rms_dw_rad_s2": [
+            0.027833,
+            0.00030123
+          ],
+          "saturation_rate_pct": [
+            0.266,
+            0.27298718
+          ]
+        },
+        "exclusive": {
+          "rms_dw_rad_s_per_frame": [
+            0.00213544,
+            2.791e-05
+          ],
+          "jitter_sd_dw_rad_s_per_frame": [
+            0.0021354,
+            2.792e-05
+          ],
+          "rms_dw_rad_s2": [
+            0.030601,
+            0.00034167
+          ],
+          "saturation_rate_pct": [
+            0.083,
+            0.01414214
+          ]
+        },
+        "hold_exit": {
+          "rms_dw_rad_s_per_frame": [
+            0.00237401,
+            2.08e-05
+          ],
+          "jitter_sd_dw_rad_s_per_frame": [
+            0.00237022,
+            1.899e-05
+          ],
+          "rms_dw_rad_s2": [
+            0.03357567,
+            0.00043716
+          ],
+          "saturation_rate_pct": [
+            0.266,
+            0.27298718
+          ]
+        }
+      }
+    },
+    "B": {
+      "omega_cmd": {
+        "inclusive": {
+          "rms_dw_rad_s_per_frame": [
+            0.00719584,
+            0.00035122
+          ],
+          "jitter_sd_dw_rad_s_per_frame": [
+            0.00719583,
+            0.00035122
+          ],
+          "rms_dw_rad_s2": [
+            0.11240233,
+            0.00705844
+          ],
+          "saturation_rate_pct": [
+            0.42733333,
+            0.28795524
+          ]
+        },
+        "exclusive": {
+          "rms_dw_rad_s_per_frame": [
+            0.00741379,
+            0.00034507
+          ],
+          "jitter_sd_dw_rad_s_per_frame": [
+            0.00741371,
+            0.00034505
+          ],
+          "rms_dw_rad_s2": [
+            0.11559167,
+            0.00732019
+          ],
+          "saturation_rate_pct": [
+            0.068,
+            0.02760435
+          ]
+        },
+        "hold_exit": {
+          "rms_dw_rad_s_per_frame": [
+            0.01722422,
+            0.00159065
+          ],
+          "jitter_sd_dw_rad_s_per_frame": [
+            0.01720853,
+            0.00157626
+          ],
+          "rms_dw_rad_s2": [
+            0.26912067,
+            0.03452451
+          ],
+          "saturation_rate_pct": [
+            0.42733333,
+            0.28795524
+          ]
+        }
+      },
+      "omega_cmd_ramp": {
+        "inclusive": {
+          "rms_dw_rad_s_per_frame": [
+            0.0020034,
+            1.788e-05
+          ],
+          "jitter_sd_dw_rad_s_per_frame": [
+            0.00200339,
+            1.788e-05
+          ],
+          "rms_dw_rad_s2": [
+            0.02736467,
+            0.00012578
+          ],
+          "saturation_rate_pct": [
+            0.42733333,
+            0.28795524
+          ]
+        },
+        "exclusive": {
+          "rms_dw_rad_s_per_frame": [
+            0.00217188,
+            1.861e-05
+          ],
+          "jitter_sd_dw_rad_s_per_frame": [
+            0.00217187,
+            1.861e-05
+          ],
+          "rms_dw_rad_s2": [
+            0.02966067,
+            0.00020804
+          ],
+          "saturation_rate_pct": [
+            0.068,
+            0.02760435
+          ]
+        },
+        "hold_exit": {
+          "rms_dw_rad_s_per_frame": [
+            0.00235488,
+            1.512e-05
+          ],
+          "jitter_sd_dw_rad_s_per_frame": [
+            0.00235296,
+            1.541e-05
+          ],
+          "rms_dw_rad_s2": [
+            0.033161,
+            0.00030742
+          ],
+          "saturation_rate_pct": [
+            0.42733333,
+            0.28795524
+          ]
+        }
+      }
+    },
+    "C": {
+      "omega_cmd": {
+        "inclusive": {
+          "rms_dw_rad_s_per_frame": [
+            0.00705058,
+            0.00023949
+          ],
+          "jitter_sd_dw_rad_s_per_frame": [
+            0.00705056,
+            0.00023949
+          ],
+          "rms_dw_rad_s2": [
+            0.11106233,
+            0.00558454
+          ],
+          "saturation_rate_pct": [
+            0.47233333,
+            0.25893671
+          ]
+        },
+        "exclusive": {
+          "rms_dw_rad_s_per_frame": [
+            0.00729922,
+            0.00020793
+          ],
+          "jitter_sd_dw_rad_s_per_frame": [
+            0.00729901,
+            0.00020779
+          ],
+          "rms_dw_rad_s2": [
+            0.11398033,
+            0.0044374
+          ],
+          "saturation_rate_pct": [
+            0.074,
+            0.01224745
+          ]
+        },
+        "hold_exit": {
+          "rms_dw_rad_s_per_frame": [
+            0.01738773,
+            0.00136613
+          ],
+          "jitter_sd_dw_rad_s_per_frame": [
+            0.01734899,
+            0.00133668
+          ],
+          "rms_dw_rad_s2": [
+            0.281902,
+            0.0284348
+          ],
+          "saturation_rate_pct": [
+            0.47233333,
+            0.25893671
+          ]
+        }
+      },
+      "omega_cmd_ramp": {
+        "inclusive": {
+          "rms_dw_rad_s_per_frame": [
+            0.00193443,
+            4.82e-05
+          ],
+          "jitter_sd_dw_rad_s_per_frame": [
+            0.00193433,
+            4.814e-05
+          ],
+          "rms_dw_rad_s2": [
+            0.026968,
+            0.00014949
+          ],
+          "saturation_rate_pct": [
+            0.47233333,
+            0.25893671
+          ]
+        },
+        "exclusive": {
+          "rms_dw_rad_s_per_frame": [
+            0.00212368,
+            5.115e-05
+          ],
+          "jitter_sd_dw_rad_s_per_frame": [
+            0.00212366,
+            5.113e-05
+          ],
+          "rms_dw_rad_s2": [
+            0.029529,
+            0.00016898
+          ],
+          "saturation_rate_pct": [
+            0.074,
+            0.01224745
+          ]
+        },
+        "hold_exit": {
+          "rms_dw_rad_s_per_frame": [
+            0.00233295,
+            3.009e-05
+          ],
+          "jitter_sd_dw_rad_s_per_frame": [
+            0.00233118,
+            2.812e-05
+          ],
+          "rms_dw_rad_s2": [
+            0.03345733,
+            0.00025737
+          ],
+          "saturation_rate_pct": [
+            0.47233333,
+            0.25893671
+          ]
+        }
+      }
+    }
+  },
+  "per_arm_ci_across_seed": {
+    "omega_cmd": {
+      "inclusive": {
+        "A": {
+          "n": 8877,
+          "rms_dw": 0.00445163,
+          "ci": [
+            0.00383587,
+            0.00482747
+          ]
+        },
+        "B": {
+          "n": 8877,
+          "rms_dw": 0.00473312,
+          "ci": [
+            0.00408841,
+            0.00520463
+          ]
+        },
+        "C": {
+          "n": 8877,
+          "rms_dw": 0.00463373,
+          "ci": [
+            0.00398783,
+            0.00514697
+          ]
+        }
+      },
+      "exclusive": {
+        "A": {
+          "n": 6306,
+          "rms_dw": 0.00449359,
+          "ci": [
+            0.00370731,
+            0.00484113
+          ]
+        },
+        "B": {
+          "n": 6122,
+          "rms_dw": 0.00462203,
+          "ci": [
+            0.00370103,
+            0.00510945
+          ]
+        },
+        "C": {
+          "n": 6003,
+          "rms_dw": 0.00467807,
+          "ci": [
+            0.00375369,
+            0.00533262
+          ]
+        }
+      }
+    },
+    "omega_cmd_ramp": {
+      "inclusive": {
+        "A": {
+          "n": 8877,
+          "rms_dw": 0.00150998,
+          "ci": [
+            0.00146223,
+            0.00156305
+          ]
+        },
+        "B": {
+          "n": 8877,
+          "rms_dw": 0.00161297,
+          "ci": [
+            0.00144581,
+            0.0018737
+          ]
+        },
+        "C": {
+          "n": 8877,
+          "rms_dw": 0.00151568,
+          "ci": [
+            0.00143348,
+            0.00162482
+          ]
+        }
+      },
+      "exclusive": {
+        "A": {
+          "n": 6306,
+          "rms_dw": 0.00164434,
+          "ci": [
+            0.00159939,
+            0.00168889
+          ]
+        },
+        "B": {
+          "n": 6122,
+          "rms_dw": 0.00178305,
+          "ci": [
+            0.0015764,
+            0.002105
+          ]
+        },
+        "C": {
+          "n": 6003,
+          "rms_dw": 0.001684,
+          "ci": [
+            0.00158436,
+            0.00182042
+          ]
+        }
+      }
+    }
+  },
+  "paired_cross_arm": {
+    "omega_cmd": {
+      "inclusive": {
+        "A_minus_B": {
+          "n": 2259,
+          "delta_rms_dw": -0.00029355,
+          "ci": [
+            -0.00125126,
+            0.00024764
+          ]
+        },
+        "A_minus_C": {
+          "n": 2259,
+          "delta_rms_dw": -0.00010295,
+          "ci": [
+            -0.00106551,
+            0.0004016
+          ]
+        },
+        "B_minus_C": {
+          "n": 2259,
+          "delta_rms_dw": 0.0001906,
+          "ci": [
+            -0.00026847,
+            0.00058741
+          ]
+        }
+      },
+      "exclusive": {
+        "A_minus_B": {
+          "n": 1654,
+          "delta_rms_dw": -3.769e-05,
+          "ci": [
+            -0.00144089,
+            0.000635
+          ]
+        },
+        "A_minus_C": {
+          "n": 1642,
+          "delta_rms_dw": -1.654e-05,
+          "ci": [
+            -0.00154851,
+            0.00057937
+          ]
+        },
+        "B_minus_C": {
+          "n": 1651,
+          "delta_rms_dw": 2.254e-05,
+          "ci": [
+            -0.00046465,
+            0.00050646
+          ]
+        }
+      }
+    },
+    "omega_cmd_ramp": {
+      "inclusive": {
+        "A_minus_B": {
+          "n": 2259,
+          "delta_rms_dw": 2.333e-05,
+          "ci": [
+            -3.225e-05,
+            0.00012235
+          ]
+        },
+        "A_minus_C": {
+          "n": 2259,
+          "delta_rms_dw": 3.878e-05,
+          "ci": [
+            -1.154e-05,
+            0.00011487
+          ]
+        },
+        "B_minus_C": {
+          "n": 2259,
+          "delta_rms_dw": 1.545e-05,
+          "ci": [
+            -4.946e-05,
+            6.512e-05
+          ]
+        }
+      },
+      "exclusive": {
+        "A_minus_B": {
+          "n": 1654,
+          "delta_rms_dw": 6.138e-05,
+          "ci": [
+            1e-06,
+            0.0001301
+          ]
+        },
+        "A_minus_C": {
+          "n": 1642,
+          "delta_rms_dw": 2.1e-05,
+          "ci": [
+            -2.33e-05,
+            8.083e-05
+          ]
+        },
+        "B_minus_C": {
+          "n": 1651,
+          "delta_rms_dw": -3.822e-05,
+          "ci": [
+            -8.235e-05,
+            1.073e-05
+          ]
+        }
+      }
+    }
+  },
+  "blob_seed_observation": {
+    "blob_seeds": {
+      "A": [],
+      "B": [
+        42,
+        43
+      ],
+      "C": [
+        43,
+        44
+      ]
+    },
+    "framing": "DESCRIPTIVE OBSERVATION, NOT AN INFERENTIAL CLAIM. n = 3 seeds per arm, and the link is indirect: F007's blob is a whole-frame false mask on ONE labelled perception test scene (6799), whereas this command stream runs over the bag's in-row frames. A difference here would be suggestive, not evidence.",
+    "per_arm": {
+      "A": {
+        "comparable": false,
+        "reason": "all seeds in one group (no within-arm contrast)"
+      },
+      "B": {
+        "comparable": true,
+        "blob_seeds": [
+          42,
+          43
+        ],
+        "clean_seeds": [
+          44
+        ],
+        "rms_dw_blob": 0.00731057,
+        "rms_dw_clean": 0.00762022,
+        "delta": -0.00030965
+      },
+      "C": {
+        "comparable": true,
+        "blob_seeds": [
+          43,
+          44
+        ],
+        "clean_seeds": [
+          42
+        ],
+        "rms_dw_blob": 0.00716203,
+        "rms_dw_clean": 0.00757361,
+        "delta": -0.00041158
+      }
+    }
+  }
+}

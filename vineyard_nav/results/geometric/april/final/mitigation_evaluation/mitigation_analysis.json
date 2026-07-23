@@ -1,0 +1,232 @@
+{
+  "config": {
+    "bag": "april",
+    "V_MIN": 0.1,
+    "VY_INROW": 0.3,
+    "HR_THRESH_deg_s": 30.54,
+    "geom_thresholds": {
+      "offset_m": 0.71,
+      "heading_deg": 6.7,
+      "parallelism": 0.22,
+      "n_base_min": 12
+    },
+    "note": "F022 = odometry state gate (upper bound = manifest eligible flag; causal = per-frame speed/|v_y|/heading-rate). F023 = perception geometry filter (in-row p99). Rejection% is of two_row OUTPUTS."
+  },
+  "F022_upper_bound": {
+    "non_in_row_rejection_%": 100.0,
+    "in_row_FP_%": 0.0,
+    "note": "manifest `eligible` = the CP-1 criteria; rejects all non-in-row, keeps all in-row by construction (oracle state)."
+  },
+  "F022_F023_causal": {
+    "non_in_row": {
+      "per_arm": {
+        "A": {
+          "n": 9128,
+          "f022_%": 87.2,
+          "f023_%": 42.7,
+          "either_%": 87.8
+        },
+        "B": {
+          "n": 12082,
+          "f022_%": 90.1,
+          "f023_%": 33.9,
+          "either_%": 90.4
+        },
+        "C": {
+          "n": 14602,
+          "f022_%": 91.7,
+          "f023_%": 27.2,
+          "either_%": 92.0
+        }
+      },
+      "per_category": {
+        "stationary": {
+          "A": {
+            "n": 4775,
+            "f022_%": 100.0,
+            "f023_%": 48.6,
+            "either_%": 100.0
+          },
+          "B": {
+            "n": 7570,
+            "f022_%": 100.0,
+            "f023_%": 34.4,
+            "either_%": 100.0
+          },
+          "C": {
+            "n": 10140,
+            "f022_%": 100.0,
+            "f023_%": 25.0,
+            "either_%": 100.0
+          }
+        },
+        "turn": {
+          "A": {
+            "n": 728,
+            "f022_%": 87.9,
+            "f023_%": 47.3,
+            "either_%": 87.9
+          },
+          "B": {
+            "n": 727,
+            "f022_%": 87.6,
+            "f023_%": 47.2,
+            "either_%": 87.6
+          },
+          "C": {
+            "n": 720,
+            "f022_%": 87.6,
+            "f023_%": 46.0,
+            "either_%": 87.9
+          }
+        },
+        "transition": {
+          "A": {
+            "n": 3625,
+            "f022_%": 70.1,
+            "f023_%": 34.0,
+            "either_%": 71.7
+          },
+          "B": {
+            "n": 3785,
+            "f022_%": 70.7,
+            "f023_%": 30.4,
+            "either_%": 71.6
+          },
+          "C": {
+            "n": 3742,
+            "f022_%": 69.9,
+            "f023_%": 29.4,
+            "either_%": 71.1
+          }
+        }
+      }
+    },
+    "in_row_FP": {
+      "A": {
+        "n": 20653,
+        "f022_%": 0.9,
+        "f023_%": 1.8,
+        "either_%": 2.6
+      },
+      "B": {
+        "n": 20837,
+        "f022_%": 0.9,
+        "f023_%": 2.6,
+        "either_%": 3.4
+      },
+      "C": {
+        "n": 20416,
+        "f022_%": 0.9,
+        "f023_%": 2.5,
+        "either_%": 3.3
+      }
+    }
+  },
+  "F023_turn_mechanism": {
+    "per_arm": {
+      "A": {
+        "turn_two_row_n": 728,
+        "rejection_%": 47.3,
+        "by_phase_rejection_%": {
+          "edge": 56.0,
+          "mid": 50.2,
+          "deep": 26.9
+        },
+        "by_phase_n": {
+          "edge": 316,
+          "mid": 241,
+          "deep": 171
+        },
+        "threshold_fire_%_among_rejections": {
+          "offset": 9.6,
+          "heading": 98.5,
+          "parallel": 1.5,
+          "n_base": 0.0
+        }
+      },
+      "B": {
+        "turn_two_row_n": 727,
+        "rejection_%": 47.2,
+        "by_phase_rejection_%": {
+          "edge": 55.4,
+          "mid": 50.8,
+          "deep": 26.6
+        },
+        "by_phase_n": {
+          "edge": 312,
+          "mid": 246,
+          "deep": 169
+        },
+        "threshold_fire_%_among_rejections": {
+          "offset": 11.1,
+          "heading": 95.3,
+          "parallel": 5.2,
+          "n_base": 0.0
+        }
+      },
+      "C": {
+        "turn_two_row_n": 720,
+        "rejection_%": 46.0,
+        "by_phase_rejection_%": {
+          "edge": 55.9,
+          "mid": 49.8,
+          "deep": 20.3
+        },
+        "by_phase_n": {
+          "edge": 315,
+          "mid": 247,
+          "deep": 158
+        },
+        "threshold_fire_%_among_rejections": {
+          "offset": 9.4,
+          "heading": 92.4,
+          "parallel": 10.6,
+          "n_base": 0.0
+        }
+      }
+    },
+    "note": "F023 turn rejections decomposed by turn phase (edge/mid/deep interior of each contiguous turn run) and by which p99 threshold fires. Heading-dominated (offset ~secondary, parallelism/n_base ~0); graded edge>deep -> transitional turn frames caught, clean deep-turn frames pass to F022."
+  },
+  "F023_in_row_threshold_overlap": {
+    "per_arm": {
+      "A": {
+        "in_row_two_row_n": 20653,
+        "marginal_FP_%": {
+          "offset": 0.56,
+          "heading": 0.33,
+          "parallel": 0.74,
+          "n_base": 0.53
+        },
+        "sum_of_marginals_%": 2.16,
+        "union_FP_%": 1.8,
+        "overlap_saved_pp": 0.36
+      },
+      "B": {
+        "in_row_two_row_n": 20837,
+        "marginal_FP_%": {
+          "offset": 0.98,
+          "heading": 0.52,
+          "parallel": 1.05,
+          "n_base": 0.83
+        },
+        "sum_of_marginals_%": 3.38,
+        "union_FP_%": 2.6,
+        "overlap_saved_pp": 0.78
+      },
+      "C": {
+        "in_row_two_row_n": 20416,
+        "marginal_FP_%": {
+          "offset": 0.86,
+          "heading": 0.47,
+          "parallel": 1.12,
+          "n_base": 0.79
+        },
+        "sum_of_marginals_%": 3.24,
+        "union_FP_%": 2.49,
+        "overlap_saved_pp": 0.75
+      }
+    },
+    "note": "In-row FP per threshold (each ~p99=1%); union is sub-additive by ~0.5pp -> the four thresholds are near-independent (weak correlation)."
+  }
+}

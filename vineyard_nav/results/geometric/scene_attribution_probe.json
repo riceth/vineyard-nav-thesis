@@ -1,0 +1,265 @@
+{
+  "method": "coarse-only descriptor matching (CP-0 bank at stride 10, no fine search); correlations are a consistent lower bound used for SEPARATION, not for exclusion decisions",
+  "scene_counts": {
+    "unattributed": 90,
+    "march": 100,
+    "may": 30,
+    "april": 10
+  },
+  "per_bag": {
+    "march": {
+      "bag_frames": 16656,
+      "coarse_bank": 1666,
+      "by_group": {
+        "unattributed": {
+          "n": 90,
+          "min": 0.452,
+          "p25": 0.543,
+          "median": 0.623,
+          "p75": 0.712,
+          "max": 0.84,
+          "n_ge_0.60": 55,
+          "n_ge_0.50": 84,
+          "n_ge_0.40": 90
+        },
+        "march": {
+          "n": 100,
+          "min": 0.426,
+          "p25": 0.604,
+          "median": 0.779,
+          "p75": 0.903,
+          "max": 0.945,
+          "n_ge_0.60": 75,
+          "n_ge_0.50": 90,
+          "n_ge_0.40": 100
+        },
+        "may": {
+          "n": 30,
+          "min": 0.621,
+          "p25": 0.782,
+          "median": 0.855,
+          "p75": 0.864,
+          "max": 0.881,
+          "n_ge_0.60": 30,
+          "n_ge_0.50": 30,
+          "n_ge_0.40": 30
+        },
+        "april": {
+          "n": 10,
+          "min": 0.853,
+          "p25": 0.876,
+          "median": 0.89,
+          "p75": 0.897,
+          "max": 0.903,
+          "n_ge_0.60": 10,
+          "n_ge_0.50": 10,
+          "n_ge_0.40": 10
+        }
+      },
+      "top15": [
+        {
+          "corr": 0.945,
+          "scene": "march_color_image_164",
+          "group": "march"
+        },
+        {
+          "corr": 0.942,
+          "scene": "march_color_image_125",
+          "group": "march"
+        },
+        {
+          "corr": 0.932,
+          "scene": "march_color_image_17",
+          "group": "march"
+        },
+        {
+          "corr": 0.931,
+          "scene": "march_color_image_105",
+          "group": "march"
+        },
+        {
+          "corr": 0.929,
+          "scene": "march_color_image_124",
+          "group": "march"
+        },
+        {
+          "corr": 0.926,
+          "scene": "march_color_image_158",
+          "group": "march"
+        },
+        {
+          "corr": 0.925,
+          "scene": "march_color_image_160",
+          "group": "march"
+        },
+        {
+          "corr": 0.922,
+          "scene": "march_color_image_121",
+          "group": "march"
+        },
+        {
+          "corr": 0.92,
+          "scene": "march_color_image_104",
+          "group": "march"
+        },
+        {
+          "corr": 0.918,
+          "scene": "march_color_image_120",
+          "group": "march"
+        },
+        {
+          "corr": 0.917,
+          "scene": "march_color_image_153",
+          "group": "march"
+        },
+        {
+          "corr": 0.917,
+          "scene": "march_color_image_119",
+          "group": "march"
+        },
+        {
+          "corr": 0.916,
+          "scene": "march_color_image_157",
+          "group": "march"
+        },
+        {
+          "corr": 0.915,
+          "scene": "march_color_image_162",
+          "group": "march"
+        },
+        {
+          "corr": 0.915,
+          "scene": "march_color_image_159",
+          "group": "march"
+        }
+      ]
+    },
+    "april": {
+      "bag_frames": 24355,
+      "coarse_bank": 2436,
+      "by_group": {
+        "unattributed": {
+          "n": 90,
+          "min": 0.522,
+          "p25": 0.615,
+          "median": 0.699,
+          "p75": 0.788,
+          "max": 0.869,
+          "n_ge_0.60": 74,
+          "n_ge_0.50": 90,
+          "n_ge_0.40": 90
+        },
+        "march": {
+          "n": 100,
+          "min": 0.305,
+          "p25": 0.416,
+          "median": 0.591,
+          "p75": 0.801,
+          "max": 0.907,
+          "n_ge_0.60": 49,
+          "n_ge_0.50": 64,
+          "n_ge_0.40": 83
+        },
+        "may": {
+          "n": 30,
+          "min": 0.628,
+          "p25": 0.795,
+          "median": 0.878,
+          "p75": 0.895,
+          "max": 0.902,
+          "n_ge_0.60": 30,
+          "n_ge_0.50": 30,
+          "n_ge_0.40": 30
+        },
+        "april": {
+          "n": 10,
+          "min": 0.874,
+          "p25": 0.894,
+          "median": 0.908,
+          "p75": 0.929,
+          "max": 0.947,
+          "n_ge_0.60": 10,
+          "n_ge_0.50": 10,
+          "n_ge_0.40": 10
+        }
+      },
+      "top15": [
+        {
+          "corr": 0.947,
+          "scene": "april_color_image_115",
+          "group": "april"
+        },
+        {
+          "corr": 0.943,
+          "scene": "april_color_image_114",
+          "group": "april"
+        },
+        {
+          "corr": 0.935,
+          "scene": "april_color_image_116",
+          "group": "april"
+        },
+        {
+          "corr": 0.912,
+          "scene": "april_color_image_100",
+          "group": "april"
+        },
+        {
+          "corr": 0.908,
+          "scene": "april_color_image_110",
+          "group": "april"
+        },
+        {
+          "corr": 0.907,
+          "scene": "april_color_image_104",
+          "group": "april"
+        },
+        {
+          "corr": 0.907,
+          "scene": "march_color_image_125",
+          "group": "march"
+        },
+        {
+          "corr": 0.903,
+          "scene": "april_color_image_106",
+          "group": "april"
+        },
+        {
+          "corr": 0.902,
+          "scene": "may_color_image_123",
+          "group": "may"
+        },
+        {
+          "corr": 0.901,
+          "scene": "may_color_image_119",
+          "group": "may"
+        },
+        {
+          "corr": 0.901,
+          "scene": "may_color_image_121",
+          "group": "may"
+        },
+        {
+          "corr": 0.9,
+          "scene": "may_color_image_124",
+          "group": "may"
+        },
+        {
+          "corr": 0.897,
+          "scene": "may_color_image_118",
+          "group": "may"
+        },
+        {
+          "corr": 0.897,
+          "scene": "may_color_image_117",
+          "group": "may"
+        },
+        {
+          "corr": 0.897,
+          "scene": "may_color_image_122",
+          "group": "may"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "config": {
+    "bag": "april",
+    "anchors": [
+      17685,
+      17686,
+      5794,
+      5795,
+      1044,
+      1045,
+      2679,
+      2680
+    ],
+    "per_corridor": 2,
+    "corridors": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "band": "z 0.2-1.2m, x 1-8m, |y|<2.6m",
+    "extrinsic": "Table 3 identity (x-0.098, z+1.0)",
+    "camera_heading": "mean across 9 models (tilt arm-independent)"
+  },
+  "anchors": [
+    {
+      "frame": 17685,
+      "corridor": 0,
+      "nL": 201,
+      "nR": 177,
+      "mL": 0.0562,
+      "mR": 0.058,
+      "lidar_hdg": 3.27,
+      "cam_hdg": 3.18,
+      "diff": 0.09
+    },
+    {
+      "frame": 17686,
+      "corridor": 0,
+      "nL": 193,
+      "nR": 162,
+      "mL": 0.0588,
+      "mR": 0.0584,
+      "lidar_hdg": 3.35,
+      "cam_hdg": 3.52,
+      "diff": -0.16
+    },
+    {
+      "frame": 5794,
+      "corridor": 1,
+      "nL": 123,
+      "nR": 92,
+      "mL": 0.0542,
+      "mR": 0.0579,
+      "lidar_hdg": 3.21,
+      "cam_hdg": 2.63,
+      "diff": 0.58
+    },
+    {
+      "frame": 5795,
+      "corridor": 1,
+      "nL": 123,
+      "nR": 92,
+      "mL": 0.0542,
+      "mR": 0.0579,
+      "lidar_hdg": 3.21,
+      "cam_hdg": 2.84,
+      "diff": 0.37
+    },
+    {
+      "frame": 1044,
+      "corridor": 2,
+      "nL": 205,
+      "nR": 139,
+      "mL": 0.0487,
+      "mR": 0.0528,
+      "lidar_hdg": 2.9,
+      "cam_hdg": 3.67,
+      "diff": -0.77
+    },
+    {
+      "frame": 1045,
+      "corridor": 2,
+      "nL": 213,
+      "nR": 123,
+      "mL": 0.0512,
+      "mR": 0.0556,
+      "lidar_hdg": 3.06,
+      "cam_hdg": 4.43,
+      "diff": -1.38
+    },
+    {
+      "frame": 2679,
+      "corridor": 3,
+      "nL": 154,
+      "nR": 135,
+      "mL": 0.0351,
+      "mR": 0.0344,
+      "lidar_hdg": 1.99,
+      "cam_hdg": 1.03,
+      "diff": 0.96
+    },
+    {
+      "frame": 2680,
+      "corridor": 3,
+      "nL": 162,
+      "nR": 126,
+      "mL": 0.0279,
+      "mR": 0.0343,
+      "lidar_hdg": 1.78,
+      "cam_hdg": 0.95,
+      "diff": 0.83
+    }
+  ],
+  "mean_lidar_hdg": 2.85,
+  "sd_lidar_hdg": 0.57,
+  "mean_cam_hdg": 2.78,
+  "camera_minus_lidar": -0.06,
+  "n_fitted": 8
+}
