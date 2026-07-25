@@ -95,6 +95,32 @@ pipeline, not every analysis script.
 
 ---
 
+## Run a seasonal bag start to finish
+
+Perception is already trained (the 9 checkpoints are bag-independent), so a new
+bag is **geometric then control**. All commands run from `vineyard_nav/`; replace
+`may` with any registered bag. The two strand READMEs hold the per-step detail,
+runtimes, and "you should see" checks — this is the chaining overview.
+
+1. **Convert** the ROS1 bag to ROS2 — `scripts/geometric/convert_bag.py --bag may`
+   (needs `../kg_may_06.bag`; ~1× its size in free disk).
+2. **Prepare** — `scripts/geometric/prep.py --bag may` runs CP-0 (prefix-scene
+   census + the D048 gate over the 90 unattributed scenes) then CP-1 (frame
+   manifest). If CP-0 flags `needs_review`, it stops before the manifest — open
+   the census `d048_gate.needs_review`, confirm each scene present/absent, re-run.
+3. **Geometric strand** — follow `scripts/geometric/README.md` from Stage A3 with
+   `--bag may` (extract → detection cache → 9-model inference → `analyze.py` →
+   figures), including the `--scope non_in_row` branch (needed by the control
+   strand's F026 validation).
+4. **Control strand** — follow `scripts/control/README.md` with `--bag may`
+   (no weights, no GPU; reads the geometric outputs + the bag `.db3`).
+5. **Cross-bag figures** — `figures_compare.py --bags march april may` to fold the
+   new bag into the seasonal comparison.
+
+Stages 3–4 reuse the same 9 checkpoints as march/april — **no retraining**.
+
+---
+
 ## What ships in the repo vs. what you must obtain separately
 
 | Component | In the repo? | How to obtain |
@@ -123,15 +149,19 @@ evaluated so far:
 | `march` | ✅ evaluated (the primary bag; all findings anchored here) |
 | `april` | ✅ evaluated (second season; confirms the March findings) |
 | `may` | ⏭️ next — unblocked, not yet run |
-| `june`, `july`, `september` | ⛔ **gated on O019** (see below) — not yet run |
+| `june`, `july`, `september` | ⏳ armed — run the CP-0 D048 gate at their turn; proceed unless it flags `needs_review` |
 
-**O019** is an open correctness gate: 90 of the 230 labelled SemanticBLT scenes
-carry no month in their filename, and 39% of the dataset is therefore of unknown
-origin. These are summer-foliage ("canopy") scenes, most plausibly from the
-summer bags — so June/July/September must not be evaluated until their scene
-attribution is resolved (with keypoint matching, not the correlation method that
-was shown to be inconclusive). March and April are bare-vine/early-growth and
-are not exposed to this risk. Full rationale: `docs/DECISIONS.md` (D046) and
+**O019 — resolved and wired (D048).** 90 of the 230 labelled SemanticBLT scenes
+carry no month in their filename (39% of the dataset, of unknown origin — summer-
+foliage "canopy" scenes, most plausibly from the summer bags). The risk: if any
+belong to an evaluated bag, that bag is under-excluded and contaminated. This is
+now handled automatically at **CP-0** for every bag: the D048 gate
+(`scripts/geometric/scene_attribution.py`) scores those 90 scenes against the bag
+by ORB+RANSAC identity and either excludes them (≥200 inliers), flags them for
+review (40–200, which blocks the bag's evaluation until confirmed), or clears them
+(≤40). March and April measured all 90 as absent. June/July/September are no
+longer hard-blocked — they simply run the gate at their CP-0 and proceed unless it
+raises `needs_review`. Full rationale: `docs/DECISIONS.md` (D046, D048) and
 `docs/STATUS.md` (O019).
 
 ---

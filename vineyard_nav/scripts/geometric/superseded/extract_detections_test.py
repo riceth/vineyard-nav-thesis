@@ -6,7 +6,7 @@ import numpy as np, cv2
 PKG = Path(__file__).resolve().parents[3]; sys.path.insert(0, str(PKG/"scripts"/"geometric"))
 import torch; torch.multiprocessing.set_sharing_strategy("file_system")
 from ultralytics import YOLO
-from single_arm_dryrun import CONF, BLOB_FRAC, FRAME_PX
+from cp3_geometry import CONF, BLOB_FRAC, FRAME_PX
 FR = PKG/"results/runs/geom_cp1_frames_640"
 MAN = json.load(open(PKG/"results/geometric/march/dataset_manifest.json"))
 test = [f["i"] for f in MAN["frames"] if f["split"] == "test"]

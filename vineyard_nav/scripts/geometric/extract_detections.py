@@ -13,7 +13,7 @@ import numpy as np, cv2
 PKG = Path(__file__).resolve().parents[2]; sys.path.insert(0, str(PKG / "scripts" / "geometric"))
 import torch; torch.multiprocessing.set_sharing_strategy("file_system")
 from ultralytics import YOLO
-from single_arm_dryrun import CONF, BLOB_FRAC, FRAME_PX
+from cp3_geometry import CONF, BLOB_FRAC, FRAME_PX
 from bag_config import parse_bag
 B = parse_bag()
 FR = B["frames_dir"]

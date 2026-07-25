@@ -62,7 +62,7 @@ def main():
     if not db3.exists():
         raise SystemExit(f"conversion finished but {db3} is missing — check the rosbags-convert output")
     print(f"[{a.bag}] done -> {db3} ({db3.stat().st_size / 1e9:.1f} GB)")
-    print(f"  next: python3 scripts/geometric/contamination_census.py --bag {a.bag}")
+    print(f"  next: python3 scripts/geometric/prep.py --bag {a.bag}")
 
 
 if __name__ == "__main__":

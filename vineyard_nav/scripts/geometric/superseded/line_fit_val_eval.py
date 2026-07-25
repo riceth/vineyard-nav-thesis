@@ -12,7 +12,7 @@ from albumentations.pytorch import ToTensorV2
 from scripts.perception.segmentation.unet_binary.model import UNetBinary
 from scripts.perception.segmentation.unet_binary.dataset import IMAGENET_MEAN, IMAGENET_STD
 import projection_calibration as C
-from single_arm_dryrun import CONF, BLOB_FRAC, FRAME_PX
+from cp3_geometry import CONF, BLOB_FRAC, FRAME_PX
 exec(open(Path(__file__).resolve().parent / "row_model.py").read())
 
 FR = PKG / "results/runs/geom_cp1_frames_640"

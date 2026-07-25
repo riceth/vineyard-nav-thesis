@@ -1,0 +1,143 @@
+{
+  "method": "ORB(nfeatures=3000)+RANSAC-homography inlier count; thumbnail top-30 prefilter; match@640px gray; Lowe 0.75; RANSAC 5.0px. Score = max inliers over shortlist.",
+  "scene_counts": {
+    "unattributed": 90,
+    "march": 100,
+    "may": 30,
+    "april": 10
+  },
+  "per_bag": {
+    "march": {
+      "unattributed": {
+        "n": 90,
+        "min": 5,
+        "p50": 7.0,
+        "p90": 8.0,
+        "max": 11,
+        "mean": 6.8
+      },
+      "march": {
+        "n": 100,
+        "min": 59,
+        "p50": 667.5,
+        "p90": 922.3000000000001,
+        "max": 1146,
+        "mean": 661.7
+      },
+      "may": {
+        "n": 30,
+        "min": 6,
+        "p50": 9.0,
+        "p90": 12.200000000000003,
+        "max": 23,
+        "mean": 9.2
+      },
+      "april": {
+        "n": 10,
+        "min": 6,
+        "p50": 12.0,
+        "p90": 16.499999999999993,
+        "max": 39,
+        "mean": 13.8
+      }
+    },
+    "april": {
+      "unattributed": {
+        "n": 90,
+        "min": 5,
+        "p50": 7.0,
+        "p90": 9.0,
+        "max": 12,
+        "mean": 7.0
+      },
+      "march": {
+        "n": 100,
+        "min": 5,
+        "p50": 15.5,
+        "p90": 72.10000000000001,
+        "max": 127,
+        "mean": 31.0
+      },
+      "may": {
+        "n": 30,
+        "min": 5,
+        "p50": 10.0,
+        "p90": 71.4,
+        "max": 77,
+        "mean": 24.7
+      },
+      "april": {
+        "n": 10,
+        "min": 68,
+        "p50": 544.0,
+        "p90": 768.1,
+        "max": 769,
+        "mean": 486.2
+      }
+    }
+  },
+  "calibration": {
+    "march": {
+      "positives": {
+        "n": 100,
+        "min": 59,
+        "p50": 667.5,
+        "p90": 922.3000000000001,
+        "max": 1146,
+        "mean": 661.7
+      },
+      "negatives": {
+        "n": 40,
+        "min": 6,
+        "p50": 9.0,
+        "p90": 14.0,
+        "max": 39,
+        "mean": 10.3
+      },
+      "unknowns": {
+        "n": 90,
+        "min": 5,
+        "p50": 7.0,
+        "p90": 8.0,
+        "max": 11,
+        "mean": 6.8
+      },
+      "threshold_inliers": 40,
+      "separates": true,
+      "neg_max": 39,
+      "pos_min": 59,
+      "unknowns_flagged_present": 0
+    },
+    "april": {
+      "positives": {
+        "n": 10,
+        "min": 68,
+        "p50": 544.0,
+        "p90": 768.1,
+        "max": 769,
+        "mean": 486.2
+      },
+      "negatives": {
+        "n": 130,
+        "min": 5,
+        "p50": 13.0,
+        "p90": 72.10000000000001,
+        "max": 127,
+        "mean": 29.5
+      },
+      "unknowns": {
+        "n": 90,
+        "min": 5,
+        "p50": 7.0,
+        "p90": 9.0,
+        "max": 12,
+        "mean": 7.0
+      },
+      "threshold_inliers": 128,
+      "separates": false,
+      "neg_max": 127,
+      "pos_min": 68,
+      "unknowns_flagged_present": 0
+    }
+  }
+}

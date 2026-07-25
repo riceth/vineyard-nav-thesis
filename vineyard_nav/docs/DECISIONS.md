@@ -801,6 +801,45 @@ Extending to a second bag surfaced **five** defects that share one shape: code t
 
 ---
 
+## D048 — O019 resolution: ORB+RANSAC scene→bag attribution, and its three-band decision rule
+**Date:** 24 July 2026
+**Status:** LOCKED
+
+**Purpose.** Resolve O019 — whether any of the 90 unattributed `color_image_*` SemanticBLT scenes (39% of the dataset, no month prefix) contaminate an evaluated bag. The correlation probe was rejected (D046c) as anti-informative. This locks the keypoint-based replacement and its calibrated decision rule.
+
+**Method.** Per (scene, bag): a coarse 128×128 thumbnail bank shortlists the top-30 candidate frames (recall only), then **ORB (nfeatures 3000) + Lowe-ratio match + RANSAC-homography inlier count** verifies identity; score = max inliers over the shortlist. `scripts/geometric/one_time/scene_attribution_orb.py` → `results/geometric/scene_attribution_keypoint.json`.
+
+**Control calibration (march + april).** Known positives = prefix scenes vs own bag; negatives = prefix scenes vs foreign bag; unknowns = the 90. Observed:
+
+| | march | april |
+|---|---|---|
+| genuine members | 59–1146 | 68–769 |
+| cross-session same-place tail | ≤ 39 | ≤ 127 |
+| 90 unknowns | ≤ 11 | ≤ 12 |
+
+March separates cleanly; april does **not** — a cross-session same-place tail (fixed vineyard infrastructure re-observed across sessions, visually confirmed, all correctly-prefixed, not mislabels) reaches 127, overlapping the two weakest genuine members (68, 79). **Fine-verify (full-res ±30-frame neighbourhood) was tested and does NOT recover the weak members** (their true source frames are same-place-different-pass, outside the neighbourhood; one has a single dataset version so version-selection cannot help) — so it is not part of the rule. Validation trail: `scripts/geometric/one_time/scene_attribution_{tail_probe,fineverify}.py` + `results/geometric/april/diagnostics/attribution_tail/`.
+
+**Locked decision — three-band rule** (calibrated to the clean floor gap 12→59 and the tail ceiling 127):
+- **≤ 40 inliers → absent.** (Above every unknown, below every genuine member.)
+- **≥ 200 inliers → present** → exclude from that bag's evaluation. (Above the cross-session tail with margin; at exact-frame re-observation levels.)
+- **40–200 → manual visual review.** Weak same-place members and cross-session matches genuinely coexist here; no automatic statistic separates them.
+
+**Result (O019 satisfied for march + april).** All 90 unknowns score ≤ 12 on both bags — confident-absent, zero in the review band. This converts D046d's *reasoned* directional-risk argument into a *measured* result for both evaluated bags: **the 90 unattributed scenes do not contaminate march or april.**
+
+**Accepted limitation.** ~1–2 of 10 genuine members per bag land in the 40–200 review band (multi-pass same-place siblings / heavy augmentation / single-version scenes); the method confidently confirms strong presence and clear absence but flags this band rather than auto-deciding. Accepted because (i) the march/april unknowns are unambiguous regardless, (ii) June/July/September are optional timeboxed work, and (iii) any future summer-bag unknown scoring ≥ 40 is **flagged, never silently mis-excluded** — a genuinely-present same-season scene would score ≥ 200 anyway.
+
+**CP-0 integration.** The validated function is available as the per-bag gate: at each bag's CP-0, after prefix-scene location, the 90 unattributed scenes are scored against that bag; ≥ 200 → added to the exclusion set, 40–200 → `needs_review` (blocks that bag's evaluation until reviewed), ≤ 40 → absent. The gate is satisfied at each bag's natural CP-0 point (per the D046/O019 revised approach); june/july/september remain blocked until it resolves for them.
+
+**Implemented (25 Jul 2026).** The gate is now wired into the standard pipeline, so a single `prep.py --bag <name>` runs CP-0 (both parts) then CP-1 for every bag. (CP-0 and CP-1 were consolidated into one `prep.py` in the same cleanup batch — see the geometric README; earlier drafts of this note named the pre-merge scripts `contamination_census.py` / `frame_manifest_build.py`.)
+- `scripts/geometric/scene_attribution.py` — production module (constants + ORB/RANSAC primitives + `gate()`), the byte-for-byte algorithm of the frozen validation harness `one_time/scene_attribution_orb.py` (kept separate so the committed calibration stays immutable).
+- `prep.py` (CP-0) — builds the coarse bank for **every** bag (the no-prefix early-return is gone), runs the gate, folds `present` scenes into the exclusion windows, records `present`/`needs_review`/`absent` under a `d048_gate` block, and stamps `status: clear | needs_review`.
+- `prep.py` (CP-1) — hard-stops if `status == needs_review`, listing the scenes to confirm. This is the enforcement of "blocks that bag's evaluation."
+- **Regression check:** re-running the gate on march yields 0 present / 0 needs_review / 90 absent (max 11 inliers) — reproducing the validation and adding **zero** exclusion intervals, so march's (and april's, by the same all-absent result) manifest is byte-identical. Prefix-scene matching is unchanged, so prefix exclusions are untouched.
+
+**Cross-references.** D046 (a–f, the multi-bag generalisation and the rejected correlation probe), O019 (the gate this resolves), GEOMETRY_PIPELINE_SPEC §2 (CP-0). Supersedes the correlation-based attribution of D046c.
+
+---
+
 ## Open items
 
 ### O001 — Threshold T range (Phase C)

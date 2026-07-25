@@ -13,7 +13,7 @@ Front-ends differ only at detection: YOLO gives bbox-bottom-centre base points (
 blob guard, D035); U-Net gives connected-component bbox-bottom-centre base points
 (>= 40 px, no blob guard — the F007 blob is a YOLO mask-head pathology, U-Net is immune,
 F007). Everything downstream (project -> cluster L/R -> Y-constant row -> binned centreline
--> GT-1/GT-2) is arm-agnostic and imported from single_arm_dryrun (CP-3 artefact, unmodified).
+-> GT-1/GT-2) is arm-agnostic and imported from cp3_geometry (CP-3 artefact, unmodified).
 
 Dual-mode reporting (D-D): point estimates over ALL two-row val frames; 95 % bootstrap CI
 over the Δs = 1.5 m spatially-independent subsample. Val only — no test-set evaluation.
@@ -37,7 +37,7 @@ from scripts.perception.segmentation.unet_binary.model import UNetBinary
 from scripts.perception.segmentation.unet_binary.dataset import IMAGENET_MEAN, IMAGENET_STD
 
 import projection_calibration as C
-from single_arm_dryrun import side_valid, bin_centre, NEAR_M, BINS, CONF, BLOB_FRAC, FRAME_PX
+from cp3_geometry import side_valid, bin_centre, NEAR_M, BINS, CONF, BLOB_FRAC, FRAME_PX
 
 FRAMES = REPO / "results/runs/geom_cp1_frames_640"
 MANIFEST = json.load(open(REPO / "results/geometric/march/dataset_manifest.json"))

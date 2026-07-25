@@ -10,7 +10,7 @@ PKG = Path(__file__).resolve().parents[3]; sys.path.insert(0, str(PKG)); sys.pat
 import torch; torch.multiprocessing.set_sharing_strategy("file_system")
 from ultralytics import YOLO
 import projection_calibration as C
-from single_arm_dryrun import bin_centre, CONF, BLOB_FRAC, FRAME_PX
+from cp3_geometry import bin_centre, CONF, BLOB_FRAC, FRAME_PX
 exec(open(Path(__file__).resolve().parents[1] / "row_model.py").read())
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
 

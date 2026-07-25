@@ -11,7 +11,7 @@ PKG = Path(__file__).resolve().parents[3]; sys.path.insert(0, str(PKG)); sys.pat
 import torch; torch.multiprocessing.set_sharing_strategy("file_system")
 from ultralytics import YOLO
 import projection_calibration as C
-from single_arm_dryrun import side_valid, bin_centre, NEAR_M, BINS, CONF, BLOB_FRAC, FRAME_PX
+from cp3_geometry import side_valid, bin_centre, NEAR_M, BINS, CONF, BLOB_FRAC, FRAME_PX
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
 
 SC = str(PKG / "results/geometric/march/diagnostics/figures/rowfit_validation")

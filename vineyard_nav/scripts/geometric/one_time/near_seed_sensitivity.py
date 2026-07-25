@@ -31,7 +31,7 @@ from albumentations.pytorch import ToTensorV2
 from scripts.perception.segmentation.unet_binary.model import UNetBinary
 from scripts.perception.segmentation.unet_binary.dataset import IMAGENET_MEAN, IMAGENET_STD
 import projection_calibration as C
-from single_arm_dryrun import CONF, BLOB_FRAC, FRAME_PX
+from cp3_geometry import CONF, BLOB_FRAC, FRAME_PX
 from bag_config import resolve, frames_for_scope
 
 RM = {}

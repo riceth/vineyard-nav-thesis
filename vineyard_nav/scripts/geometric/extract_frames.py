@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """CP-1 image extraction (GEOMETRY_PIPELINE_SPEC.md §9 CP-1).
 
-Reads the CP-1 manifest (frame_manifest_build.py) and, for every ELIGIBLE bag frame, decodes
+Reads the CP-1 manifest (built by prep.py) and, for every ELIGIBLE bag frame, decodes
 it from the bag's ROS2 .db3, resizes to 640x640 with the training STRETCH preprocessing,
 and saves a JPEG named by bag frame index. Idempotent — existing frames are skipped.
 Also (re)generates a few annotated sample overlays (one per corridor) for the gate.
