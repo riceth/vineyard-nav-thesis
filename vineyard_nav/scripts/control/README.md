@@ -36,9 +36,32 @@ validation measures rejection over the non-in-row frames.
 
 ---
 
-## Reproduce, in order
+## Reproduce
 
-Using April as the example. Every step is a minute or few — none is GPU-bound.
+Using April as the example. Every step is CPU-only and a minute or few — the whole
+strand is ~5–10 minutes.
+
+**One command (recommended).** `control.py` runs Steps 1→4 below in the correct
+order, so the run-order footgun (Step 3 before Step 2 → placeholder gains) cannot
+happen:
+
+```bash
+python3 scripts/control/control.py --bag april
+```
+- **Needs:** the geometric **in-row and non-in-row** branches done + the bag `.db3`.
+- **Produces:** everything the four steps produce — `state_gate_native.json`,
+  `command_per_frame.csv` + `command_summary.json`, `gain_kfold.json`,
+  `command_smoothness.json`.
+- **`--only <step[,step]>`** runs a subset, e.g. `--only command_smoothness` to
+  re-render just the headline after a tweak (step names: `state_gate_native`,
+  `command_generator`, `gain_kfold`, `command_smoothness`).
+
+`control.py` is a thin wrapper that shells out to the scripts **unchanged**, so its
+output is byte-identical to running the steps by hand. The four steps below are
+exactly what it runs, in order — run them individually to re-run or inspect a
+single stage.
+
+### The four steps (individually)
 
 **Step 1 — Validate the native state gate → finding F026**
 ```bash
@@ -122,5 +145,5 @@ smoothness (RMS frame-to-frame yaw-rate change, with and without the ramp layer)
 ## Re-running on another bag
 
 Add the bag to `BAGS` in `scripts/geometric/bag_config.py`, run the geometric
-strand (in-row **and** non-in-row) for it, then run Steps 1–4 above with
-`--bag <name>`.
+strand (in-row **and** non-in-row) for it, then run this strand with
+`python3 scripts/control/control.py --bag <name>` (or the four steps individually).
