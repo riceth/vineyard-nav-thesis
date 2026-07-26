@@ -1,0 +1,215 @@
+{
+  "status": "CP-P3: command stream at the P-4c LOCKED first-principles gains (d_s=20 m, zeta=1, F017 de-bias). Backs F027 continuation.",
+  "config": {
+    "bag": "may",
+    "streams": "P-1a: 9 independent (arm x seed) streams, per-pass state reset",
+    "gate": "P-5a locked native gate v_x > 0.3627 m/s (D042/F026)",
+    "pid": "P-2a weighted-sum on offset(m)+heading(deg)",
+    "P4c_locked_gains": {
+      "Kp": 0.06508969,
+      "Kpsi": 0.00783469,
+      "Kd": 0.0,
+      "Ki": 0.0,
+      "omega_n_rad_s": 0.22444721,
+      "zeta": 1.0,
+      "d_settle_m": 20.0,
+      "v_inrow_ms": 0.77395588
+    },
+    "gain_derivation": "P-4c first principles: omega_n=5.8*v/d_s (zeta=1, 2% settling over d_s of travel); Kp=omega_n^2/v; Kpsi=2*zeta*omega_n per degree; Kd=Ki=0. NOT fitted.",
+    "tilt_debias_deg": 2.31,
+    "tilt_debias_note": "F017/D038 sensor-common tilt removed from heading as a fixed calibration constant; uncorrected it would consume ~30% of omega_max on a projection artefact.",
+    "sign_convention": "+1 corrective (locked, spec \u00a75 amendment)",
+    "anti_windup": "conditional integration (freeze integral on saturation, P-6)",
+    "omega_max_rad_s": 0.07834,
+    "omega_max_source": "IMU-gyro in-row p99 (F026: odom yaw-rate noise-inflated, unreliable)",
+    "omega_max_odom_rad_s_for_reference": 0.25142,
+    "ramp_rate_rad_s2": 0.043956,
+    "ramp_note": "toggleable P-6 layer (DERIVED, locked); omega_cmd (off) + omega_cmd_ramp (on)",
+    "executed_yaw_reference": "omega_exec_odom (spec \u00a77a) + omega_exec_imu (F026 alternative) both logged"
+  },
+  "design_point_sensitivity": {
+    "locked": "d_s=20 m, zeta=1.0",
+    "in_row_offset_rms_m": 0.2292,
+    "observed_in_row_yaw_std_deg_s": 1.62,
+    "observed_in_row_yaw_p99_deg_s": 4.488,
+    "candidates": {
+      "5m": {
+        "Kp": 1.041435,
+        "Kpsi_per_deg": 0.03133874,
+        "saturating_offset_m": 0.0752,
+        "unclamped_cmd_at_rms_offset_deg_s": 13.679,
+        "x_observed_yaw_p99": 3.05,
+        "x_observed_yaw_std": 8.44
+      },
+      "10m": {
+        "Kp": 0.260359,
+        "Kpsi_per_deg": 0.01566937,
+        "saturating_offset_m": 0.3009,
+        "unclamped_cmd_at_rms_offset_deg_s": 3.42,
+        "x_observed_yaw_p99": 0.76,
+        "x_observed_yaw_std": 2.11
+      },
+      "20m": {
+        "Kp": 0.06509,
+        "Kpsi_per_deg": 0.00783469,
+        "saturating_offset_m": 1.2035,
+        "unclamped_cmd_at_rms_offset_deg_s": 0.855,
+        "x_observed_yaw_p99": 0.19,
+        "x_observed_yaw_std": 0.53
+      },
+      "30m": {
+        "Kp": 0.028929,
+        "Kpsi_per_deg": 0.00522312,
+        "saturating_offset_m": 2.7079,
+        "unclamped_cmd_at_rms_offset_deg_s": 0.38,
+        "x_observed_yaw_p99": 0.08,
+        "x_observed_yaw_std": 0.23
+      }
+    },
+    "note": "5 m / 10 m saturate at offsets at or below the in-row offset RMS (ordinary estimation noise, F013); 20 m saturates only beyond F023's p99 tail (0.71 m); 30 m under-corrects within a ~53 m row. A 5 m design point would also demand commands far exceeding the yaw-rate envelope the platform actually used (see x_observed_yaw_* multipliers)."
+  },
+  "ramp_layer": {
+    "rate_rad_s2": 0.043956,
+    "derivation": "(2*zeta + 1/(2*zeta)) * omega_n * omega_max  [= 2.5*omega_n*omega_max at zeta=1]",
+    "demanded_slew_rad_s2": {
+      "50": 0.01697,
+      "90": 0.11787,
+      "95": 0.17558,
+      "99": 0.38655
+    },
+    "demanded_slew_max_rad_s2": 1.73255,
+    "clipped_pct_of_transitions": 31.98,
+    "interpretation": "Median demanded slew sits BELOW the bound, so genuine transitions pass untouched; the tail (p99 ~24x the bound) is frame-to-frame perception jitter converted into commanded yaw-rate change - exactly what the P-6 layer exists to clip. By construction the bound cannot throttle a legitimate response.",
+    "straight_row_caveat": "Validity rests on D038's straight-row model: no legitimate curvature term exists to clip. Extending the pipeline to curved rows requires re-deriving this bound rather than assuming it still holds."
+  },
+  "per_stream": {
+    "A_42": {
+      "n": 8840,
+      "fresh": 6010,
+      "held": 2830,
+      "held_abstain": 2757,
+      "held_state_gate": 89,
+      "held_both": 16,
+      "hold_spans": 300,
+      "max_hold_run": 144,
+      "mean_hold_run": 9.39,
+      "saturated_frames": 77,
+      "ramp_changed_frames": 3596
+    },
+    "A_43": {
+      "n": 8840,
+      "fresh": 5911,
+      "held": 2929,
+      "held_abstain": 2859,
+      "held_state_gate": 89,
+      "held_both": 19,
+      "hold_spans": 380,
+      "max_hold_run": 130,
+      "mean_hold_run": 7.67,
+      "saturated_frames": 70,
+      "ramp_changed_frames": 3746
+    },
+    "A_44": {
+      "n": 8840,
+      "fresh": 5787,
+      "held": 3053,
+      "held_abstain": 2987,
+      "held_state_gate": 89,
+      "held_both": 23,
+      "hold_spans": 363,
+      "max_hold_run": 137,
+      "mean_hold_run": 8.37,
+      "saturated_frames": 79,
+      "ramp_changed_frames": 3555
+    },
+    "B_42": {
+      "n": 8840,
+      "fresh": 5358,
+      "held": 3482,
+      "held_abstain": 3424,
+      "held_state_gate": 89,
+      "held_both": 31,
+      "hold_spans": 462,
+      "max_hold_run": 159,
+      "mean_hold_run": 7.5,
+      "saturated_frames": 38,
+      "ramp_changed_frames": 3152
+    },
+    "B_43": {
+      "n": 8840,
+      "fresh": 5871,
+      "held": 2969,
+      "held_abstain": 2907,
+      "held_state_gate": 89,
+      "held_both": 27,
+      "hold_spans": 402,
+      "max_hold_run": 132,
+      "mean_hold_run": 7.35,
+      "saturated_frames": 61,
+      "ramp_changed_frames": 3057
+    },
+    "B_44": {
+      "n": 8840,
+      "fresh": 5834,
+      "held": 3006,
+      "held_abstain": 2939,
+      "held_state_gate": 89,
+      "held_both": 22,
+      "hold_spans": 458,
+      "max_hold_run": 144,
+      "mean_hold_run": 6.53,
+      "saturated_frames": 34,
+      "ramp_changed_frames": 3278
+    },
+    "C_42": {
+      "n": 8840,
+      "fresh": 5567,
+      "held": 3273,
+      "held_abstain": 3205,
+      "held_state_gate": 89,
+      "held_both": 21,
+      "hold_spans": 479,
+      "max_hold_run": 144,
+      "mean_hold_run": 6.8,
+      "saturated_frames": 81,
+      "ramp_changed_frames": 3064
+    },
+    "C_43": {
+      "n": 8840,
+      "fresh": 5601,
+      "held": 3239,
+      "held_abstain": 3172,
+      "held_state_gate": 89,
+      "held_both": 22,
+      "hold_spans": 441,
+      "max_hold_run": 159,
+      "mean_hold_run": 7.32,
+      "saturated_frames": 42,
+      "ramp_changed_frames": 3200
+    },
+    "C_44": {
+      "n": 8840,
+      "fresh": 5362,
+      "held": 3478,
+      "held_abstain": 3418,
+      "held_state_gate": 89,
+      "held_both": 29,
+      "hold_spans": 486,
+      "max_hold_run": 158,
+      "mean_hold_run": 7.13,
+      "saturated_frames": 26,
+      "ramp_changed_frames": 3069
+    }
+  },
+  "overall": {
+    "n": 79560,
+    "fresh": 51301,
+    "held": 28259,
+    "held_abstain": 27668,
+    "held_state_gate": 801,
+    "held_both": 210,
+    "hold_spans": 3771,
+    "saturated_frames": 508,
+    "ramp_changed_frames": 29717
+  }
+}

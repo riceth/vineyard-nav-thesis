@@ -1,0 +1,488 @@
+{
+  "meta": {
+    "checkpoint": "CP-0",
+    "generated": "2026-07-26T01:32:09",
+    "bag": "may",
+    "src_bag": "kg_may_06.bag",
+    "db3": "kg_may_06_ros2/kg_may_06_ros2.db3",
+    "scene_prefix": "may",
+    "camera_topic": "/front/zed_node/rgb/image_rect_color/compressed",
+    "bag_frames": 17302,
+    "params": {
+      "coarse_stride": 10,
+      "fine_halfwidth": 30,
+      "window_sec": 1.0,
+      "window_frames_each_side": 14,
+      "high_conf_corr": 0.6,
+      "descriptor": "128x128 zero-mean L2-norm grayscale",
+      "d048": {
+        "absent_le": 40,
+        "present_ge": 200,
+        "shortlist_k": 30,
+        "orb_nfeatures": 3000,
+        "match_res": 640,
+        "lowe": 0.75,
+        "ransac_px": 5.0
+      }
+    },
+    "note": "prefix scenes: full-stream search, low-confidence (corr<0.60) matches visually spot-checked and verified correct. D048 gate: the 90 unattributed scenes scored by ORB+RANSAC identity; present (>=200) folded into exclusions, needs_review (40-200) blocks CP-1, absent (<=40) recorded only."
+  },
+  "status": "clear",
+  "summary": {
+    "prefix": {
+      "unique_scenes": 30,
+      "located": 30,
+      "truly_unlocated": 0,
+      "high_confidence": 30,
+      "low_confidence_verified": 0,
+      "by_split": {
+        "train": 21,
+        "test": 3,
+        "valid": 6
+      },
+      "corr_min": 0.932,
+      "corr_median": 0.9935,
+      "corr_max": 0.998,
+      "t_offset_span_s": [
+        53.24,
+        1023.63
+      ],
+      "t_offset_span_min": [
+        0.9,
+        17.1
+      ]
+    },
+    "d048_gate": {
+      "scored": 90,
+      "present": 0,
+      "needs_review": 0,
+      "absent": 90,
+      "max_inliers": 11
+    },
+    "n_merged_intervals": 28,
+    "excluded_frames": 830,
+    "excluded_pct_of_bag": 4.8,
+    "eligible_frames_after_exclusion": 16472
+  },
+  "per_scene": [
+    {
+      "scene": "may_color_image_10",
+      "split": "train",
+      "bag_frame": 782,
+      "timestamp_ns": 1651827197302386999,
+      "t_offset_s": 53.24,
+      "corr": 0.991,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_11",
+      "split": "train",
+      "bag_frame": 856,
+      "timestamp_ns": 1651827202260421991,
+      "t_offset_s": 58.2,
+      "corr": 0.991,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_12",
+      "split": "train",
+      "bag_frame": 930,
+      "timestamp_ns": 1651827207288185358,
+      "t_offset_s": 63.23,
+      "corr": 0.992,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_106",
+      "split": "train",
+      "bag_frame": 4407,
+      "timestamp_ns": 1651827448587639331,
+      "t_offset_s": 304.53,
+      "corr": 0.954,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_100",
+      "split": "train",
+      "bag_frame": 7277,
+      "timestamp_ns": 1651827647275557041,
+      "t_offset_s": 503.22,
+      "corr": 0.992,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_101",
+      "split": "train",
+      "bag_frame": 7352,
+      "timestamp_ns": 1651827652282402992,
+      "t_offset_s": 508.23,
+      "corr": 0.991,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_102",
+      "split": "train",
+      "bag_frame": 7427,
+      "timestamp_ns": 1651827657320112943,
+      "t_offset_s": 513.26,
+      "corr": 0.991,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_103",
+      "split": "train",
+      "bag_frame": 7500,
+      "timestamp_ns": 1651827662275389194,
+      "t_offset_s": 518.22,
+      "corr": 0.991,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_104",
+      "split": "train",
+      "bag_frame": 7573,
+      "timestamp_ns": 1651827667293789386,
+      "t_offset_s": 523.24,
+      "corr": 0.992,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_105",
+      "split": "train",
+      "bag_frame": 7642,
+      "timestamp_ns": 1651827672317958831,
+      "t_offset_s": 528.26,
+      "corr": 0.995,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_107",
+      "split": "train",
+      "bag_frame": 7790,
+      "timestamp_ns": 1651827682296052694,
+      "t_offset_s": 538.24,
+      "corr": 0.996,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_108",
+      "split": "test",
+      "bag_frame": 7860,
+      "timestamp_ns": 1651827687181216478,
+      "t_offset_s": 543.12,
+      "corr": 0.995,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_110",
+      "split": "train",
+      "bag_frame": 8011,
+      "timestamp_ns": 1651827697302177429,
+      "t_offset_s": 553.24,
+      "corr": 0.996,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_112",
+      "split": "train",
+      "bag_frame": 8158,
+      "timestamp_ns": 1651827707282163858,
+      "t_offset_s": 563.22,
+      "corr": 0.997,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_115",
+      "split": "test",
+      "bag_frame": 8380,
+      "timestamp_ns": 1651827722283024549,
+      "t_offset_s": 578.23,
+      "corr": 0.996,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_117",
+      "split": "train",
+      "bag_frame": 8520,
+      "timestamp_ns": 1651827732145099401,
+      "t_offset_s": 588.09,
+      "corr": 0.997,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_118",
+      "split": "valid",
+      "bag_frame": 8590,
+      "timestamp_ns": 1651827737222352743,
+      "t_offset_s": 593.16,
+      "corr": 0.997,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_120",
+      "split": "test",
+      "bag_frame": 8721,
+      "timestamp_ns": 1651827747214556932,
+      "t_offset_s": 603.16,
+      "corr": 0.998,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_121",
+      "split": "train",
+      "bag_frame": 8789,
+      "timestamp_ns": 1651827752295141458,
+      "t_offset_s": 608.24,
+      "corr": 0.997,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_122",
+      "split": "train",
+      "bag_frame": 8856,
+      "timestamp_ns": 1651827757253262042,
+      "t_offset_s": 613.2,
+      "corr": 0.997,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_123",
+      "split": "train",
+      "bag_frame": 8922,
+      "timestamp_ns": 1651827762142601013,
+      "t_offset_s": 618.09,
+      "corr": 0.997,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_124",
+      "split": "train",
+      "bag_frame": 8989,
+      "timestamp_ns": 1651827767238117218,
+      "t_offset_s": 623.18,
+      "corr": 0.997,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_125",
+      "split": "valid",
+      "bag_frame": 9050,
+      "timestamp_ns": 1651827772253499746,
+      "t_offset_s": 628.2,
+      "corr": 0.997,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_126",
+      "split": "valid",
+      "bag_frame": 9123,
+      "timestamp_ns": 1651827777283200025,
+      "t_offset_s": 633.23,
+      "corr": 0.997,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_111",
+      "split": "valid",
+      "bag_frame": 10986,
+      "timestamp_ns": 1651827903679550886,
+      "t_offset_s": 759.62,
+      "corr": 0.943,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_113",
+      "split": "valid",
+      "bag_frame": 11002,
+      "timestamp_ns": 1651827904754664897,
+      "t_offset_s": 760.7,
+      "corr": 0.932,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_109",
+      "split": "train",
+      "bag_frame": 11363,
+      "timestamp_ns": 1651827929274316310,
+      "t_offset_s": 785.22,
+      "corr": 0.941,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_116",
+      "split": "train",
+      "bag_frame": 11523,
+      "timestamp_ns": 1651827940258269071,
+      "t_offset_s": 796.2,
+      "corr": 0.944,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_114",
+      "split": "train",
+      "bag_frame": 11525,
+      "timestamp_ns": 1651827940385263442,
+      "t_offset_s": 796.33,
+      "corr": 0.933,
+      "matched_via": "plain",
+      "confidence": "high"
+    },
+    {
+      "scene": "may_color_image_119",
+      "split": "valid",
+      "bag_frame": 14820,
+      "timestamp_ns": 1651828167684472799,
+      "t_offset_s": 1023.63,
+      "corr": 0.96,
+      "matched_via": "plain",
+      "confidence": "high"
+    }
+  ],
+  "d048_gate": {
+    "present": [],
+    "needs_review": [],
+    "absent_max_inliers": 11
+  },
+  "merged_exclusion_intervals_frames": [
+    [
+      768,
+      796
+    ],
+    [
+      842,
+      870
+    ],
+    [
+      916,
+      944
+    ],
+    [
+      4393,
+      4421
+    ],
+    [
+      7263,
+      7291
+    ],
+    [
+      7338,
+      7366
+    ],
+    [
+      7413,
+      7441
+    ],
+    [
+      7486,
+      7514
+    ],
+    [
+      7559,
+      7587
+    ],
+    [
+      7628,
+      7656
+    ],
+    [
+      7776,
+      7804
+    ],
+    [
+      7846,
+      7874
+    ],
+    [
+      7997,
+      8025
+    ],
+    [
+      8144,
+      8172
+    ],
+    [
+      8366,
+      8394
+    ],
+    [
+      8506,
+      8534
+    ],
+    [
+      8576,
+      8604
+    ],
+    [
+      8707,
+      8735
+    ],
+    [
+      8775,
+      8803
+    ],
+    [
+      8842,
+      8870
+    ],
+    [
+      8908,
+      8936
+    ],
+    [
+      8975,
+      9003
+    ],
+    [
+      9036,
+      9064
+    ],
+    [
+      9109,
+      9137
+    ],
+    [
+      10972,
+      11016
+    ],
+    [
+      11349,
+      11377
+    ],
+    [
+      11509,
+      11539
+    ],
+    [
+      14806,
+      14834
+    ]
+  ]
+}

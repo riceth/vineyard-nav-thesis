@@ -483,31 +483,46 @@ def config_analysis(B):
     print(f"\n=== argmin over viable regime (coverage >= {VIABLE_COV}%) + tie-break (overlap agnostic -> lock agnostic) ===")
     print(f"viable cells: {viable_keys}")
     print(f"excluded (sub-viable): {[(e['cell'], e['two_row_pct']) for e in excluded]}")
-    for metric, rk, ck in [("GT1", "gt1_rms", "gt1_ci"), ("GT2", "gt2_rms", "gt2_ci")]:
-        best = min(viable_keys, key=lambda k: report[k][rk])
-        ov = overlaps(report[best][ck], agn[ck])
-        lock = "agnostic" if ov else best
-        argmin_summary[metric] = {"argmin": best, "argmin_rms": report[best][rk],
-                                  "overlaps_agnostic": ov, "locked": lock}
-        print(f"{metric}: argmin={best} (RMS {report[best][rk]}); CI overlaps agnostic={ov} -> LOCK {lock}")
+    if not viable_keys:
+        # Canopy bags can leave NO cell at the VIABLE_COV floor (May tops out ~63%). F018's viable-
+        # regime argmin/tie-break is then undefined; record the honest result instead of crashing.
+        # This does NOT change F018's 70% definition — it only handles the empty result of that
+        # definition (no viable downstream config regime for this bag).
+        max_two_row = max((report[k]["two_row_pct"] for k in sweep_keys), default=0.0)
+        argmin_summary["viable_regime"] = {
+            "coverage_floor_pct": VIABLE_COV, "any_viable": False,
+            "max_two_row_pct": round(max_two_row, 1), "viable_cells": [], "excluded_cells": excluded,
+            "note": (f"no config cell reaches the {VIABLE_COV:.0f}% two_row coverage floor on this bag "
+                     f"(max {max_two_row:.1f}%); F018 viable-regime argmin undefined — no viable "
+                     f"downstream config regime for this bag.")}
+        print(f"NO VIABLE CELL: max two_row {max_two_row:.1f}% < {VIABLE_COV:.0f}% floor -> "
+              f"argmin/tie-break skipped (no viable downstream regime).")
+    else:
+        for metric, rk, ck in [("GT1", "gt1_rms", "gt1_ci"), ("GT2", "gt2_rms", "gt2_ci")]:
+            best = min(viable_keys, key=lambda k: report[k][rk])
+            ov = overlaps(report[best][ck], agn[ck])
+            lock = "agnostic" if ov else best
+            argmin_summary[metric] = {"argmin": best, "argmin_rms": report[best][rk],
+                                      "overlaps_agnostic": ov, "locked": lock}
+            print(f"{metric}: argmin={best} (RMS {report[best][rk]}); CI overlaps agnostic={ov} -> LOCK {lock}")
 
-    vci1 = [report[k]["gt1_ci"] for k in viable_keys]
-    vci2 = [report[k]["gt2_ci"] for k in viable_keys]
-    flat1 = all(overlaps(a, b) for a in vci1 for b in vci1)
-    flat2 = all(overlaps(a, b) for a in vci2 for b in vci2)
-    agnostic_locked = all(v["locked"] == "agnostic" for v in argmin_summary.values())
-    argmin_summary["viable_regime"] = {
-        "coverage_floor_pct": VIABLE_COV, "viable_cells": viable_keys, "excluded_cells": excluded,
-        "rationale": "F018 viable-regime definition: argmin/tie-break evaluated only over cells with "
-                     "two_row coverage >= 70%. Sub-viable pole cells are single-frame artefacts "
-                     "(pole_T1/T2/T3, n_2r ~ 1) or survivorship on easy frames (pole_T8 ~46%), not "
-                     "comparable RMS estimates."}
-    argmin_summary["flat_gt1_viable_all_overlap"] = flat1
-    argmin_summary["flat_gt2_viable_all_overlap"] = flat2
-    argmin_summary["agnostic_locked"] = agnostic_locked
-    argmin_summary["pause_flag"] = not agnostic_locked
-    print(f"\nFLAT (viable)? GT-1 all viable cells CI-overlap: {flat1} | GT-2: {flat2}")
-    print(f"agnostic_locked={agnostic_locked} pause_flag={not agnostic_locked}")
+        vci1 = [report[k]["gt1_ci"] for k in viable_keys]
+        vci2 = [report[k]["gt2_ci"] for k in viable_keys]
+        flat1 = all(overlaps(a, b) for a in vci1 for b in vci1)
+        flat2 = all(overlaps(a, b) for a in vci2 for b in vci2)
+        agnostic_locked = all(v["locked"] == "agnostic" for v in argmin_summary.values())
+        argmin_summary["viable_regime"] = {
+            "coverage_floor_pct": VIABLE_COV, "viable_cells": viable_keys, "excluded_cells": excluded,
+            "rationale": "F018 viable-regime definition: argmin/tie-break evaluated only over cells with "
+                         "two_row coverage >= 70%. Sub-viable pole cells are single-frame artefacts "
+                         "(pole_T1/T2/T3, n_2r ~ 1) or survivorship on easy frames (pole_T8 ~46%), not "
+                         "comparable RMS estimates."}
+        argmin_summary["flat_gt1_viable_all_overlap"] = flat1
+        argmin_summary["flat_gt2_viable_all_overlap"] = flat2
+        argmin_summary["agnostic_locked"] = agnostic_locked
+        argmin_summary["pause_flag"] = not agnostic_locked
+        print(f"\nFLAT (viable)? GT-1 all viable cells CI-overlap: {flat1} | GT-2: {flat2}")
+        print(f"agnostic_locked={agnostic_locked} pause_flag={not agnostic_locked}")
 
     out = {"config": {"bag": B["bag"], "n_frames": len(FRAMES), "seeds": SEEDS, "T_grid": T_GRID,
                       "upstream": "line-fit locked (D035-D038); conf 0.25, 15% blob guard",
@@ -1051,17 +1066,31 @@ def main():
     else:
         selected = stratum_order
 
+    import traceback
     if a.non_in_row:
-        for name in selected:
-            if name == "non_in_row_analysis":
-                non_in_row_analysis(resolve(a.bag, "non_in_row"))
-            elif name == "mitigation":
-                mitigation_analysis(resolve(a.bag, "eligible"), resolve(a.bag, "non_in_row"))
+        B_in, B_non = resolve(a.bag, "eligible"), resolve(a.bag, "non_in_row")
+        runners = {"non_in_row_analysis": lambda: non_in_row_analysis(B_non),
+                   "mitigation": lambda: mitigation_analysis(B_in, B_non)}
     else:
         B = resolve(a.bag, "eligible")
         B["out_dir"].mkdir(parents=True, exist_ok=True)   # so an --only subset does not depend on run order
-        for name in selected:
-            IN_ROW_FUNCS[name](B)
+        runners = {n: (lambda n=n: IN_ROW_FUNCS[n](B)) for n in IN_ROW_ORDER}
+
+    # Per-analysis isolation: one failing analysis must not abort the others (restores the independence
+    # the pre-merge separate scripts had). Collect failures, report a summary, exit non-zero if any failed.
+    failures = []
+    for name in selected:
+        try:
+            runners[name]()
+        except Exception:
+            failures.append(name)
+            print(f"\n!! analyze [{a.bag}] '{name}' FAILED — continuing with the rest:\n"
+                  f"{traceback.format_exc()}", file=sys.stderr, flush=True)
+    ok = [n for n in selected if n not in failures]
+    print(f"\nanalyze [{a.bag}] summary: {len(ok)}/{len(selected)} ok"
+          + (f"; FAILED: {failures}" if failures else ""))
+    if failures:
+        raise SystemExit(f"analyze: {len(failures)} analysis/analyses failed: {failures}")
 
 
 if __name__ == "__main__":
