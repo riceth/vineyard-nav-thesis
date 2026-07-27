@@ -138,7 +138,7 @@ caching per-detection class + base point for the config sweep):
 python3 scripts/geometric/extract_detections.py --bag april
 ```
 - **Needs:** the frames (A3) and the 3 Phase-C checkpoints.
-- **Produces:** `results/geometric/april/cache/detections.csv` (gitignored, ~16 MB).
+- **Produces:** `results/geometric/april/cache/detections.csv` (gitignored, ~16 MB) + `cache/blob_audit.json` (F007 blob-guard audit — any detection over the 15% guard plus the 10–15% near-blob band; gitignored, regenerable).
 - **Runtime:** ~15 minutes (GPU). April cached 717,763 detections.
 
 **B2. ⏳ Run the 9-model line-fit inference** (the pipeline's longest step — all

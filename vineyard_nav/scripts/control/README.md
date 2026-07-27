@@ -55,6 +55,10 @@ python3 scripts/control/control.py --bag april
 - **`--only <step[,step]>`** runs a subset, e.g. `--only command_smoothness` to
   re-render just the headline after a tweak (step names: `state_gate_native`,
   `command_generator`, `gain_kfold`, `command_smoothness`).
+- **Completion gate:** on a full run (not `--only`), `control.py` finishes by running
+  `scripts/geometric/check_bag_complete.py --bag <name>` (Stage G) — the bag is not
+  "done" until that passes: all artefacts **plus** a `docs/STATUS.md` "Confirmed on
+  <bag>" summary.
 
 `control.py` is a thin wrapper that shells out to the scripts **unchanged**, so its
 output is byte-identical to running the steps by hand. The four steps below are

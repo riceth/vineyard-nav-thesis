@@ -116,6 +116,10 @@ runtimes, and "you should see" checks — this is the chaining overview.
    (no weights, no GPU; reads the geometric outputs + the bag `.db3`).
 5. **Cross-bag figures** — `figures_compare.py --bags march april may` to fold the
    new bag into the seasonal comparison.
+6. **Confirm the bag is done** — `scripts/geometric/check_bag_complete.py --bag may`.
+   It passes only when every artefact exists **and** `docs/STATUS.md` carries a
+   consolidated "Confirmed on may" summary; `control.py` runs it automatically at the
+   end of step 4. **A bag is not done until this passes.**
 
 Stages 3–4 reuse the same 9 checkpoints as march/april — **no retraining**.
 
