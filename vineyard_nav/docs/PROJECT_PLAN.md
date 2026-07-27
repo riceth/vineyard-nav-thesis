@@ -50,8 +50,8 @@ All strands stratified by canopy state (bare-vine: march/april prefixes; canopy:
 | Strand | Metrics | Statistical treatment |
 |---|---|---|
 | Perception | Per-arm intrinsic: mIoU for Phase A; mAP@50, precision, recall for Phases B and C | Reported per-arm; NOT cross-arm-compared (different formulations) |
-| Geometric | Centreline vs teleoperator trajectory: RMS lateral error, heading error, frame-level success rate | Cross-arm comparable. Bootstrap CIs over per-frame differences. Effect sizes reported. |
-| Command-level | PID command smoothness: RMS yaw-rate difference vs teleoperator commands (where available), command jitter, saturation rate | Cross-arm comparable. Bootstrap CIs, effect sizes. |
+| Geometric | Centreline vs the autonomous driven-path trajectory *(BLT ran autonomous GPS/topological navigation, Polvara 2024 — not teleoperated; DECISIONS D014 amendment / D-F)*: RMS lateral error, heading error, frame-level success rate | Cross-arm comparable. Bootstrap CIs over per-frame differences. Effect sizes reported. |
+| Command-level | PID command smoothness: cross-arm RMS frame-to-frame yaw-rate change, command jitter, saturation rate *(no vision-derived command reference — the platform drove autonomously; comparison is across arms; DECISIONS D014 amendment)* | Cross-arm comparable. Bootstrap CIs, effect sizes. |
 
 **Perception metrics are not cross-arm-compared** because Phase A produces per-pixel segmentation and Phases B/C produce per-instance detections — mIoU and mAP@50 measure fundamentally different things. Perception is reported per-arm as internal training validation.
 
@@ -70,7 +70,7 @@ Phase C's advantage over Phase B lies not just in richer detections but in how t
 **Selection rule:**
 - T sweep on validation set only: T ∈ {1, 2, 3, 5, 8, 12} instance counts
 - Config C has no T parameter (evaluated once)
-- Best (config*, T*) selected on val by RMS lateral error to teleoperator trajectory
+- Best (config*, T*) selected on val by RMS lateral error to the driven-path trajectory *(BLT autonomous, Polvara 2024; D-F)*
 - Test set evaluated **once** at locked (config*, T*)
 
 **Attribution story enabled by the three configs:**
@@ -123,7 +123,7 @@ This 3-way comparison earns distinction-level attribution under CRG LO6 ("robust
 Not blockers — surfaced because full data exploration and design refinement is what happened. Acknowledging openly rather than hiding is what distinction-level methodology looks like.
 
 1. **"Poles remain visible" framing retired.** A1 asserted poles remain visible while trunks are occluded. Measured retention: trunks 35%, poles 24%. Both degrade; both retain enough signal for class-aware combination. The contribution argument survives — it never depended on relative pole/trunk robustness.
-2. **Reference trajectory is teleoperated, not algorithmic ground truth.** Geometric metrics characterise agreement with teleoperator's recorded trajectory, not deviation from true centreline.
+2. **Reference trajectory is the platform's autonomous driven path, not algorithmic ground truth.** The platform navigated by GPS/topological waypoints (Polvara 2024), not vision (DECISIONS D014 amendment; F016/F027); geometric metrics characterise agreement with that recorded driven path, not deviation from a surveyed true centreline.
 3. **Test set is 10% of resplit** (~100 frames; ~50 per canopy bin). Improved from 23 frames under Roboflow default. Bootstrap CIs meaningful; p-values still excluded.
 4. **ROS bag is fixed recording.** PID is offline characterisation, not closed-loop. Ziegler-Nichols excluded (requires closed-loop oscillation).
 5. **SemanticBLT folds foliage into background.** Cannot use foliage as a navigation cue.

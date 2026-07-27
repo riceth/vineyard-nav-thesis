@@ -186,7 +186,7 @@ For each val image:
    a. Apply config to get `{"left": [...], "right": [...]}`
    b. Fit RANSAC per side → left line, right line
    c. Compute centreline
-   d. Compute frame-level geometric metric (RMS lateral error to teleoperator trajectory reference)
+   d. Compute frame-level geometric metric (RMS lateral error to the driven-path trajectory reference — BLT autonomous, Polvara 2024; DECISIONS D014 amendment / D-F)
 3. Aggregate per (config, T) cell across all val images: mean RMS lateral error, canopy-stratified
 
 Output: `sweep_results.csv` with columns `config, T, canopy_state, n_frames, mean_rms_lateral_error, ci_low, ci_high`.
