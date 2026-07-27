@@ -475,6 +475,8 @@ The CP-3 single-arm dry run (Phase C seed 42, all 4 708 val frames) locked the (
 
 **Blob guard — lenient (CP-3 finding).** The F007 canopy-blob pathology does **not** manifest on the bare-vine March bag: the largest detections (~10.5 % of frame) are **real close-up trellis poles**, verified visually. An aggressive area cap would reject real poles, so the guard is set at **15 % of frame** — it drops 0 real detections in March val while still rejecting a gross whole-frame blob. The per-frame outlier defence is the row fit's median ± 0.5 m inlier test. (The blob guard remains relevant for the leafy April/June bags, future work.)
 
+> **Canopy blob check done (27 Jul 2026 — F007 geometric-stream audit).** The "future work" flagged above (does the blob pathology manifest on the leafy bags?) has been run: every eligible frame × 3 Phase-C seeds across march/april/may (~887k detections) yields **0** detections above the 15 % guard on any bag, canopy may included; the largest legitimate detections reach 14.0 % (april and may alike; march 10.5 %). The guard is never triggered on the data tested, and the audit is now emitted per bag automatically by `extract_detections.py` (`cache/blob_audit.json`). Full result + the bag-independent thin-margin caveat: F007 (27 Jul amendment).
+
 **Cross-references:** GEOMETRY_PIPELINE_SPEC.md §4–6, §9, D-F; D034 (projection fan); D033 (pass-level split); F007 (blob pathology, canopy scenes).
 
 ---
@@ -825,6 +827,8 @@ March separates cleanly; april does **not** — a cross-session same-place tail 
 - **40–200 → manual visual review.** Weak same-place members and cross-session matches genuinely coexist here; no automatic statistic separates them.
 
 **Result (O019 satisfied for march + april).** All 90 unknowns score ≤ 12 on both bags — confident-absent, zero in the review band. This converts D046d's *reasoned* directional-risk argument into a *measured* result for both evaluated bags: **the 90 unattributed scenes do not contaminate march or april.**
+
+**May confirms (26 Jul 2026).** Running the wired CP-0 gate on `kg_may_06` scores all 90 unattributed scenes ≤ 11 inliers → 0 present / 0 needs_review / 90 absent. The 90 unattributed scenes are now measured-absent from **all three evaluated bags (March, April, May)** — the canopy-adjacency risk did not materialise on May. O019 remains armed for June/July/September.
 
 **Accepted limitation.** ~1–2 of 10 genuine members per bag land in the 40–200 review band (multi-pass same-place siblings / heavy augmentation / single-version scenes); the method confidently confirms strong presence and clear absence but flags this band rather than auto-deciding. Accepted because (i) the march/april unknowns are unambiguous regardless, (ii) June/July/September are optional timeboxed work, and (iii) any future summer-bag unknown scoring ≥ 40 is **flagged, never silently mis-excluded** — a genuinely-present same-season scene would score ≥ 200 anyway.
 
