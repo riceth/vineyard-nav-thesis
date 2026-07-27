@@ -53,6 +53,14 @@ def main():
             raise SystemExit(f"control: step '{name}' failed (exit {r.returncode}) — stopping.")
     print(f"\ncontrol [{a.bag}]: done ({len(run)} step{'s' if len(run) != 1 else ''}).")
 
+    # Bag-completion tripwire (advisory — never affects control's own exit). On a full run this is the
+    # last pipeline stage, so print the completion verdict: a bag is not "done" until its consolidated
+    # STATUS 'Confirmed on <bag>' summary exists, not just its artefacts (check_bag_complete.py).
+    # Skipped for --only (a partial re-run is not a completion).
+    if want is None:
+        checker = HERE.parent / "geometric" / "check_bag_complete.py"
+        subprocess.run([sys.executable, str(checker), "--bag", a.bag])
+
 
 if __name__ == "__main__":
     main()

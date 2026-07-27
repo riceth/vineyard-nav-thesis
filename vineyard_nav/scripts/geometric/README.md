@@ -75,7 +75,8 @@ bags ship as ROS1):
 ```bash
 python3 scripts/geometric/convert_bag.py --bag april
 ```
-- **Needs:** `../kg_april_06.bag` at the repo root; ~110 GB free disk.
+- **Needs:** the bag's ROS1 file at the repo root (`../kg_<month>_*.bag`); **~1× the bag's size**
+  in free disk (the `.db3` is roughly the source size — e.g. April 116.5 GB, May 70 GB).
 - **Produces:** `../kg_april_06_ros2/kg_april_06_ros2.db3` (gitignored).
 - **Runtime:** tens of minutes, I/O-bound. April's output was a 116.5 GB `.db3`
   containing 24,355 camera frames.
@@ -213,6 +214,13 @@ footgun is gone; `--only name[,name]` selects a subset here too.
 
 ### Stage E — figures
 
+> **New bag? Per-bag figures need a curated frame registry first.** `figures.py` renders 11
+> frame-specific report figures from a hand-curated `FRAMES['<bag>']` entry in `figures.py`
+> (representative frames + captions/footers; see the March/April entries). Without it,
+> `figures.py --bag <new>` exits gracefully (*"no representative-frame registry for bag …"*) and
+> produces no per-bag figures — curate `FRAMES['<bag>']` before this step. `figures_compare.py`
+> needs no registry (data-only; runs on any bags whose JSONs exist).
+
 ```bash
 python3 scripts/geometric/figures.py          --bag april            # 15 per-bag figures
 python3 scripts/geometric/figures_compare.py  --bags march april     # 4 cross-bag comparison figures
@@ -237,6 +245,19 @@ python3 scripts/geometric/figures_compare.py  --bags march april     # 4 cross-b
 The command-level strand runs on this strand's outputs (F026's full validation
 needs the Stage-D non-in-row results, so run Stage D first). See
 `scripts/control/README.md`.
+
+### Stage G — confirm the bag is done (mandatory gate)
+
+A bag is **not done when its artefacts exist — it is done when its results are also summarised.**
+
+    python3 scripts/geometric/check_bag_complete.py --bag april
+
+Verifies (a) every committed artefact from Stages C–F exists **and** (b) `docs/STATUS.md` carries a
+consolidated **"Confirmed on <bag>"** summary bullet (spot-checked, April/May style — one line per
+applicable finding F010–F028, control F026–F028 included). Prints `BAG COMPLETE` only when both hold,
+a loud `⚠️ NOT COMPLETE` otherwise. `control.py` runs this automatically at the end of Stage F, so you
+will see the verdict — **do not consider the bag finished until it passes.** Writing the STATUS summary
+is the step this gate exists to enforce (it was missed for May).
 
 ---
 
