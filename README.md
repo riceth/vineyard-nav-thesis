@@ -49,7 +49,7 @@ already done this.
 | I want to… | What I need | Go to |
 |---|---|---|
 | **Understand what was done and found** | nothing — just this repo | `vineyard_nav/docs/STATUS.md`, then `FINDINGS.md`; browse the figures in `vineyard_nav/results/geometric/<bag>/final/figures/` |
-| **Verify a committed result without re-running any model** | nothing — the per-frame data ships in the repo | Re-run an *analysis* script on the committed CSV, e.g. `python3 scripts/geometric/line_fit_eval.py --bag march` — it recomputes the report JSON from data already in the repo |
+| **Verify a committed result without re-running any model** | nothing — the per-frame data ships in the repo | Re-run an *analysis* on the committed CSV, e.g. `python3 scripts/geometric/analyze.py --bag march --only line_fit_eval` — it recomputes the report JSON from data already in the repo |
 | **Re-run the geometric (centreline) pipeline on a bag** | a ROS bag **+** the 9 model weights **+** ~150 GB free disk **+** a CUDA GPU | `scripts/geometric/README.md` (full walkthrough, April as the worked example) |
 | **Re-run the control (PID / command) strand** | that bag's geometric outputs (run its **non-in-row** branch first) **+** the bag `.db3` — **no weights, no GPU** | `scripts/control/README.md` |
 | **Re-train the perception models** | the SemanticBLT dataset + a CUDA GPU | `scripts/perception/README.md` |
@@ -109,9 +109,9 @@ runtimes, and "you should see" checks — this is the chaining overview.
    manifest). If CP-0 flags `needs_review`, it stops before the manifest — open
    the census `d048_gate.needs_review`, confirm each scene present/absent, re-run.
 3. **Geometric strand** — follow `scripts/geometric/README.md` from Stage A3 with
-   `--bag may` (extract → detection cache → 9-model inference → `analyze.py` →
-   figures), including the `--scope non_in_row` branch (needed by the control
-   strand's F026 validation).
+   `--bag may` (extract → detection cache [+ the automatic F007 blob-guard audit]
+   → 9-model inference → `analyze.py` → figures), including the `--scope non_in_row`
+   branch (needed by the control strand's F026 validation).
 4. **Control strand** — follow `scripts/control/README.md` with `--bag may`
    (no weights, no GPU; reads the geometric outputs + the bag `.db3`).
 5. **Cross-bag figures** — `figures_compare.py --bags march april may` to fold the
