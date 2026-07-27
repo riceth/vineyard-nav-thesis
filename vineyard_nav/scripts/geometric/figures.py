@@ -557,6 +557,23 @@ FRAMES = {
         "f022_footer": "State gate catches 88-92% of spurious non-in-row outputs (100% stationary / ~88% turn / ~70% transition) at 0.9% in-row false-positive · arm-invariant per category · uses odometry only - no perception input.",
         "f023_footer": "Geometry filter catches ~27-43% via off-nominal geometry at ~3% in-row false-positive · perception-based, odometry-free (deployment fallback) · cannot resolve clean-geometry turns.",
     },
+    "may": {
+        # Curated 26 Jul 2026 from the May end-to-end run (canopy). Every caption number is verified
+        # against this bag's own line_fit_per_frame.csv on ARM A — the arm the mitigation/abstention
+        # figures render — plus mitigation_analysis.json for the footers. Each non-in-row frame was
+        # re-checked against category() and matches its slot exactly (as march/april do); an earlier
+        # candidate set had transitions mislabelled as turns/stationary and was corrected before locking.
+        # Abstention frame 3006 illustrates may's DOMINANT abstention cause too_few_near_seed (F024),
+        # verified numerically: failing side R has 0 detections inside the 5 m near-seed window (all 3
+        # lie beyond 5 m -> seen_far_only), fitting side L has 6 (4 near) and fits.
+        "anatomy": 4657, "arm_invariance": 4644, "mechanism": 4657, "abstention": 3006,
+        "stationary": 15053, "turn": 15165, "transition": 5584,
+        "f023_triple": (5845, 15072, 8900), "turn_blind": 15577,
+        "abstention_caption": ("Right side: 0 detections within the 5 m near-seed window — all 3 lie beyond 5 m (fit needs >=2 near to seed) · left side: 6 detections (4 near), fits\n"
+                               "too_few_near_seed dominates may's in-row abstentions (65.5% of arm-A single_row frames; F024) — under canopy the failing row is typically detected only in the far field (seen_far_only 62.7%), starving the near-field seed"),
+        "f022_footer": "State gate catches ~92% of spurious non-in-row outputs (100% stationary / ~88% turn / ~80% transition) at 0.4% in-row false-positive · arm-invariant per category · uses odometry only (speed, |v_y|, heading-rate) - no perception input.",
+        "f023_footer": "Geometry filter catches ~56-62% via off-nominal geometry at ~8-9% in-row false-positive (canopy - fixed bare-vine thresholds don't transfer) · perception-based, odometry-free (deployment fallback) · cannot resolve clean-geometry turns.",
+    },
 }
 
 
