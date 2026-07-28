@@ -1,0 +1,1767 @@
+{
+  "meta": {
+    "checkpoint": "CP-0",
+    "generated": "2026-07-27T20:05:13",
+    "bag": "june",
+    "src_bag": "kg_june_08.bag",
+    "db3": "kg_june_08_ros2/kg_june_08_ros2.db3",
+    "scene_prefix": "june",
+    "camera_topic": "/front/zed_node/rgb/image_rect_color/compressed",
+    "bag_frames": 16266,
+    "params": {
+      "coarse_stride": 10,
+      "fine_halfwidth": 30,
+      "window_sec": 1.0,
+      "window_frames_each_side": 14,
+      "high_conf_corr": 0.6,
+      "descriptor": "128x128 zero-mean L2-norm grayscale",
+      "d048": {
+        "absent_le": 40,
+        "present_ge": 200,
+        "shortlist_k": 30,
+        "orb_nfeatures": 3000,
+        "match_res": 640,
+        "lowe": 0.75,
+        "ransac_px": 5.0
+      }
+    },
+    "note": "prefix scenes: full-stream search, low-confidence (corr<0.60) matches visually spot-checked and verified correct. D048 gate (two-stage): the 90 unattributed scenes scored by coarse ORB+RANSAC identity; needs_review (40-200) auto-fine-verified (full-res +/-30 frames) then finalised by d048_confirmed.json; present (>=200) folded into exclusions, absent (<=40) recorded, any unconfirmed residual blocks CP-1."
+  },
+  "status": "clear",
+  "summary": {
+    "prefix": {
+      "located": 0
+    },
+    "d048_gate": {
+      "scored": 90,
+      "present": 88,
+      "needs_review": 0,
+      "absent": 2,
+      "max_inliers": 591
+    },
+    "n_merged_intervals": 21,
+    "excluded_frames": 1229,
+    "excluded_pct_of_bag": 7.6,
+    "eligible_frames_after_exclusion": 15037
+  },
+  "per_scene": [
+    {
+      "scene": "color_image_7088",
+      "split": "unattributed",
+      "bag_frame": 6920,
+      "timestamp_ns": 1654688941330887079,
+      "t_offset_s": 477.34,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 362
+    },
+    {
+      "scene": "color_image_6357",
+      "split": "unattributed",
+      "bag_frame": 11390,
+      "timestamp_ns": 1654689253915844202,
+      "t_offset_s": 789.92,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 591
+    },
+    {
+      "scene": "color_image_6386",
+      "split": "unattributed",
+      "bag_frame": 11440,
+      "timestamp_ns": 1654689257521111726,
+      "t_offset_s": 793.53,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 496
+    },
+    {
+      "scene": "color_image_6419",
+      "split": "unattributed",
+      "bag_frame": 11530,
+      "timestamp_ns": 1654689263873270750,
+      "t_offset_s": 799.88,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 462
+    },
+    {
+      "scene": "color_image_6434",
+      "split": "unattributed",
+      "bag_frame": 11530,
+      "timestamp_ns": 1654689263873270750,
+      "t_offset_s": 799.88,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 386
+    },
+    {
+      "scene": "color_image_6460",
+      "split": "unattributed",
+      "bag_frame": 11550,
+      "timestamp_ns": 1654689265413542509,
+      "t_offset_s": 801.42,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 462
+    },
+    {
+      "scene": "color_image_6478",
+      "split": "unattributed",
+      "bag_frame": 11590,
+      "timestamp_ns": 1654689268173380613,
+      "t_offset_s": 804.18,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 213
+    },
+    {
+      "scene": "color_image_6493",
+      "split": "unattributed",
+      "bag_frame": 11610,
+      "timestamp_ns": 1654689269773786783,
+      "t_offset_s": 805.78,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 239
+    },
+    {
+      "scene": "color_image_6515",
+      "split": "unattributed",
+      "bag_frame": 11650,
+      "timestamp_ns": 1654689272920754909,
+      "t_offset_s": 808.93,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 145
+    },
+    {
+      "scene": "color_image_6534",
+      "split": "unattributed",
+      "bag_frame": 11680,
+      "timestamp_ns": 1654689275000839710,
+      "t_offset_s": 811.01,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 341
+    },
+    {
+      "scene": "color_image_6552",
+      "split": "unattributed",
+      "bag_frame": 11720,
+      "timestamp_ns": 1654689277810481309,
+      "t_offset_s": 813.82,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 296
+    },
+    {
+      "scene": "color_image_6567",
+      "split": "unattributed",
+      "bag_frame": 11740,
+      "timestamp_ns": 1654689279191259384,
+      "t_offset_s": 815.2,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 400
+    },
+    {
+      "scene": "color_image_6582",
+      "split": "unattributed",
+      "bag_frame": 11770,
+      "timestamp_ns": 1654689281162277460,
+      "t_offset_s": 817.17,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 324
+    },
+    {
+      "scene": "color_image_6600",
+      "split": "unattributed",
+      "bag_frame": 11800,
+      "timestamp_ns": 1654689283188904762,
+      "t_offset_s": 819.2,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 435
+    },
+    {
+      "scene": "color_image_6619",
+      "split": "unattributed",
+      "bag_frame": 11840,
+      "timestamp_ns": 1654689285979509592,
+      "t_offset_s": 821.99,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 227
+    },
+    {
+      "scene": "color_image_6641",
+      "split": "unattributed",
+      "bag_frame": 11880,
+      "timestamp_ns": 1654689288866514682,
+      "t_offset_s": 824.87,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 228
+    },
+    {
+      "scene": "color_image_6663",
+      "split": "unattributed",
+      "bag_frame": 11920,
+      "timestamp_ns": 1654689291705637931,
+      "t_offset_s": 827.71,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 574
+    },
+    {
+      "scene": "color_image_6682",
+      "split": "unattributed",
+      "bag_frame": 11950,
+      "timestamp_ns": 1654689294169311761,
+      "t_offset_s": 830.18,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 201
+    },
+    {
+      "scene": "color_image_6700",
+      "split": "unattributed",
+      "bag_frame": 11970,
+      "timestamp_ns": 1654689295711933851,
+      "t_offset_s": 831.72,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 482
+    },
+    {
+      "scene": "color_image_6718",
+      "split": "unattributed",
+      "bag_frame": 12000,
+      "timestamp_ns": 1654689297837550163,
+      "t_offset_s": 833.84,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 361
+    },
+    {
+      "scene": "color_image_6734",
+      "split": "unattributed",
+      "bag_frame": 12030,
+      "timestamp_ns": 1654689299993668079,
+      "t_offset_s": 836.0,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 346
+    },
+    {
+      "scene": "color_image_6739",
+      "split": "unattributed",
+      "bag_frame": 12040,
+      "timestamp_ns": 1654689300792539834,
+      "t_offset_s": 836.8,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 261
+    },
+    {
+      "scene": "color_image_6751",
+      "split": "unattributed",
+      "bag_frame": 12060,
+      "timestamp_ns": 1654689302196127176,
+      "t_offset_s": 838.2,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 515
+    },
+    {
+      "scene": "color_image_6753",
+      "split": "unattributed",
+      "bag_frame": 12070,
+      "timestamp_ns": 1654689302868661165,
+      "t_offset_s": 838.87,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 510
+    },
+    {
+      "scene": "color_image_6756",
+      "split": "unattributed",
+      "bag_frame": 12070,
+      "timestamp_ns": 1654689302868661165,
+      "t_offset_s": 838.87,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 264
+    },
+    {
+      "scene": "color_image_6761",
+      "split": "unattributed",
+      "bag_frame": 12080,
+      "timestamp_ns": 1654689303611340284,
+      "t_offset_s": 839.62,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 512
+    },
+    {
+      "scene": "color_image_6762",
+      "split": "unattributed",
+      "bag_frame": 12080,
+      "timestamp_ns": 1654689303611340284,
+      "t_offset_s": 839.62,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 269
+    },
+    {
+      "scene": "color_image_6766",
+      "split": "unattributed",
+      "bag_frame": 12090,
+      "timestamp_ns": 1654689304281332254,
+      "t_offset_s": 840.29,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 501
+    },
+    {
+      "scene": "color_image_6765",
+      "split": "unattributed",
+      "bag_frame": 12090,
+      "timestamp_ns": 1654689304281332254,
+      "t_offset_s": 840.29,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 401
+    },
+    {
+      "scene": "color_image_6772",
+      "split": "unattributed",
+      "bag_frame": 12100,
+      "timestamp_ns": 1654689304948165655,
+      "t_offset_s": 840.95,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 485
+    },
+    {
+      "scene": "color_image_6775",
+      "split": "unattributed",
+      "bag_frame": 12100,
+      "timestamp_ns": 1654689304948165655,
+      "t_offset_s": 840.95,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 445
+    },
+    {
+      "scene": "color_image_6770",
+      "split": "unattributed",
+      "bag_frame": 12100,
+      "timestamp_ns": 1654689304948165655,
+      "t_offset_s": 840.95,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 322
+    },
+    {
+      "scene": "color_image_6781",
+      "split": "unattributed",
+      "bag_frame": 12110,
+      "timestamp_ns": 1654689305745963096,
+      "t_offset_s": 841.75,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 483
+    },
+    {
+      "scene": "color_image_6779",
+      "split": "unattributed",
+      "bag_frame": 12110,
+      "timestamp_ns": 1654689305745963096,
+      "t_offset_s": 841.75,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 380
+    },
+    {
+      "scene": "color_image_6787",
+      "split": "unattributed",
+      "bag_frame": 12120,
+      "timestamp_ns": 1654689306440088748,
+      "t_offset_s": 842.45,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 375
+    },
+    {
+      "scene": "color_image_6783",
+      "split": "unattributed",
+      "bag_frame": 12120,
+      "timestamp_ns": 1654689306440088748,
+      "t_offset_s": 842.45,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 302
+    },
+    {
+      "scene": "color_image_6789",
+      "split": "unattributed",
+      "bag_frame": 12130,
+      "timestamp_ns": 1654689307229876518,
+      "t_offset_s": 843.24,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 377
+    },
+    {
+      "scene": "color_image_6793",
+      "split": "unattributed",
+      "bag_frame": 12130,
+      "timestamp_ns": 1654689307229876518,
+      "t_offset_s": 843.24,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 282
+    },
+    {
+      "scene": "color_image_6790",
+      "split": "unattributed",
+      "bag_frame": 12130,
+      "timestamp_ns": 1654689307229876518,
+      "t_offset_s": 843.24,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 233
+    },
+    {
+      "scene": "color_image_6796",
+      "split": "unattributed",
+      "bag_frame": 12140,
+      "timestamp_ns": 1654689307963354587,
+      "t_offset_s": 843.97,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 198
+    },
+    {
+      "scene": "color_image_6797",
+      "split": "unattributed",
+      "bag_frame": 12140,
+      "timestamp_ns": 1654689307963354587,
+      "t_offset_s": 843.97,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 181
+    },
+    {
+      "scene": "color_image_6801",
+      "split": "unattributed",
+      "bag_frame": 12150,
+      "timestamp_ns": 1654689308638297557,
+      "t_offset_s": 844.64,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 262
+    },
+    {
+      "scene": "color_image_6802",
+      "split": "unattributed",
+      "bag_frame": 12150,
+      "timestamp_ns": 1654689308638297557,
+      "t_offset_s": 844.64,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 220
+    },
+    {
+      "scene": "color_image_6799",
+      "split": "unattributed",
+      "bag_frame": 12150,
+      "timestamp_ns": 1654689308638297557,
+      "t_offset_s": 844.64,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 199
+    },
+    {
+      "scene": "color_image_6806",
+      "split": "unattributed",
+      "bag_frame": 12160,
+      "timestamp_ns": 1654689309429666519,
+      "t_offset_s": 845.44,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 252
+    },
+    {
+      "scene": "color_image_6808",
+      "split": "unattributed",
+      "bag_frame": 12160,
+      "timestamp_ns": 1654689309429666519,
+      "t_offset_s": 845.44,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 210
+    },
+    {
+      "scene": "color_image_6813",
+      "split": "unattributed",
+      "bag_frame": 12170,
+      "timestamp_ns": 1654689310110641241,
+      "t_offset_s": 846.12,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 293
+    },
+    {
+      "scene": "color_image_6819",
+      "split": "unattributed",
+      "bag_frame": 12180,
+      "timestamp_ns": 1654689310845500946,
+      "t_offset_s": 846.85,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 346
+    },
+    {
+      "scene": "color_image_6827",
+      "split": "unattributed",
+      "bag_frame": 12190,
+      "timestamp_ns": 1654689311506981134,
+      "t_offset_s": 847.51,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 296
+    },
+    {
+      "scene": "color_image_6830",
+      "split": "unattributed",
+      "bag_frame": 12200,
+      "timestamp_ns": 1654689312314186573,
+      "t_offset_s": 848.32,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 240
+    },
+    {
+      "scene": "color_image_6841",
+      "split": "unattributed",
+      "bag_frame": 12220,
+      "timestamp_ns": 1654689313718575477,
+      "t_offset_s": 849.72,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 353
+    },
+    {
+      "scene": "color_image_6855",
+      "split": "unattributed",
+      "bag_frame": 12240,
+      "timestamp_ns": 1654689315191820383,
+      "t_offset_s": 851.2,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 298
+    },
+    {
+      "scene": "color_image_6866",
+      "split": "unattributed",
+      "bag_frame": 12260,
+      "timestamp_ns": 1654689316669227361,
+      "t_offset_s": 852.68,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 447
+    },
+    {
+      "scene": "color_image_6870",
+      "split": "unattributed",
+      "bag_frame": 12270,
+      "timestamp_ns": 1654689317413122415,
+      "t_offset_s": 853.42,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 419
+    },
+    {
+      "scene": "color_image_6877",
+      "split": "unattributed",
+      "bag_frame": 12280,
+      "timestamp_ns": 1654689318142014265,
+      "t_offset_s": 854.15,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 320
+    },
+    {
+      "scene": "color_image_6892",
+      "split": "unattributed",
+      "bag_frame": 12300,
+      "timestamp_ns": 1654689319687434911,
+      "t_offset_s": 855.69,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 315
+    },
+    {
+      "scene": "color_image_6899",
+      "split": "unattributed",
+      "bag_frame": 12320,
+      "timestamp_ns": 1654689321016617774,
+      "t_offset_s": 857.02,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 223
+    },
+    {
+      "scene": "color_image_6907",
+      "split": "unattributed",
+      "bag_frame": 12330,
+      "timestamp_ns": 1654689321696381330,
+      "t_offset_s": 857.7,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 261
+    },
+    {
+      "scene": "color_image_6921",
+      "split": "unattributed",
+      "bag_frame": 12350,
+      "timestamp_ns": 1654689323095218896,
+      "t_offset_s": 859.1,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 167
+    },
+    {
+      "scene": "color_image_6933",
+      "split": "unattributed",
+      "bag_frame": 12380,
+      "timestamp_ns": 1654689325302850723,
+      "t_offset_s": 861.31,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 371
+    },
+    {
+      "scene": "color_image_6936",
+      "split": "unattributed",
+      "bag_frame": 12380,
+      "timestamp_ns": 1654689325302850723,
+      "t_offset_s": 861.31,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 202
+    },
+    {
+      "scene": "color_image_6947",
+      "split": "unattributed",
+      "bag_frame": 12400,
+      "timestamp_ns": 1654689326846112012,
+      "t_offset_s": 862.85,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 368
+    },
+    {
+      "scene": "color_image_6955",
+      "split": "unattributed",
+      "bag_frame": 12410,
+      "timestamp_ns": 1654689327577318668,
+      "t_offset_s": 863.58,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 313
+    },
+    {
+      "scene": "color_image_6981",
+      "split": "unattributed",
+      "bag_frame": 12450,
+      "timestamp_ns": 1654689330481547832,
+      "t_offset_s": 866.49,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 307
+    },
+    {
+      "scene": "color_image_6992",
+      "split": "unattributed",
+      "bag_frame": 12470,
+      "timestamp_ns": 1654689331945923805,
+      "t_offset_s": 867.95,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 546
+    },
+    {
+      "scene": "color_image_6999",
+      "split": "unattributed",
+      "bag_frame": 12480,
+      "timestamp_ns": 1654689332745475053,
+      "t_offset_s": 868.75,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 220
+    },
+    {
+      "scene": "color_image_7010",
+      "split": "unattributed",
+      "bag_frame": 12510,
+      "timestamp_ns": 1654689335161856412,
+      "t_offset_s": 871.17,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 327
+    },
+    {
+      "scene": "color_image_7040",
+      "split": "unattributed",
+      "bag_frame": 12560,
+      "timestamp_ns": 1654689338707645177,
+      "t_offset_s": 874.71,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 368
+    },
+    {
+      "scene": "color_image_7051",
+      "split": "unattributed",
+      "bag_frame": 12560,
+      "timestamp_ns": 1654689338707645177,
+      "t_offset_s": 874.71,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 367
+    },
+    {
+      "scene": "color_image_7021",
+      "split": "unattributed",
+      "bag_frame": 12560,
+      "timestamp_ns": 1654689338707645177,
+      "t_offset_s": 874.71,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 329
+    },
+    {
+      "scene": "color_image_7029",
+      "split": "unattributed",
+      "bag_frame": 12560,
+      "timestamp_ns": 1654689338707645177,
+      "t_offset_s": 874.71,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 169
+    },
+    {
+      "scene": "color_image_7059",
+      "split": "unattributed",
+      "bag_frame": 12580,
+      "timestamp_ns": 1654689340172039508,
+      "t_offset_s": 876.18,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 335
+    },
+    {
+      "scene": "color_image_7072",
+      "split": "unattributed",
+      "bag_frame": 12590,
+      "timestamp_ns": 1654689340846362352,
+      "t_offset_s": 876.85,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 396
+    },
+    {
+      "scene": "color_image_7064",
+      "split": "unattributed",
+      "bag_frame": 12590,
+      "timestamp_ns": 1654689340846362352,
+      "t_offset_s": 876.85,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 393
+    },
+    {
+      "scene": "color_image_7083",
+      "split": "unattributed",
+      "bag_frame": 12620,
+      "timestamp_ns": 1654689342921479701,
+      "t_offset_s": 878.93,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 493
+    },
+    {
+      "scene": "color_image_7096",
+      "split": "unattributed",
+      "bag_frame": 12630,
+      "timestamp_ns": 1654689343608885526,
+      "t_offset_s": 879.62,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 248
+    },
+    {
+      "scene": "color_image_7105",
+      "split": "unattributed",
+      "bag_frame": 12650,
+      "timestamp_ns": 1654689344999485492,
+      "t_offset_s": 881.01,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 440
+    },
+    {
+      "scene": "color_image_7103",
+      "split": "unattributed",
+      "bag_frame": 12650,
+      "timestamp_ns": 1654689344999485492,
+      "t_offset_s": 881.01,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 323
+    },
+    {
+      "scene": "color_image_7111",
+      "split": "unattributed",
+      "bag_frame": 12660,
+      "timestamp_ns": 1654689345732039928,
+      "t_offset_s": 881.74,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 406
+    },
+    {
+      "scene": "color_image_7122",
+      "split": "unattributed",
+      "bag_frame": 12680,
+      "timestamp_ns": 1654689347142534494,
+      "t_offset_s": 883.15,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 247
+    },
+    {
+      "scene": "color_image_7131",
+      "split": "unattributed",
+      "bag_frame": 12690,
+      "timestamp_ns": 1654689347882868051,
+      "t_offset_s": 883.89,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 462
+    },
+    {
+      "scene": "color_image_7142",
+      "split": "unattributed",
+      "bag_frame": 12710,
+      "timestamp_ns": 1654689349227545022,
+      "t_offset_s": 885.23,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 355
+    },
+    {
+      "scene": "color_image_7151",
+      "split": "unattributed",
+      "bag_frame": 12720,
+      "timestamp_ns": 1654689349917778491,
+      "t_offset_s": 885.92,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 393
+    },
+    {
+      "scene": "color_image_7155",
+      "split": "unattributed",
+      "bag_frame": 12730,
+      "timestamp_ns": 1654689350690585136,
+      "t_offset_s": 886.7,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 279
+    },
+    {
+      "scene": "color_image_7162",
+      "split": "unattributed",
+      "bag_frame": 12740,
+      "timestamp_ns": 1654689351376666307,
+      "t_offset_s": 887.38,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 529
+    },
+    {
+      "scene": "color_image_7165",
+      "split": "unattributed",
+      "bag_frame": 12740,
+      "timestamp_ns": 1654689351376666307,
+      "t_offset_s": 887.38,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 426
+    },
+    {
+      "scene": "color_image_7169",
+      "split": "unattributed",
+      "bag_frame": 12750,
+      "timestamp_ns": 1654689352034965038,
+      "t_offset_s": 888.04,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 390
+    },
+    {
+      "scene": "color_image_7167",
+      "split": "unattributed",
+      "bag_frame": 12750,
+      "timestamp_ns": 1654689352034965038,
+      "t_offset_s": 888.04,
+      "corr": null,
+      "matched_via": "orb_d048",
+      "confidence": "d048_present",
+      "inliers": 215
+    }
+  ],
+  "d048_gate": {
+    "present": [
+      {
+        "scene": "color_image_6357",
+        "coarse_inliers": 591,
+        "inliers": 591,
+        "bag_frame": 11390,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6663",
+        "coarse_inliers": 119,
+        "inliers": 574,
+        "bag_frame": 11920,
+        "verdict": "present",
+        "fine_inliers": 574
+      },
+      {
+        "scene": "color_image_6992",
+        "coarse_inliers": 546,
+        "inliers": 546,
+        "bag_frame": 12470,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_7162",
+        "coarse_inliers": 529,
+        "inliers": 529,
+        "bag_frame": 12740,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6751",
+        "coarse_inliers": 176,
+        "inliers": 515,
+        "bag_frame": 12060,
+        "verdict": "present",
+        "fine_inliers": 515
+      },
+      {
+        "scene": "color_image_6761",
+        "coarse_inliers": 512,
+        "inliers": 512,
+        "bag_frame": 12080,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6753",
+        "coarse_inliers": 143,
+        "inliers": 510,
+        "bag_frame": 12070,
+        "verdict": "present",
+        "fine_inliers": 510
+      },
+      {
+        "scene": "color_image_6766",
+        "coarse_inliers": 501,
+        "inliers": 501,
+        "bag_frame": 12090,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6386",
+        "coarse_inliers": 496,
+        "inliers": 496,
+        "bag_frame": 11440,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_7083",
+        "coarse_inliers": 493,
+        "inliers": 493,
+        "bag_frame": 12620,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6772",
+        "coarse_inliers": 485,
+        "inliers": 485,
+        "bag_frame": 12100,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6781",
+        "coarse_inliers": 191,
+        "inliers": 483,
+        "bag_frame": 12110,
+        "verdict": "present",
+        "fine_inliers": 483
+      },
+      {
+        "scene": "color_image_6700",
+        "coarse_inliers": 141,
+        "inliers": 482,
+        "bag_frame": 11970,
+        "verdict": "present",
+        "fine_inliers": 482
+      },
+      {
+        "scene": "color_image_6419",
+        "coarse_inliers": 462,
+        "inliers": 462,
+        "bag_frame": 11530,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6460",
+        "coarse_inliers": 462,
+        "inliers": 462,
+        "bag_frame": 11550,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_7131",
+        "coarse_inliers": 462,
+        "inliers": 462,
+        "bag_frame": 12690,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6866",
+        "coarse_inliers": 447,
+        "inliers": 447,
+        "bag_frame": 12260,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6775",
+        "coarse_inliers": 112,
+        "inliers": 445,
+        "bag_frame": 12100,
+        "verdict": "present",
+        "fine_inliers": 445
+      },
+      {
+        "scene": "color_image_7105",
+        "coarse_inliers": 440,
+        "inliers": 440,
+        "bag_frame": 12650,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6600",
+        "coarse_inliers": 112,
+        "inliers": 435,
+        "bag_frame": 11800,
+        "verdict": "present",
+        "fine_inliers": 435
+      },
+      {
+        "scene": "color_image_7165",
+        "coarse_inliers": 196,
+        "inliers": 426,
+        "bag_frame": 12740,
+        "verdict": "present",
+        "fine_inliers": 426
+      },
+      {
+        "scene": "color_image_6870",
+        "coarse_inliers": 180,
+        "inliers": 419,
+        "bag_frame": 12270,
+        "verdict": "present",
+        "fine_inliers": 419
+      },
+      {
+        "scene": "color_image_7111",
+        "coarse_inliers": 406,
+        "inliers": 406,
+        "bag_frame": 12660,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6765",
+        "coarse_inliers": 401,
+        "inliers": 401,
+        "bag_frame": 12090,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6567",
+        "coarse_inliers": 187,
+        "inliers": 400,
+        "bag_frame": 11740,
+        "verdict": "present",
+        "fine_inliers": 400
+      },
+      {
+        "scene": "color_image_7072",
+        "coarse_inliers": 396,
+        "inliers": 396,
+        "bag_frame": 12590,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_7064",
+        "coarse_inliers": 393,
+        "inliers": 393,
+        "bag_frame": 12590,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_7151",
+        "coarse_inliers": 393,
+        "inliers": 393,
+        "bag_frame": 12720,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_7169",
+        "coarse_inliers": 390,
+        "inliers": 390,
+        "bag_frame": 12750,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6434",
+        "coarse_inliers": 386,
+        "inliers": 386,
+        "bag_frame": 11530,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6779",
+        "coarse_inliers": 380,
+        "inliers": 380,
+        "bag_frame": 12110,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6789",
+        "coarse_inliers": 112,
+        "inliers": 377,
+        "bag_frame": 12130,
+        "verdict": "present",
+        "fine_inliers": 377
+      },
+      {
+        "scene": "color_image_6787",
+        "coarse_inliers": 111,
+        "inliers": 375,
+        "bag_frame": 12120,
+        "verdict": "present",
+        "fine_inliers": 375
+      },
+      {
+        "scene": "color_image_6933",
+        "coarse_inliers": 154,
+        "inliers": 371,
+        "bag_frame": 12380,
+        "verdict": "present",
+        "fine_inliers": 371
+      },
+      {
+        "scene": "color_image_6947",
+        "coarse_inliers": 368,
+        "inliers": 368,
+        "bag_frame": 12400,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_7040",
+        "coarse_inliers": 368,
+        "inliers": 368,
+        "bag_frame": 12560,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_7051",
+        "coarse_inliers": 367,
+        "inliers": 367,
+        "bag_frame": 12560,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_7088",
+        "coarse_inliers": 362,
+        "inliers": 362,
+        "bag_frame": 6920,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6718",
+        "coarse_inliers": 123,
+        "inliers": 361,
+        "bag_frame": 12000,
+        "verdict": "present",
+        "fine_inliers": 361
+      },
+      {
+        "scene": "color_image_7142",
+        "coarse_inliers": 355,
+        "inliers": 355,
+        "bag_frame": 12710,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6841",
+        "coarse_inliers": 169,
+        "inliers": 353,
+        "bag_frame": 12220,
+        "verdict": "present",
+        "fine_inliers": 353
+      },
+      {
+        "scene": "color_image_6734",
+        "coarse_inliers": 121,
+        "inliers": 346,
+        "bag_frame": 12030,
+        "verdict": "present",
+        "fine_inliers": 346
+      },
+      {
+        "scene": "color_image_6819",
+        "coarse_inliers": 346,
+        "inliers": 346,
+        "bag_frame": 12180,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6534",
+        "coarse_inliers": 145,
+        "inliers": 341,
+        "bag_frame": 11680,
+        "verdict": "present",
+        "fine_inliers": 341
+      },
+      {
+        "scene": "color_image_7059",
+        "coarse_inliers": 335,
+        "inliers": 335,
+        "bag_frame": 12580,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_7021",
+        "coarse_inliers": 329,
+        "inliers": 329,
+        "bag_frame": 12560,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_7010",
+        "coarse_inliers": 327,
+        "inliers": 327,
+        "bag_frame": 12510,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6582",
+        "coarse_inliers": 324,
+        "inliers": 324,
+        "bag_frame": 11770,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_7103",
+        "coarse_inliers": 323,
+        "inliers": 323,
+        "bag_frame": 12650,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6770",
+        "coarse_inliers": 131,
+        "inliers": 322,
+        "bag_frame": 12100,
+        "verdict": "present",
+        "fine_inliers": 322
+      },
+      {
+        "scene": "color_image_6877",
+        "coarse_inliers": 320,
+        "inliers": 320,
+        "bag_frame": 12280,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6892",
+        "coarse_inliers": 145,
+        "inliers": 315,
+        "bag_frame": 12300,
+        "verdict": "present",
+        "fine_inliers": 315
+      },
+      {
+        "scene": "color_image_6955",
+        "coarse_inliers": 44,
+        "inliers": 313,
+        "bag_frame": 12410,
+        "verdict": "present",
+        "fine_inliers": 313
+      },
+      {
+        "scene": "color_image_6981",
+        "coarse_inliers": 307,
+        "inliers": 307,
+        "bag_frame": 12450,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6783",
+        "coarse_inliers": 302,
+        "inliers": 302,
+        "bag_frame": 12120,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6855",
+        "coarse_inliers": 298,
+        "inliers": 298,
+        "bag_frame": 12240,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6552",
+        "coarse_inliers": 105,
+        "inliers": 296,
+        "bag_frame": 11720,
+        "verdict": "present",
+        "fine_inliers": 296
+      },
+      {
+        "scene": "color_image_6827",
+        "coarse_inliers": 86,
+        "inliers": 296,
+        "bag_frame": 12190,
+        "verdict": "present",
+        "fine_inliers": 296
+      },
+      {
+        "scene": "color_image_6813",
+        "coarse_inliers": 143,
+        "inliers": 293,
+        "bag_frame": 12170,
+        "verdict": "present",
+        "fine_inliers": 293
+      },
+      {
+        "scene": "color_image_6793",
+        "coarse_inliers": 115,
+        "inliers": 282,
+        "bag_frame": 12130,
+        "verdict": "present",
+        "fine_inliers": 282
+      },
+      {
+        "scene": "color_image_7155",
+        "coarse_inliers": 279,
+        "inliers": 279,
+        "bag_frame": 12730,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6762",
+        "coarse_inliers": 269,
+        "inliers": 269,
+        "bag_frame": 12080,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6756",
+        "coarse_inliers": 264,
+        "inliers": 264,
+        "bag_frame": 12070,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6801",
+        "coarse_inliers": 194,
+        "inliers": 262,
+        "bag_frame": 12150,
+        "verdict": "present",
+        "fine_inliers": 262
+      },
+      {
+        "scene": "color_image_6739",
+        "coarse_inliers": 261,
+        "inliers": 261,
+        "bag_frame": 12040,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6907",
+        "coarse_inliers": 116,
+        "inliers": 261,
+        "bag_frame": 12330,
+        "verdict": "present",
+        "fine_inliers": 261
+      },
+      {
+        "scene": "color_image_6806",
+        "coarse_inliers": 102,
+        "inliers": 252,
+        "bag_frame": 12160,
+        "verdict": "present",
+        "fine_inliers": 252
+      },
+      {
+        "scene": "color_image_7096",
+        "coarse_inliers": 248,
+        "inliers": 248,
+        "bag_frame": 12630,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_7122",
+        "coarse_inliers": 247,
+        "inliers": 247,
+        "bag_frame": 12680,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6830",
+        "coarse_inliers": 240,
+        "inliers": 240,
+        "bag_frame": 12200,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6493",
+        "coarse_inliers": 153,
+        "inliers": 239,
+        "bag_frame": 11610,
+        "verdict": "present",
+        "fine_inliers": 239
+      },
+      {
+        "scene": "color_image_6790",
+        "coarse_inliers": 233,
+        "inliers": 233,
+        "bag_frame": 12130,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6641",
+        "coarse_inliers": 228,
+        "inliers": 228,
+        "bag_frame": 11880,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6619",
+        "coarse_inliers": 227,
+        "inliers": 227,
+        "bag_frame": 11840,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6899",
+        "coarse_inliers": 77,
+        "inliers": 223,
+        "bag_frame": 12320,
+        "verdict": "present",
+        "fine_inliers": 223
+      },
+      {
+        "scene": "color_image_6802",
+        "coarse_inliers": 220,
+        "inliers": 220,
+        "bag_frame": 12150,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6999",
+        "coarse_inliers": 220,
+        "inliers": 220,
+        "bag_frame": 12480,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_7167",
+        "coarse_inliers": 215,
+        "inliers": 215,
+        "bag_frame": 12750,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6478",
+        "coarse_inliers": 180,
+        "inliers": 213,
+        "bag_frame": 11590,
+        "verdict": "present",
+        "fine_inliers": 213
+      },
+      {
+        "scene": "color_image_6808",
+        "coarse_inliers": 210,
+        "inliers": 210,
+        "bag_frame": 12160,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6936",
+        "coarse_inliers": 202,
+        "inliers": 202,
+        "bag_frame": 12380,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6682",
+        "coarse_inliers": 201,
+        "inliers": 201,
+        "bag_frame": 11950,
+        "verdict": "present"
+      },
+      {
+        "scene": "color_image_6799",
+        "coarse_inliers": 74,
+        "inliers": 199,
+        "bag_frame": 12150,
+        "verdict": "present",
+        "fine_inliers": 199,
+        "confirmed_by": "d048_confirmed.json"
+      },
+      {
+        "scene": "color_image_6796",
+        "coarse_inliers": 176,
+        "inliers": 198,
+        "bag_frame": 12140,
+        "verdict": "present",
+        "fine_inliers": 198,
+        "confirmed_by": "d048_confirmed.json"
+      },
+      {
+        "scene": "color_image_6797",
+        "coarse_inliers": 166,
+        "inliers": 181,
+        "bag_frame": 12140,
+        "verdict": "present",
+        "fine_inliers": 181,
+        "confirmed_by": "d048_confirmed.json"
+      },
+      {
+        "scene": "color_image_7029",
+        "coarse_inliers": 119,
+        "inliers": 169,
+        "bag_frame": 12560,
+        "verdict": "present",
+        "fine_inliers": 169,
+        "confirmed_by": "d048_confirmed.json"
+      },
+      {
+        "scene": "color_image_6921",
+        "coarse_inliers": 65,
+        "inliers": 167,
+        "bag_frame": 12350,
+        "verdict": "present",
+        "fine_inliers": 167,
+        "confirmed_by": "d048_confirmed.json"
+      },
+      {
+        "scene": "color_image_6515",
+        "coarse_inliers": 92,
+        "inliers": 145,
+        "bag_frame": 11650,
+        "verdict": "present",
+        "fine_inliers": 145,
+        "confirmed_by": "d048_confirmed.json"
+      }
+    ],
+    "needs_review": [],
+    "absent_max_inliers": 30
+  },
+  "merged_exclusion_intervals_frames": [
+    [
+      6906,
+      6934
+    ],
+    [
+      11376,
+      11404
+    ],
+    [
+      11426,
+      11454
+    ],
+    [
+      11516,
+      11564
+    ],
+    [
+      11576,
+      11624
+    ],
+    [
+      11636,
+      11664
+    ],
+    [
+      11666,
+      11694
+    ],
+    [
+      11706,
+      11754
+    ],
+    [
+      11756,
+      11784
+    ],
+    [
+      11786,
+      11814
+    ],
+    [
+      11826,
+      11854
+    ],
+    [
+      11866,
+      11894
+    ],
+    [
+      11906,
+      11934
+    ],
+    [
+      11936,
+      11984
+    ],
+    [
+      11986,
+      12014
+    ],
+    [
+      12016,
+      12364
+    ],
+    [
+      12366,
+      12424
+    ],
+    [
+      12436,
+      12494
+    ],
+    [
+      12496,
+      12524
+    ],
+    [
+      12546,
+      12604
+    ],
+    [
+      12606,
+      12764
+    ]
+  ]
+}

@@ -1,0 +1,708 @@
+{
+  "status": "CP-P3 step (B): k-fold run to DOCUMENT DEGENERACY of the P-4 tracking objective. NOT a usable tuning result \u2014 the strand pivots to P-4c (fixed principled gains). Evidence for F027.",
+  "config": {
+    "bag": "june",
+    "n_gain_candidates": 560,
+    "grid": {
+      "Kp": [
+        0.0,
+        0.01,
+        0.02,
+        0.04,
+        0.08,
+        0.15,
+        0.3
+      ],
+      "Kpsi": [
+        0.0,
+        0.0005,
+        0.001,
+        0.002,
+        0.005
+      ],
+      "Kd": [
+        0.0,
+        0.005,
+        0.02,
+        0.05
+      ],
+      "Ki": [
+        0.0,
+        0.001,
+        0.003,
+        0.01
+      ]
+    },
+    "structure": "SHARED gains (D014): tuned once per fold on the pooled training passes of all 9 (arm x seed) streams; scored per stream on the held-out pass. NOT per-arm.",
+    "folds": "18 CP-1 passes (pass-level, spatial independence)",
+    "objective": "minimise RMS(omega_hat - omega_ref) over FRESH frames (controller acts on geometry)",
+    "references": {
+      "primary": "imu_signcorrected = -/imu/data.angular_velocity.z (IMU z is inverted vs base_link)",
+      "sensitivity": "odom = /odometry/base_raw.twist.angular.z"
+    },
+    "gate": "v_x > 0.3367 m/s (D042/F026)",
+    "omega_max_rad_s": 0.073139,
+    "pid": "P-2a weighted-sum, SIGN=+1, conditional-integration anti-windup, omega_max clamp (ramp layer not used for tuning)"
+  },
+  "predictability_of_reference": {
+    "imu_signcorrected": {
+      "pooled": {
+        "n": 42265,
+        "corr_offset": 0.0533,
+        "corr_heading": 0.0283,
+        "best_linear_R2": 0.00326,
+        "resid_rms_rad_s": 0.026184,
+        "reference_std_rad_s": 0.026227
+      },
+      "per_arm": {
+        "A": {
+          "n": 14753,
+          "corr_offset": 0.0602,
+          "corr_heading": 0.0311,
+          "best_linear_R2": 0.0041
+        },
+        "B": {
+          "n": 14124,
+          "corr_offset": 0.0461,
+          "corr_heading": 0.0291,
+          "best_linear_R2": 0.00266
+        },
+        "C": {
+          "n": 13388,
+          "corr_offset": 0.0538,
+          "corr_heading": 0.024,
+          "best_linear_R2": 0.00313
+        }
+      },
+      "note": "Upper bound on ANY weighted-sum law of (offset, heading). R^2 ~ 0 means the perceived centreline carries essentially no information about the executed yaw-rate, so minimising RMS(omega_hat - omega_ref) is degenerate."
+    },
+    "odom": {
+      "pooled": {
+        "n": 42265,
+        "corr_offset": 0.0492,
+        "corr_heading": 0.0311,
+        "best_linear_R2": 0.003,
+        "resid_rms_rad_s": 0.048386,
+        "reference_std_rad_s": 0.048458
+      },
+      "per_arm": {
+        "A": {
+          "n": 14753,
+          "corr_offset": 0.0478,
+          "corr_heading": 0.0376,
+          "best_linear_R2": 0.00321
+        },
+        "B": {
+          "n": 14124,
+          "corr_offset": 0.0459,
+          "corr_heading": 0.032,
+          "best_linear_R2": 0.0028
+        },
+        "C": {
+          "n": 13388,
+          "corr_offset": 0.0542,
+          "corr_heading": 0.022,
+          "best_linear_R2": 0.00312
+        }
+      },
+      "note": "Upper bound on ANY weighted-sum law of (offset, heading). R^2 ~ 0 means the perceived centreline carries essentially no information about the executed yaw-rate, so minimising RMS(omega_hat - omega_ref) is degenerate."
+    }
+  },
+  "sim_equivalence_check": {
+    "note": "vectorised sim vs command_generator.py CSV at P-4c locked gains (from command_summary.json), stream (A,42)",
+    "gains_compared": [
+      0.06507907,
+      0.00783341,
+      0.0,
+      0.0
+    ],
+    "tilt_debias_deg_applied": 2.31,
+    "n_compared": 4974,
+    "max_abs_diff_rad_s": 5.127087006270847e-07
+  },
+  "kfold": {
+    "imu_signcorrected": {
+      "per_fold": [
+        {
+          "fold": 0,
+          "held_out_pass": 0,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.026017,
+          "train_rms_zero_gain_rad_s": 0.026077,
+          "oof_rms_rad_s": 0.027241
+        },
+        {
+          "fold": 1,
+          "held_out_pass": 1,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.026248,
+          "train_rms_zero_gain_rad_s": 0.026298,
+          "oof_rms_rad_s": 0.023397
+        },
+        {
+          "fold": 2,
+          "held_out_pass": 2,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.026358,
+          "train_rms_zero_gain_rad_s": 0.026397,
+          "oof_rms_rad_s": 0.024718
+        },
+        {
+          "fold": 3,
+          "held_out_pass": 3,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.026279,
+          "train_rms_zero_gain_rad_s": 0.026328,
+          "oof_rms_rad_s": 0.025261
+        },
+        {
+          "fold": 4,
+          "held_out_pass": 4,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.026185,
+          "train_rms_zero_gain_rad_s": 0.026232,
+          "oof_rms_rad_s": 0.027051
+        },
+        {
+          "fold": 5,
+          "held_out_pass": 5,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.026369,
+          "train_rms_zero_gain_rad_s": 0.026419,
+          "oof_rms_rad_s": 0.024581
+        },
+        {
+          "fold": 6,
+          "held_out_pass": 6,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.026246,
+          "train_rms_zero_gain_rad_s": 0.02629,
+          "oof_rms_rad_s": 0.024653
+        },
+        {
+          "fold": 7,
+          "held_out_pass": 7,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.025912,
+          "train_rms_zero_gain_rad_s": 0.025974,
+          "oof_rms_rad_s": 0.030867
+        },
+        {
+          "fold": 8,
+          "held_out_pass": 8,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.02607,
+          "train_rms_zero_gain_rad_s": 0.026116,
+          "oof_rms_rad_s": 0.027775
+        },
+        {
+          "fold": 9,
+          "held_out_pass": 9,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.026162,
+          "train_rms_zero_gain_rad_s": 0.026211,
+          "oof_rms_rad_s": 0.026909
+        },
+        {
+          "fold": 10,
+          "held_out_pass": 10,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.026262,
+          "train_rms_zero_gain_rad_s": 0.026313,
+          "oof_rms_rad_s": 0.024828
+        },
+        {
+          "fold": 11,
+          "held_out_pass": 11,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.026263,
+          "train_rms_zero_gain_rad_s": 0.026301,
+          "oof_rms_rad_s": 0.024632
+        },
+        {
+          "fold": 12,
+          "held_out_pass": 12,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.026168,
+          "train_rms_zero_gain_rad_s": 0.026218,
+          "oof_rms_rad_s": 0.028381
+        },
+        {
+          "fold": 13,
+          "held_out_pass": 13,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.026193,
+          "train_rms_zero_gain_rad_s": 0.026239,
+          "oof_rms_rad_s": 0.018041
+        },
+        {
+          "fold": 14,
+          "held_out_pass": 14,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.026284,
+          "train_rms_zero_gain_rad_s": 0.026314,
+          "oof_rms_rad_s": 0.024534
+        },
+        {
+          "fold": 15,
+          "held_out_pass": 15,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.026172,
+          "train_rms_zero_gain_rad_s": 0.026216,
+          "oof_rms_rad_s": 0.026664
+        },
+        {
+          "fold": 16,
+          "held_out_pass": 16,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.026079,
+          "train_rms_zero_gain_rad_s": 0.026119,
+          "oof_rms_rad_s": 0.027732
+        },
+        {
+          "fold": 17,
+          "held_out_pass": 17,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.02619,
+          "train_rms_zero_gain_rad_s": 0.026233,
+          "oof_rms_rad_s": 0.026217
+        }
+      ],
+      "gain_stability_across_folds": {
+        "Kp": {
+          "values": [
+            0.01
+          ],
+          "min": 0.01,
+          "max": 0.01,
+          "median": 0.01,
+          "n_distinct_across_11_folds": 1
+        },
+        "Kpsi": {
+          "values": [
+            0.0
+          ],
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "n_distinct_across_11_folds": 1
+        },
+        "Kd": {
+          "values": [
+            0.0
+          ],
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "n_distinct_across_11_folds": 1
+        },
+        "Ki": {
+          "values": [
+            0.0
+          ],
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "n_distinct_across_11_folds": 1
+        }
+      },
+      "pooled_oof_rms_rad_s": 0.026192,
+      "zero_gain_pooled_oof_rms_rad_s": 0.026239,
+      "improvement_over_zero_gain_pct": 0.177,
+      "per_arm_oof_rms_rad_s": {
+        "A": 0.026257,
+        "B": 0.026161,
+        "C": 0.026154
+      },
+      "grid_flatness": {
+        "best_rms": 0.026192,
+        "worst_rms": 0.06029,
+        "zero_gain_rms": 0.026239,
+        "best_vs_zero_pct": 0.177
+      },
+      "reference_std_rad_s": 0.026765
+    },
+    "odom": {
+      "per_fold": [
+        {
+          "fold": 0,
+          "held_out_pass": 0,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.04805,
+          "train_rms_zero_gain_rad_s": 0.04806,
+          "oof_rms_rad_s": 0.051145
+        },
+        {
+          "fold": 1,
+          "held_out_pass": 1,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.048935,
+          "train_rms_zero_gain_rad_s": 0.048937,
+          "oof_rms_rad_s": 0.018439
+        },
+        {
+          "fold": 2,
+          "held_out_pass": 2,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.049183,
+          "train_rms_zero_gain_rad_s": 0.049184,
+          "oof_rms_rad_s": 0.042118
+        },
+        {
+          "fold": 3,
+          "held_out_pass": 3,
+          "best_gains": {
+            "Kp": 0.0,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.04988,
+          "train_rms_zero_gain_rad_s": 0.04988,
+          "oof_rms_rad_s": 0.030325
+        },
+        {
+          "fold": 4,
+          "held_out_pass": 4,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.048677,
+          "train_rms_zero_gain_rad_s": 0.048678,
+          "oof_rms_rad_s": 0.018405
+        },
+        {
+          "fold": 5,
+          "held_out_pass": 5,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.045905,
+          "train_rms_zero_gain_rad_s": 0.045922,
+          "oof_rms_rad_s": 0.0671
+        },
+        {
+          "fold": 6,
+          "held_out_pass": 6,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.047853,
+          "train_rms_zero_gain_rad_s": 0.047856,
+          "oof_rms_rad_s": 0.063914
+        },
+        {
+          "fold": 7,
+          "held_out_pass": 7,
+          "best_gains": {
+            "Kp": 0.0,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.046719,
+          "train_rms_zero_gain_rad_s": 0.046719,
+          "oof_rms_rad_s": 0.073754
+        },
+        {
+          "fold": 8,
+          "held_out_pass": 8,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.047867,
+          "train_rms_zero_gain_rad_s": 0.047867,
+          "oof_rms_rad_s": 0.056248
+        },
+        {
+          "fold": 9,
+          "held_out_pass": 9,
+          "best_gains": {
+            "Kp": 0.0,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.049074,
+          "train_rms_zero_gain_rad_s": 0.049074,
+          "oof_rms_rad_s": 0.031671
+        },
+        {
+          "fold": 10,
+          "held_out_pass": 10,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.049055,
+          "train_rms_zero_gain_rad_s": 0.049055,
+          "oof_rms_rad_s": 0.036317
+        },
+        {
+          "fold": 11,
+          "held_out_pass": 11,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.048727,
+          "train_rms_zero_gain_rad_s": 0.048749,
+          "oof_rms_rad_s": 0.043263
+        },
+        {
+          "fold": 12,
+          "held_out_pass": 12,
+          "best_gains": {
+            "Kp": 0.0,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.048299,
+          "train_rms_zero_gain_rad_s": 0.048299,
+          "oof_rms_rad_s": 0.064437
+        },
+        {
+          "fold": 13,
+          "held_out_pass": 13,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.048499,
+          "train_rms_zero_gain_rad_s": 0.048499,
+          "oof_rms_rad_s": 0.008503
+        },
+        {
+          "fold": 14,
+          "held_out_pass": 14,
+          "best_gains": {
+            "Kp": 0.0,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.04887,
+          "train_rms_zero_gain_rad_s": 0.04887,
+          "oof_rms_rad_s": 0.041473
+        },
+        {
+          "fold": 15,
+          "held_out_pass": 15,
+          "best_gains": {
+            "Kp": 0.01,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.049288,
+          "train_rms_zero_gain_rad_s": 0.049293,
+          "oof_rms_rad_s": 0.023244
+        },
+        {
+          "fold": 16,
+          "held_out_pass": 16,
+          "best_gains": {
+            "Kp": 0.0,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.04881,
+          "train_rms_zero_gain_rad_s": 0.04881,
+          "oof_rms_rad_s": 0.043902
+        },
+        {
+          "fold": 17,
+          "held_out_pass": 17,
+          "best_gains": {
+            "Kp": 0.0,
+            "Kpsi": 0.0,
+            "Kd": 0.0,
+            "Ki": 0.0
+          },
+          "train_rms_rad_s": 0.048938,
+          "train_rms_zero_gain_rad_s": 0.048938,
+          "oof_rms_rad_s": 0.042587
+        }
+      ],
+      "gain_stability_across_folds": {
+        "Kp": {
+          "values": [
+            0.0,
+            0.01
+          ],
+          "min": 0.0,
+          "max": 0.01,
+          "median": 0.01,
+          "n_distinct_across_11_folds": 2
+        },
+        "Kpsi": {
+          "values": [
+            0.0
+          ],
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "n_distinct_across_11_folds": 1
+        },
+        "Kd": {
+          "values": [
+            0.0
+          ],
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "n_distinct_across_11_folds": 1
+        },
+        "Ki": {
+          "values": [
+            0.0
+          ],
+          "min": 0.0,
+          "max": 0.0,
+          "median": 0.0,
+          "n_distinct_across_11_folds": 1
+        }
+      },
+      "pooled_oof_rms_rad_s": 0.04855,
+      "zero_gain_pooled_oof_rms_rad_s": 0.048497,
+      "improvement_over_zero_gain_pct": -0.108,
+      "per_arm_oof_rms_rad_s": {
+        "A": 0.048122,
+        "B": 0.048727,
+        "C": 0.04883
+      },
+      "grid_flatness": {
+        "best_rms": 0.048497,
+        "worst_rms": 0.07292,
+        "zero_gain_rms": 0.048497,
+        "best_vs_zero_pct": 0.001
+      },
+      "reference_std_rad_s": 0.049151
+    }
+  }
+}

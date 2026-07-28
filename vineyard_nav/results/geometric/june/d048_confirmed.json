@@ -1,0 +1,9 @@
+{
+  "_note": "D048 residual needs_review scenes visually confirmed 27 Jul 2026 (labelled scene vs its best June frame; see scene_attribution fine-verify). All 6 are the same hillside-building corridor segment (bag frames ~11.6k-12.6k); color_image_6799 is the F007 blob scene. All present -> excluded as perception-training contamination.",
+  "color_image_6796": "present",
+  "color_image_6797": "present",
+  "color_image_6799": "present",
+  "color_image_7029": "present",
+  "color_image_6515": "present",
+  "color_image_6921": "present"
+}

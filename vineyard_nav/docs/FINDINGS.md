@@ -408,6 +408,14 @@ O009 multi-seed pass across all three arms establishes the failure profile of th
 > **Two different data sources — not a contradiction.** March showing 0 geometric blobs does **not** retract or weaken the 6799 finding: the two measure different things — a *labelled perception test scene* vs. *real bag footage through the guard*. The bounded, correct statement is: **the perception-evaluation blob mode has not been shown to leak into the geometric detection stream on any of the three bags tested (march/april/may).** It has not "gone away"; it simply has not manifested in this separate pipeline.
 >
 > **Corrected margin note — bag-independent, not a canopy effect.** The largest *legitimate* detections reach **14.0 % of frame on both april (bare-vine) and may (canopy)** — real close-up trunks/poles (D035's March visual check; march max 10.5 %) — against the 15 % guard tuned on march's 10.5 %. Headroom is therefore only **~1 pp, regardless of canopy state** (an earlier reading called it canopy-specific; april bare-vine reaches the same 14.0 %). A future bag with a genuine close-up structure > 15 % of frame would be wrongly dropped, canopy or not. The 10–15 % near-blob band (march 7 / may 1–5 per seed / april 14 frames) passes the guard and is absorbed by the downstream RANSAC median ± 0.5 m inlier test. *(A visual check of may's 9 near-blob detections: 6 are genuine trellis poles, 3 are a person walking the row misdetected as a pole-like vertical structure — an incidental false-positive the RANSAC outlier test rejects, not the canopy-blob mode this audit targets.)* Artefacts: `results/geometric/{march,april,may}/cache/blob_audit.json` (regenerable via `extract_detections.py`; june+ emitted automatically).
+>
+> **June — the first geometric-stream blob (28 July 2026, additive; supersedes the "no leak" statement above for june only).** Auditing june's **252,742** detections (3 Phase-C seeds × 7,308 eligible frames) found **exactly one** detection above the D035 15 % guard: **frame 7460, seed 42, class `trunk`, conf 0.28, 110,719 px² = 27.03 % of frame**, bbox [0, 0, 232, 477] — spanning from the very top edge of frame. Seeds 43 and 44 are clean (max 9.1 % / 8.6 %); the 10–15 % near-blob band holds 3 detections, all on seed 42.
+>
+> **Visually confirmed as the 6799 pathology, not a close-up trunk.** Rendering the frame shows the mask covering the **entire left-hand canopy wall** — a whole-foliage false positive labelled `trunk` — while the correct thin trunk boxes remain detected underneath it, i.e. the blob is *additive* noise, not a replacement of the true detections. This is the same failure mode as labelled test scene 6799 (low-confidence whole-canopy mask), now observed once in real bag footage.
+>
+> **The guard did its job.** The detection exceeded the 15 % threshold and was dropped before base-point extraction, so it never entered `detections.csv` and no downstream metric is affected. This is the **first evidence the D035 guard actually fires on production footage** — it is load-bearing, not decorative.
+>
+> **Corrected bounded statement.** Across four bags and ~1.14 M detections (march 234k, april 236k, may 416k, june 253k), the perception-evaluation blob mode leaks into the geometric stream **once** — a rate of **~4 × 10⁻⁶**, four orders of magnitude below its perception-evaluation incidence (2/3 seeds on 6799). It is **canopy-linked** (the sole occurrence is on a canopy bag, and the mask is canopy), **seed-linked** (seed 42 only), and **guard-contained**. The march/april/may "no leak" result above stands exactly as measured; june replaces *"has not been shown to leak"* with *"leaks at a vanishingly low, guard-contained rate."* Artefacts: `results/geometric/june/cache/blob_audit.json`; rendered figure `results/geometric/june/diagnostics/blob_audit/blob_s42_f07460.png` (regenerable via `scripts/geometric/diagnostics/figure_blob_audit.py --bag june`).
 
 ---
 
@@ -812,6 +820,8 @@ trunk-only GT-1 0.204 [0.192, 0.216] overlaps agnostic 0.200 [0.189, 0.210] (GT-
 
 **May (canopy) has no viable downstream config regime at the 70% floor (26 Jul 2026).** On `kg_may_06`, no config cell — class-agnostic or any trunk_T*/pole_T* — reaches F018's 70% two-row coverage floor (max **63.1%**, class-agnostic; trunk max 63.1% @ T12; pole max 62.8% @ T12). F018's viable-regime argmin/tie-break is therefore **undefined** for May and correctly reported as `viable_regime: {any_viable: false, max_two_row_pct: 63.1}` rather than forced. This is a **seasonal-coverage result, not a failure**: canopy lowers two-row coverage below the bare-vine bags, so the config-selection question has no viable regime to select over on May. F018's 70% definition is unchanged.
 
+**Answered on canopy (28 July 2026) — see F029.** F018's registered open question ("whether poles carry more signal under canopy") is now resolved on **two** canopy bags (may, june): poles carry *less absolute* signal under canopy (pole base points 12.8 / 11.7 → 6.2 / 2.7; pole-only 1.0% / 0.6% at n=1 → **0.0% / 0.0% at n=0**), while their *relative* contribution is **unchanged** (+12.4 / +13.6 pp bare-vine vs +13.8 / +13.7 pp canopy) and trunk-only remains CI-indistinguishable from class-agnostic on all four bags. The trunks-load-bearing / poles-supplement-coverage-not-quality mechanism is therefore **season-invariant**; F029 carries the full canopy characterisation.
+
 **NOT defensible.**
 - ✗ claim poles carry no information in general (bounded to this bag's density; higher-visibility bags untested).
 - ✗ report the pole-only 0.118 m / 1.26° as an RMS/quality figure (single-frame artefact, n = 1).
@@ -937,6 +947,10 @@ trunk-only GT-1 0.204 [0.192, 0.216] overlaps agnostic 0.200 [0.189, 0.210] (GT-
 
 **Citation map.** Ours: `final/mitigation_evaluation/mitigation_analysis.json` (F022 block). D041 (CP-1 criteria), D-A (odometry). No paper support (contribution).
 
+> **June bounds the headline (28 July 2026, additive).** Causal state-gate rejection of non-in-row two-row falls to **62.4–65.0%** on June (March 98.4–98.5%, April 87.2–91.7%, May 92.0–92.4%) while in-row FP stays negligible (**1.1–1.2%**). The mechanism is visible per category (arm A): rejection is **100% on `stationary` on every bag**, but on `transition` it degrades 95.7% (March) → 70.1% (April) → 80.0% (May) → **48.0% (June)**, and June's spurious fits are **65.6% `transition`** (March 26.6%) with almost no turning at all (`turn` = 0.8% of June's headland vs 6.4% on March).
+>
+> **Interpretation.** The gate keys on *motion state* (speed / |v_y| / heading-rate), so it rejects stationary perfectly and turning well, but is **blind to straight-line driving through a corridor that simply isn't the evaluated one** — which is exactly what `transition` is, and what June's headland stratum is dominated by. **F022's ~98% figure is therefore a property of a headland stratum dominated by stationary + turning, not a universal rejection rate.** The gate remains the cheap mitigation (FP ~1%); what degrades under a transition-dominated stratum is its *coverage*, not its *cost*.
+
 ### F023 — Geometry-confidence filter: a perception-only fallback, blind to clean-geometry turns
 
 **Finding.** A perception-only rejection filter — reject a two_row output whose geometry is off-nominal against the in-row distribution (`|offset| > 0.71 m`, `|heading| > 6.7°`, `|m_L − m_R| > 0.22`, `n_base < 12`, all in-row p99) — rejects only **~38–41% of the spurious non-in-row outputs** at a **~3% in-row false-positive rate**. The low rejection rate **is the finding**: most non-in-row failures are geometrically **indistinguishable from valid in-row** (their offset 0.14–0.37 m and heading 2–7° overlap the in-row median 0.16 m / 2.2°; F020 diagnostic) because the camera is genuinely seeing a real vine row mid-manoeuvre. F023 catches the geometric outliers — sparsest stationary fits and off-nominal transitions (~40%), and about half of turns (47–54%, the mis-aligned ones) — but the **clean-geometry turns pass straight through** (F022's job). Adding F023 to F022 lifts combined non-in-row rejection only 98.4 → **98.6%** (F022 already catches turns kinematically), so **F023's value is an odometry-free fallback, not an additive gain when F022 works**.
@@ -963,6 +977,12 @@ trunk-only GT-1 0.204 [0.192, 0.216] overlaps agnostic 0.200 [0.189, 0.210] (GT-
 - ✗ call ~40 % rejection a failure (it is the measured perception-only ceiling).
 
 **Citation map.** Ours: `final/mitigation_evaluation/mitigation_analysis.json` (F023 block); in-row p99 thresholds from `final/march_evaluation/line_fit_per_frame.csv`. F013 (in-row distribution). No paper support (contribution).
+
+> **Threshold-transfer failure on June (28 July 2026, additive).** The geometry filter's in-row false-positive rate explodes to **48.6% / 22.9% / 27.5%** (arms A/B/C) on June, against 2.7–3.6% (March), 1.8–2.6% (April) and 7.5–9.1% (May). The marginal decomposition identifies a single culprit: the **`n_base` criterion** contributes **47.17% / 20.94% / 25.81%** of that FP, while the other three thresholds stay small (offset 0.18–0.32%, heading 1.41–2.16%, parallelism 1.18–1.59%).
+>
+> **Cause.** `n_base_min = 12` is **fixed across bags** (`geom_thresholds` identical on all four), calibrated where in-row frames carried ~30 base points (March). June's in-row frames average **10.5 / 12.3 / 11.5** base points (arms A/B/C) — *at or below the threshold* — so the filter rejects legitimate in-row frames for having exactly the base-point count canopy permits. The FP ordering tracks base-point density monotonically (A 10.5 → 47.2%, C 11.5 → 25.8%, B 12.3 → 20.9%), confirming the mechanism.
+>
+> **Consequence.** The geometry filter is **not usable as a standalone mitigation on June** (it discards roughly half of arm A's valid in-row centrelines), and pairing it with the state gate inherits that cost (`either` in-row FP 49.2% on arm A) — so on canopy the state gate should be used *alone*. This is F029's starvation mechanism propagating into the mitigation layer: a plausibility threshold calibrated at bare-vine density mis-classifies canopy-density frames as implausible. **The thresholds are reported as-locked and NOT retuned** — the transfer failure is itself the finding; a bag-relative `n_base_min` (e.g. a percentile of that bag's in-row base-point distribution) is the obvious remedy and is registered as future work, not applied retroactively.
 
 ### F024 — In-row abstention: the pipeline declines a centreline on ~13% of in-row frames; its conservatism is evidence-based, not context-based
 
@@ -1032,6 +1052,8 @@ Two quantitative shifts, both consistent with april's sparser near field (mean b
 - ✗ "widening is production-ready" — the heavy-tail adjacent-row corruption requires an adjacency-rejection guard (D036/F014) first.
 - ✗ read the plausibility-fire rate as a false-positive rate (no ground truth; it is a bounded geometric-plausibility flag).
 - ✗ rank arms (architecturally shared; ≤~1 pp variation; optimal window within 0.5 m).
+
+> **Amendment (27 July 2026, additive — may canopy near-seed sensitivity; F025's march numbers stand). The near-seed optimum widens on canopy, but widening recovers a smaller fraction of abstentions.** The same NEAR sweep on the canopy bag (may; `may_evaluation/near_seed_sensitivity.json`; NEAR=5 slice reproduces the committed CSV, 0 mismatches) shifts the deployed-system optimum **wider**: Opt-A(10%) = **7.0–7.5 m** (vs march 6.5 m A/C / 7.0 m B), with **Opt-A and Opt-B coinciding at 7.0–7.5 m** (on march Opt-A 6.5 > Opt-B 6.0). Widening arm A to 7.5 m recovers **25% of abstentions** (march 32%) and lifts two_row coverage **67.6 → 74.5% (+6.9 pp)** — a *larger* absolute lift than march's +3.7 pp, but from a lower base to a lower ceiling (74.5% vs 85%), because canopy abstentions are dominated by far-field detections beyond the near-seed window (F024 `seen_far_only` 62.7%). The wider optimum is largely a consequence of canopy's higher baseline offset RMS (0.231 vs 0.209 m) softening the *relative* 10% RMS-tolerance penalty — full-set RMS still rises monotonically (+9.6% at 7.5 m). **Implication:** the 5 m default is conservative in both seasons and *more* conservative on canopy (optimum 7.0–7.5 m); a canopy deployment could widen further within the same RMS budget, but buys proportionally less abstention recovery than bare-vine. The heavy-tail adjacent-row corruption caveat (existing-shift max ~148 cm) and the adjacency-guard requirement (D036/F014) are unchanged. Bounded cross-season characterisation of F025's one-time study; does not change the march-locked NEAR=5 pipeline.
 
 **Future work.** (i) Implement and evaluate the **D036/F014 adjacency-rejection guard** on the recovered set — the production widen path that would suppress the corruption tail. (ii) **Multi-bag sensitivity:** re-run the sweep on other months to test whether canopy vs bare-vine geometry shifts the optimum (this is a **March-only** result). Both reuse `one_time/near_seed_sensitivity.py --bag <bag>`.
 
@@ -1195,3 +1217,52 @@ The three secondary results reproduce: (i) the D043 **dual metric still matters*
 **Future work.** (i) Multi-bag: re-run `command_smoothness.py --bag <bag>` on April+ to test whether the null holds across seasons. (ii) The block length is reused from the offset/heading series; differencing whitens a series, so the true block length for Δω̂ is likely shorter and these CIs are conservative — a dedicated decorrelation estimate on Δω̂ would tighten them. (iii) A closed-loop or simulated evaluation would let smoothness be measured under the controller's own trajectory rather than a replayed one.
 
 **Citation map.** Ours: `final/command_evaluation/command_smoothness.json` (F028); `scripts/control/command_smoothness.py`; upstream stream `command_per_frame.csv` + `command_summary.json` (F027-A gains). D014 (strand-3), D043 (dual metric), F013 (convergence), F019 (micro-difference precedent), F007/O009 (blob seeds). No paper support (contribution).
+
+### F029 — Canopy season: the class-structure mechanism is season-invariant; what canopy removes is base-point availability, and with it deployability
+
+**Finding.** Across two bare-vine bags (March, April) and two canopy bags (May, June), canopy changes *how much* the geometric front-end can see but not *what class structure contributes*: (1) class-agnostic two-row coverage falls 80.6 / 76.5% → **63.1 / 61.5%**, below F018's 70% viability floor on **both** canopy bags, so no viable downstream config regime exists there; (2) the proximate cause is **base-point starvation, not misdetection** — arm-C mean base points/frame fall 30.3 / 26.9 → **15.7 / 11.5** (2.6× March→June) while the failing row is still *detected* on 93.6–98.2% of abstaining frames; (3) **the class-structure mechanism is unchanged** — poles supplement trunks by +12.4 / +13.6 (bare-vine) vs **+13.8 / +13.7 pp** (canopy), trunk-only stays CI-indistinguishable from class-agnostic on both metrics on all four bags, and pole-only stays degenerate; (4) heading error is canopy-elevated (GT-2 2.34–2.64° → 3.15–4.17°) but lateral error is **not** reliably so (June 0.192–0.202 m sits inside the bare-vine range).
+
+**This answers the open question F018 registered.** F018 asked whether poles carry more signal under canopy. They do not: pole base points fall 12.8 / 11.7 → **6.2 / 2.7**, pole-only goes from degenerate-with-one-frame (1.0 / 0.6%, n=1) to degenerate-with-none (**0.0 / 0.0%, n=0**). Poles carry *less absolute* signal under canopy while their *relative* contribution — coverage, not quality — is unchanged.
+
+**Evidence — class structure (arm C, whole-bag `config_analysis.json`):**
+
+| bag | season | agnostic | trunk-only | pole supplement | pole-only | agnostic base pts | pole-only base pts |
+|---|---|---|---|---|---|---|---|
+| March | bare-vine | 80.6% | 68.2% | **+12.4 pp** | 1.0% (n=1) | 30.3 | 12.8 |
+| April | bare-vine | 76.5% | 62.9% | **+13.6 pp** | 0.6% (n=1) | 26.9 | 11.7 |
+| May | canopy | 63.1% | 49.3% | **+13.8 pp** | 0.0% (n=0) | 15.7 | 6.2 |
+| June | canopy | 61.5% | 47.8% | **+13.7 pp** | 0.0% (n=0) | 11.5 | 2.7 |
+
+Trunk-only vs class-agnostic GT-1 CIs overlap on every bag (March 0.1974 [0.1894, 0.2068] vs 0.194 [0.1849, 0.201]; April 0.1613 [0.1492, 0.1694] vs 0.1579 [0.1454, 0.1605]; May 0.2474 [0.2331, 0.2628] vs 0.2389 [0.2256, 0.2523]; June 0.2011 [0.1853, 0.2214] vs 0.1913 [0.178, 0.2081]); GT-2 likewise on all four.
+
+**Evidence — what canopy costs (per-arm, mean ± SD over 3 seeds, `line_fit_report.json`):**
+
+| bag | two-row A / B / C | GT-1 RMS (m) | GT-2 RMS (°) | tilt (°) | abstention (arm A) |
+|---|---|---|---|---|---|
+| March | 81.3 / 81.6 / 80.8 | 0.209–0.215 | 2.60–2.64 | 2.10–2.18 | 12.8% |
+| April | 77.4 / 78.2 / 76.5 | 0.164–0.175 | 2.34 | 1.85–1.86 | 14.9% |
+| May | 67.6 / 65.1 / 63.0 | 0.231–0.243 | 4.16–4.17 | 3.73–3.74 | 22.0% |
+| June | 67.8 / 64.9 / 61.5 | 0.192–0.202 | 3.15–3.30 | 2.75–2.81 | 20.8% |
+
+Within abstaining frames the dominant cause stays `too_few_near_seed` (73.2 / 72.7 → 65.5 / 63.7%) while `too_few_total` **rises** (18.7 / 20.3 → 30.0 / 31.4%) — the shift from "row seen but not near enough" toward "not enough detections at all" is the starvation signature.
+
+**Canopy separates the arms on coverage, not on quality.** Bare-vine arms sit within 0.8 pp (March) and 1.6 pp (April), B marginally highest; canopy widens the spread to 4.5 pp (May) and 6.3 pp (June) with ordering **A > B > C**. Centreline *quality* remains cross-arm indistinguishable throughout (F013; every June paired CI includes zero). Coverage is an availability axis not tested by the paired quality bootstrap — this canopy-emergent separation is descriptive, and its mechanism is open.
+
+**Interpretation — perception gain does not transfer to geometric utility.** F001 measures canopy frames as *easier* to segment (+0.077 val / +0.081 test pooled fg IoU). The same frames yield ~16 pp lower row-fit coverage and 2.6× fewer base points. These are not in conflict: F001 measures per-pixel quality on structures that **are** visible, whereas the geometric front-end requires near-field trunk/pole base points to **exist**; canopy occludes those structures rather than causing them to be mis-segmented (failing rows are still detected on 93.6–98.2% of abstaining frames). **Detectability of visible structure ≠ availability of structure for geometry** — the sharpest statement in this work that perception-level benchmarks do not predict navigation-level utility.
+
+**Scope effect on the central comparison.** Canopy does not weaken the class-aware comparison — it *extends its scope*: the B–C null and the trunks-load-bearing / poles-supplement-coverage-not-quality mechanism now hold across two seasons and four bags, so they are not artefacts of bare-vine visibility. What canopy changes is whether the pipeline clears the 70% floor at all — a property of the geometric front-end, not of class structure.
+
+> **Canopy deployment gap (28 July 2026, additive; in-row scope above unchanged).** The same base-point starvation that costs in-row coverage also **suppresses spurious headland fits**: non-in-row two-row output falls 48.0–52.2% (March) / 20.1–32.1% (April) → 26.3–26.8% (May) / **13.6–15.4% (June)**, and driven-path lateral error is *lowest* on June (0.263–0.282 m vs 0.324–0.431 m on the other three bags), with heading error back in the bare-vine range (5.09–5.45°; May is the outlier at 8.40–9.43°). Starvation is therefore **symmetric across strata** — canopy makes the pipeline abstain more both where abstention is costly (in-row) and where it is desirable (headland). What canopy does *not* preserve is mitigation transfer: see the F022 and F023 amendments.
+
+**Caveats.** Canopy is characterised at **n = 2 bags** (July/September pending). The in-row stratum is this finding's main body; the canopy deployment-gap (non-in-row) result is the amendment above, with per-bag detail under F020–F023. The arm coverage spread is descriptive (mean ± SD over 3 seeds), **not** CI-tested. The 70% floor is F018's pre-stated definition, not an external deployability standard. Bare-vine pole-only RMS values are single-frame artefacts (n = 1); canopy pole-only is undefined (n = 0). June's GT-1 lies inside the bare-vine range — canopy does not monotonically degrade lateral accuracy. Row tilt is elevated on both canopy bags but non-monotone (May 3.74° > June 2.78°).
+
+**NOT defensible.**
+- ✗ "canopy destroys the class-aware advantage" — the pole coverage supplement is unchanged (+12.4 → +13.7 pp).
+- ✗ "canopy degrades accuracy" as a blanket claim — heading yes, lateral not on June.
+- ✗ "poles are useless under canopy" — they still add ~+13.7 pp coverage; they simply cannot fit rows alone (true on **every** bag).
+- ✗ treating the A > B > C canopy coverage ordering as a resolved arm difference (not CI-tested).
+- ✗ "the pipeline fails on canopy" — it *abstains*, evidence-based (F024); mitigation (F022/F026) still applies.
+
+**Cross-references.** F018 (the question this answers), F001 (perception canopy gain), F011 (coverage), F013 (arm-invariance), F024 (abstention), F025 (near-seed optimum widens to 7.0–7.5 m on canopy — same starvation mechanism), D026 (sweep is arm-C-specific), D040 (whole-bag pooling).
+
+**Citation map.** Ours: `final/{bag}_evaluation/config_analysis.json`, `line_fit_report.json`, `single_row_analysis.json` for all four bags (march, april, may, june); F001 (`perception` canopy/bare-vine split). No paper support (contribution).
