@@ -1,0 +1,33 @@
+{
+  "summary": {
+    "raw_frames": 17422,
+    "pose_pair_max_offset_ms": 5775.0,
+    "contamination_excluded": 0,
+    "stationary": 11678,
+    "headland": 17382,
+    "headland_or_stationary_excl_noncontam": 17382,
+    "in_row": 40,
+    "eligible": 40,
+    "n_passes": 1,
+    "n_corridors": 1,
+    "corridor_centres_x": [
+      -2.68
+    ],
+    "eligible_corridor_frames": {
+      "0": 40
+    },
+    "max_corridor_pct": 100.0,
+    "subsample_1p5m": 12,
+    "path_length_m": 522.0
+  },
+  "per_pass": [
+    {
+      "pass": 0,
+      "corridor": 0,
+      "dir": "up",
+      "t0_s": 1362.9,
+      "t1_s": 1365.7,
+      "eligible": 40
+    }
+  ]
+}

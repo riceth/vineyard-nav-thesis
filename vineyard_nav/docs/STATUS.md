@@ -96,6 +96,10 @@ Fourth seasonal bag (`kg_june_08`, the **second canopy** bag). Locked pipeline, 
 - **Cross-bag reading:** june is where **both** mitigations are bounded for the first time — the state gate by *composition* (a transition-dominated headland it cannot discriminate, F022/F026) and the geometry filter by *threshold transfer* (a bare-vine `n_base` floor that canopy density violates, F023). Neither failure is arm-related: the **B–C class-structure ablation remains null on every metric and every bag**, and june gives the cleanest cross-arm null yet (F013/F019). Canopy therefore changes *deployability*, not the *comparison* — which is the strongest form the thesis result can take.
 - **Completion:** all stages ran (A–G); `check_bag_complete.py --bag june` passes once this summary is in place (13/13 figures via `FIGURE_EXCEPTIONS`).
 
+### July — NOT EVALUATED (stop-start recording; D050)
+
+`kg_july_13` was converted and taken through CP-0/CP-1. The D048 gate is **clean** (0/90 present). CP-1 yields **1 pass / 40 eligible frames / 1 corridor**, because the bag was driven stop-start (350 stationary blocks vs june's 59) and the contiguous-pass detector cannot resolve that — despite july covering the same block and 452 m of along-row motion. Excluded rather than special-cased; see **D050** for the evidence, the rejected global fix and the deferred july-only option. **Evaluated set remains march / april / may / june.**
+
 *Planning-phase history (retained for context):* A1 submitted early; supervisor → three-arm design (U-Net binary + YOLO binary + YOLO multiclass) + Config A/B/C sweep on Phase C; split changed to 70/20/10 stratified; Roboflow `roboflow-3-n-seg` reference-only.
 
 ---

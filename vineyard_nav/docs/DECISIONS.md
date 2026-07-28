@@ -862,6 +862,26 @@ March separates cleanly; april does **not** — a cross-session same-place tail 
 > - **Guard completeness.** The guard is imported before torch in **every** GPU entry point, not just the first four: added to `analyze.py` (Stage-C `single_row_analysis`) and `projection_calibration.py` (CP-2 `_validate`), which were found unguarded — the same intermittent-crash exposure. Full guarded set: `extract_detections`, `line_fit_infer`, `figures`, `one_time/near_seed_sensitivity`, `analyze`, `projection_calibration`. Secondary diagnostics/perception scripts rely on the `post-create.sh` `LD_LIBRARY_PATH` belt-and-suspenders rather than an in-script guard.
 > - **cuDNN `half`→`quantize` deprecation.** All active `model.predict(...)`/`.val(...)` calls were switched from the deprecated `half=True` to `quantize=16` (23 call sites across the geometric + perception strands + 4 doc/print mentions; `superseded/` left as-is). ultralytics 8.4.90 forwards `half=True`→`quantize=16`→predictor `fp16 = (quantize==16)`, with `half` popped and no other consumer — so the two are the *identical* inference path; **verified bit-identical** (boxes **and** masks) on the Phase-B and Phase-C weights. The switch only stops the per-predict `LOGGER.warning("'half' is deprecated …")` from flooding a reproducer's console (and risking them killing a healthy run). Committed CSVs reproduce exactly.
 
+## D050 — July bag excluded from evaluation: stop-start recording defeats the contiguous-pass detector
+**Date:** 28 July 2026
+**Status:** LOCKED
+
+**Decision.** `kg_july_13` is **not evaluated**. The evaluated set remains march, april, may, june (two bare-vine, two canopy).
+
+**What was observed.** CP-1 on july yields **1 in-row pass, 40 eligible frames (0.2% of a 17,422-frame bag), 1 corridor** — against 7,308–8,889 eligible frames and 4–6 corridors on the four evaluated bags. The bag is neither empty nor mis-converted: it covers the **same physical block** (x span −14.6→0.6 m, y −44.7→7.2 m, both matching june) and records **452 m of along-row motion** against june's 479 m.
+
+**Mechanism.** CP-1 defines an in-row pass as a **contiguous** run of `|v_y| > VY_INROW` (0.30 m/s) spanning `|Δy| > PASS_MIN_Y` (10 m). July was driven **stop-start**: 350 stationary blocks (longest 167 s; 64% of the 1,366 s session; the first five minutes are 6.2% moving) against june's 59. The traverses are therefore shredded into **289 sub-threshold fragments of median Δy 1.3 m**, only one of which spans 10 m. The detector sees one pass where the robot drove roughly ten.
+
+**Rejected — a global gap tolerance.** Merging runs separated by short pauses would recover july, but it changes the detector for **every** bag: it breaks march's `expected_passes = 11` and april's `= 12` CP-1 assertions, and would silently alter may's and june's committed manifests and every number derived from them. Not acceptable under working rule 1.
+
+**Considered and deferred — a july-only opt-in gap tolerance.** An optional, default-off `pass_gap_frames` field (july = 45 frames ≈ 3.5 s) was simulated: it recovers **10 passes, 4,416 eligible frames, 7 corridors**, with **97% of recovered frames at `|v_y| ≥ 0.30`** — genuine in-row driving, not padding. It is technically sound and provably non-breaking for the other bags. It is **not adopted**, because it introduces a **bag-specific eligibility criterion** that weakens the cross-bag comparability the multi-bag design exists to provide, and because four bags already deliver a complete, consistent result. The simulation is recorded here so the option can be revisited if a later bag shows the same pattern.
+
+**Limitation to report (A2).** The CP-1 pass detector **assumes uninterrupted traverses and is not robust to stop-start driving**. This is a property of the frame-selection stage, not of any perception arm, and affects no committed result — but it bounds which recordings the pipeline can evaluate, and it is why july is absent. F029's canopy characterisation therefore stays at **n = 2 canopy bags**.
+
+**Artefacts (evidence, committed).** `results/geometric/july/{contamination_census_exclusions,dataset_manifest,manifest_summary}.json`. The D048 gate ran **clean** on july (0 present / 0 needs_review / 90 absent), so contamination is not a factor. July's detection cache (140 detections over 40 frames) is gitignored and carries no result.
+
+**Cross-references.** D040/D041 (CP-1 whole-bag eligibility), D046 (multi-bag generalisation), F029 (canopy characterisation, n = 2), `bag_config.expected_passes`.
+
 ---
 
 ## Open items
