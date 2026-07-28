@@ -86,8 +86,8 @@ def cmp_forest(bags):
     axL.axvspan(-RTK_MM, RTK_MM, color="#2166ac", alpha=0.06)
     axL.set_title("GT-1 lateral offset — indistinguishable on every bag\n(shaded = ±RTK floor 38 mm; dashed = 0)")
     panel(axR, "GT2", 1.0, "deg", None)
-    axR.set_title("GT-2 heading — march sub-noise-floor offset\ndoes not reproduce on april (red = CI excludes 0)")
-    fig.suptitle(f"F013 cross-arm paired differences · bags: {', '.join(bags)} · red = 95% CI excludes zero",
+    axR.set_title("GT-2 heading — march's all-pair offset\ndoes not reproduce on any later bag (red = CI excludes 0)")
+    fig.suptitle(f"Cross-arm paired differences · bags: {', '.join(bags)} · red = 95% CI excludes zero",
                  y=1.02, fontsize=10)
     fig.tight_layout()
     return _save(fig, "cmp_forest.png")
@@ -111,7 +111,7 @@ def cmp_tilt(bags):
     ax.axhline(0, color="k", lw=0.8)
     ax.set_xticks(x); ax.set_xticklabels(bags)
     ax.set_ylabel("row heading vs base_link (deg)")
-    ax.set_title("F017 sensor-common row tilt (post-D047 mid-pass anchors)\nboth sensors nonzero, same sign, agreeing on every bag")
+    ax.set_title("Camera vs LiDAR row tilt (mid-pass anchors)\nboth sensors nonzero, same sign, agreeing on every bag")
     ax.legend(); ax.grid(axis="y", alpha=0.3)
     fig.tight_layout()
     return _save(fig, "cmp_tilt.png")
@@ -135,8 +135,8 @@ def cmp_nonrow_distribution(bags):
         ax.grid(axis="y", alpha=0.3)
     axes[0].set_ylabel("spurious two_row (% of category)")
     axes[-1].legend()
-    fig.suptitle(f"F020 spurious two_row per non-in-row category · bags: {', '.join(bags)}\n"
-                 "turn reproduces (~80%, arm-consistent); stationary arm-divergence appears on april", y=1.04, fontsize=10)
+    fig.suptitle(f"Spurious two_row per non-in-row category · bags: {', '.join(bags)}\n"
+                 "turn is the highest-rate category on every bag; every category falls under canopy", y=1.04, fontsize=10)
     fig.tight_layout()
     return _save(fig, "cmp_nonrow_distribution.png")
 
@@ -158,7 +158,7 @@ def cmp_mitigation_closure(bags):
             ax.text(x[xi] + (j - (len(bags) - 1) / 2) * w, v + 0.6, f"{v:.0f}", ha="center", va="bottom", fontsize=7)
     ax.set_xticks(x); ax.set_xticklabels(CATS); ax.set_ylim(0, 108)
     ax.set_ylabel("state-gate rejection (% of spurious two_row)")
-    ax.set_title("F022 state-gate closure per category (arm-invariant)\ntransition collapses on april; stationary/turn hold")
+    ax.set_title("State-gate closure per category (arm-invariant)\nstationary holds at 100% on every bag; transition is weakest and collapses on june")
     ax.legend(title="bag"); ax.grid(axis="y", alpha=0.3)
     fig.tight_layout()
     return _save(fig, "cmp_mitigation_closure.png")

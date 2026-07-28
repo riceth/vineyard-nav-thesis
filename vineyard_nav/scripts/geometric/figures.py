@@ -572,7 +572,7 @@ FRAMES = {
         "stationary": 15053, "turn": 15165, "transition": 5584,
         "f023_triple": (5845, 15072, 8900), "turn_blind": 15577,
         "abstention_caption": ("Right side: 0 detections within the 5 m near-seed window — all 3 lie beyond 5 m (fit needs >=2 near to seed) · left side: 6 detections (4 near), fits\n"
-                               "too_few_near_seed dominates may's in-row abstentions (65.5% of arm-A single_row frames; F024) — under canopy the failing row is typically detected only in the far field (seen_far_only 62.7%), starving the near-field seed"),
+                               "too_few_near_seed dominates may's in-row abstentions (65.5% of arm-A single_row frames) — under canopy the failing row is typically detected only in the far field (seen_far_only 62.7%), starving the near-field seed"),
         "f022_footer": "State gate catches ~92% of spurious non-in-row outputs (100% stationary / ~88% turn / ~80% transition) at 0.4% in-row false-positive · arm-invariant per category · uses odometry only (speed, |v_y|, heading-rate) - no perception input.",
         "f023_footer": "Geometry filter catches ~56-62% via off-nominal geometry at ~8-9% in-row false-positive (canopy - fixed bare-vine thresholds don't transfer) · perception-based, odometry-free (deployment fallback) · cannot resolve clean-geometry turns.",
     },
@@ -603,7 +603,7 @@ FRAMES = {
         "stationary": 4063, "turn": None, "transition": 4052,
         "f023_triple": (3391, None, 4615), "turn_blind": None,
         "abstention_caption": ("Right side: 0 detections within the 5 m near-seed window — all 3 lie beyond 5 m (fit needs >=2 near to seed) · left side: 7 detections (4 near), fits\n"
-                               "too_few_near_seed dominates june's in-row abstentions (63.7% of arm-A single_row frames; F024) — under canopy the failing row is typically detected only in the far field (seen_far_only 57.3%), starving the near-field seed"),
+                               "too_few_near_seed dominates june's in-row abstentions (63.7% of arm-A single_row frames) — under canopy the failing row is typically detected only in the far field (seen_far_only 57.3%), starving the near-field seed"),
         "f022_footer": ("State gate catches ~65% of spurious non-in-row outputs (100% stationary / ~69% turn / only ~48% transition)\n"
                         "at 1.1% in-row false-positive · arm-similar (62-65%) · uses odometry only (speed, |v_y|, heading-rate)\n"
                         "blind to straight-line driving in a non-evaluated corridor — 66% of june's spurious fits · turn panel withheld"),
