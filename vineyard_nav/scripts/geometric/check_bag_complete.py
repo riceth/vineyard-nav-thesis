@@ -27,6 +27,11 @@ FINAL_JSONS = ["non_in_row_evaluation/non_in_row_analysis.json",                
                "command_evaluation/gain_kfold.json",
                "command_evaluation/command_smoothness.json"]
 N_FIGURES = 15                                                                        # Stage E
+# Bags that legitimately publish fewer figures. june WITHHOLDS its `turn` category — every one of its
+# 40 turn frames contains identifiable people (its only turning episode coincides with people walking
+# the row), so figs 6 and 11 are not generated and figs 9/10 render as 2-panel rows. The turn
+# STATISTICS are still reported (fig9/fig10 footers, mitigation_analysis.json). See FRAMES['june'].
+FIGURE_EXCEPTIONS = {"june": 13}
 CACHE_ADVISORY = ["detections.csv", "blob_audit.json"]    # gitignored/regenerable -> advisory only
 
 
@@ -39,7 +44,8 @@ def check(bag):
     for j in FINAL_JSONS:
         if not (final / j).exists(): missing.append(j)
     figs = list((final / "figures").rglob("*.png")) if (final / "figures").is_dir() else []
-    if len(figs) < N_FIGURES: missing.append(f"figures/ (found {len(figs)}/{N_FIGURES})")
+    n_expect = FIGURE_EXCEPTIONS.get(bag, N_FIGURES)
+    if len(figs) < n_expect: missing.append(f"figures/ (found {len(figs)}/{n_expect})")
     advisory = [c for c in CACHE_ADVISORY if not (B["cache_dir"] / c).exists()]
     txt = STATUS.read_text().lower() if STATUS.exists() else ""
     summary_required = bag != DESIGN_BAG

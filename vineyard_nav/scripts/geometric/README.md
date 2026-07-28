@@ -31,6 +31,10 @@ pwd     # must end in /vineyard_nav
     `scripts/perception/README.md`, or obtain them).
   - plus ~150 GB free disk (the ROS2 conversion alone is ~110 GB) and a CUDA GPU.
 
+  On a fresh terminal the GPU stages auto-preload the pip-wheel cuDNN libs (`cuda_preload`, imported
+  before torch) to avoid an intermittent `Cannot load symbol cudnnGetVersion` abort on Blackwell
+  GPUs — automatic, nothing to run (D049).
+
 ---
 
 ## Verify committed results without models
@@ -104,6 +108,20 @@ stationary / contaminated and segments the in-row passes — **unless** CP-0
 returned `needs_review`, in which case `prep.py` stops after the census and
 prints the scenes to confirm (add to exclusions if present, clear if absent,
 then re-run).
+
+> **When the gate blocks with `needs_review` — the D048 two-stage resolution procedure.** Summer bags
+> (june/july/september) overlap the 90 unattributed training scenes, so their gate *will* flag the
+> 40–200 band. `prep.py` now **auto-fine-verifies** it (full-res ±30-frame non-strided search) and
+> recovers true members to `present` — no action needed for those. For any scene *still* in the band:
+> 1. Open `results/geometric/<bag>/contamination_census_exclusions.json` → `d048_gate.needs_review`
+>    (each row carries the scene, its best `bag_frame`, and `coarse_inliers`/`fine_inliers`).
+> 2. Visually confirm each — the labelled scene image (SemanticBLT) vs that `bag_frame`: same scene = present, not = absent.
+> 3. Record the calls in **`results/geometric/<bag>/d048_confirmed.json`** — `{"color_image_XXXX": "present", …}`.
+> 4. Re-run `python3 scripts/geometric/prep.py --bag <bag>`. Confirmed-present fold into the exclusion
+>    set; any scene left unconfirmed still blocks (**fail-closed**). When all resolve, CP-1 builds.
+>
+> *Worked example (june):* coarse 52 present / 36 needs_review / 2 absent → fine-verify recovered 30
+> → 6 confirmed present in `d048_confirmed.json` → **88 present, status clear, CP-1 built** (D048).
 
 - **Needs:** the `.db3` from A1; the SemanticBLT dataset at the repo root.
 - **Produces (all under `results/geometric/april/`):**
@@ -227,10 +245,21 @@ python3 scripts/geometric/figures_compare.py  --bags march april     # 4 cross-b
 ```
 - **`figures.py`** needs the 9 checkpoints (it re-renders per-frame panels) and
   every JSON from Stages C/D. Produces `results/geometric/april/final/figures/`
-  (15 PNGs). Runtime ~1–2 minutes. A load-bearing assertion re-checks each
-  per-frame figure against the committed CSV and aborts on any mismatch.
+  (15 PNGs; **13 on june** — see the withholding note below). Runtime ~1–2 minutes.
+  A load-bearing assertion re-checks each per-frame figure against the committed
+  CSV and aborts on any mismatch.
 - **`figures_compare.py`** is data-only (reads the committed JSONs), extends to
   more bags via `--bags march april may …`. Produces `results/geometric/comparison/figures/`.
+
+> **Withheld frames (privacy).** A bag can withhold a whole non-in-row category by setting its frame to
+> `None` in `FRAMES['<bag>']`: `figures.py` skips the figures whose subject it is and renders the
+> mitigation rows with the remaining panels. **June withholds `turn`** — all 40 of its turn frames
+> contain identifiable people (its only turning episode coincides with people walking the row), so
+> figs 6 and 11 are not generated and figs 9/10 render as 2-panel rows: **13 PNGs**, which
+> `check_bag_complete.py` expects via `FIGURE_EXCEPTIONS`. Only the *imagery* is withheld — june's turn
+> statistics still appear in the fig9/fig10 footers and in `mitigation_analysis.json`. March/April/May
+> screened clean. **Screen a new bag's picks for people before curating it** (the COCO backbone
+> `yolo11n-seg.pt`, class 0, over the candidate frames).
 
 > **New bag just finished Stages A–D?** Do both of these in Stage E: (1) render
 > that bag's own 15 figures — `python3 scripts/geometric/figures.py --bag <newbag>`;

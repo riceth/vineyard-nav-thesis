@@ -106,6 +106,17 @@ The **Shows** column is the **working-doc reference** (F-labels + cross-refs, fo
 only — these do **not** appear on the figures). The **verbatim content-language PNG captions** (what a
 marker actually sees) are recorded in **§5a**.
 
+> **Per-bag withholding (added 28 July 2026, additive — the locked set below is unchanged).** The set is
+> 15 for march/april/may. A bag may **withhold** a whole non-in-row category: its frame is set to `None`
+> in `FRAMES['<bag>']`, `figures.py` skips the figures whose *subject* that category is, and the
+> mitigation rows render with the remaining panels. **June withholds `turn`** — all 40 of its turn
+> two_row frames contain identifiable people (june's only turning episode coincides with people walking
+> the row; screened with the COCO `yolo11n-seg` backbone, class 0), so **figs 6 and 11 are not generated
+> for june** and figs 9/10 render as 2-panel rows: **13 PNGs**, the count `check_bag_complete.py` expects
+> for that bag via `FIGURE_EXCEPTIONS`. Only the *imagery* is withheld — june's turn statistics remain in
+> the fig9/fig10 footers and in `mitigation_analysis.json` (F022 turn 69.1 %, F023 turn 70.9 %).
+> March/april/may screened clean and are unaffected. Screen a new bag's picks before curating it.
+
 **In-row (6) — F013 / F017 / F018 / F024:**
 
 | # | File | Shows | Frame(s) |

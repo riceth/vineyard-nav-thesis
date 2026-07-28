@@ -30,6 +30,7 @@ import matplotlib.pyplot as plt
 
 PKG = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PKG)); sys.path.insert(0, str(PKG / "scripts" / "geometric"))
+import cuda_preload  # noqa: E402,F401 — cuDNN cold-init guard; MUST precede torch (D049)
 import torch
 from ultralytics import YOLO
 import albumentations as A
@@ -89,7 +90,7 @@ def frontend(arm, seed, img):
     (uc, v) generation is IDENTICAL to line_fit_infer.py; class is extra draw-only metadata."""
     typ, m = _model(arm, seed)
     if typ == "yolo":
-        r = m.predict(source=img, conf=CONF, half=True, device=0, verbose=False)[0]
+        r = m.predict(source=img, conf=CONF, quantize=16, device=0, verbose=False)[0]
         if r.boxes is None or len(r.boxes) == 0: return []
         xy = r.boxes.xyxy.cpu().numpy(); cl = r.boxes.cls.cpu().numpy().astype(int)
         keep = (xy[:, 2] - xy[:, 0]) * (xy[:, 3] - xy[:, 1]) <= BLOB_FRAC * FRAME_PX * FRAME_PX
@@ -397,10 +398,11 @@ def plot_arm_invariance(bag, frame, seed=42):
 
 
 def plot_mitigation_3up(bag, triples, layer, title, fname, accent=None, footer=None):
-    """triples: [(frame, category, arm), ...] -> a 1x3 image-panel row with verdict subtitles.
+    """triples: [(frame, category, arm), ...] -> a 1xN image-panel row with verdict subtitles.
+    N = len(triples): a bag that WITHHOLDS a category (frame None, see build()) renders the rest.
     accent colours the suptitle (mechanism cue); footer is a one-line summary statistic below the row."""
     c = ctx(bag); HR = c["HR_deg"]; B = resolve(bag, "non_in_row")
-    fig, ax = plt.subplots(1, 3, figsize=(12, 4.4))
+    fig, ax = plt.subplots(1, len(triples), figsize=(4 * len(triples), 4.4), squeeze=False); ax = ax[0]
     for j, (frame, category, arm) in enumerate(triples):
         img = cv2.imread(str(B["frames_dir"] / f"{frame:05d}.jpg")); K = c["kin"][frame]
         base = frontend(arm, 42, img); o = fit_frame(base); assert_csv("non_in_row", B, arm, 42, frame, o)
@@ -574,6 +576,41 @@ FRAMES = {
         "f022_footer": "State gate catches ~92% of spurious non-in-row outputs (100% stationary / ~88% turn / ~80% transition) at 0.4% in-row false-positive · arm-invariant per category · uses odometry only (speed, |v_y|, heading-rate) - no perception input.",
         "f023_footer": "Geometry filter catches ~56-62% via off-nominal geometry at ~8-9% in-row false-positive (canopy - fixed bare-vine thresholds don't transfer) · perception-based, odometry-free (deployment fallback) · cannot resolve clean-geometry turns.",
     },
+    "june": {
+        # Curated 28 Jul 2026 from the June end-to-end run (canopy, second canopy bag). Every caption
+        # number is verified against this bag's own line_fit_per_frame.csv on ARM A (the arm the
+        # mitigation/abstention figures render) + mitigation_analysis.json for the footers; every
+        # non-in-row frame was classified with this module's own category() so each slot matches exactly.
+        # Abstention frame 2026 illustrates june's DOMINANT abstention cause too_few_near_seed (F024,
+        # 63.7% of arm-A single_row frames), verified numerically: the failing side R has 0 of its 3
+        # detections inside the 5 m near-seed window (all beyond -> seen_far_only), while the fitting
+        # side L has 7 (4 near) and fits — the same starvation signature as may's 3006.
+        # turn_blind would have been 10071 — one of only TWO june turn frames the geometry filter still
+        # ACCEPTS (n_base 13, barely clear of the fixed n_base_min 12), so F023's canopy threshold-transfer
+        # failure is visible in the curation itself — but the turn category is withheld, see below.
+        #
+        # TURN CATEGORY WITHHELD (turn / turn_blind / f023_triple[1] = None). June's ONLY turning episode
+        # (frames ~10019-10072) coincides with people walking the row: ALL 40 of its turn two_row frames
+        # contain identifiable individuals (screened with the COCO yolo11n-seg backbone; person 2.3-27%
+        # of frame), so no person-free turn frame exists on this bag. Rather than publish identifiable
+        # faces, figs 6 and 11 are not generated for june and figs 9/10 render as 2-panel rows
+        # (stationary + transition). March/april/may screened CLEAN and are unaffected. Only the IMAGERY
+        # is withheld — june's turn statistics are still reported, in the fig9/fig10 footers and in
+        # mitigation_analysis.json (F022 turn 69.1%, F023 turn 70.9%). The stationary picks were re-drawn
+        # to person-free frames for the same reason (4063 for figs 5/9, 3391 for fig 10; the original
+        # 9974/12942 both contain people).
+        "anatomy": 2140, "arm_invariance": 2095, "mechanism": 2140, "abstention": 2026,
+        "stationary": 4063, "turn": None, "transition": 4052,
+        "f023_triple": (3391, None, 4615), "turn_blind": None,
+        "abstention_caption": ("Right side: 0 detections within the 5 m near-seed window — all 3 lie beyond 5 m (fit needs >=2 near to seed) · left side: 7 detections (4 near), fits\n"
+                               "too_few_near_seed dominates june's in-row abstentions (63.7% of arm-A single_row frames; F024) — under canopy the failing row is typically detected only in the far field (seen_far_only 57.3%), starving the near-field seed"),
+        "f022_footer": ("State gate catches ~65% of spurious non-in-row outputs (100% stationary / ~69% turn / only ~48% transition)\n"
+                        "at 1.1% in-row false-positive · arm-similar (62-65%) · uses odometry only (speed, |v_y|, heading-rate)\n"
+                        "blind to straight-line driving in a non-evaluated corridor — 66% of june's spurious fits · turn panel withheld"),
+        "f023_footer": ("Geometry filter catches ~43-58% via off-nominal geometry but at 23-49% in-row false-positive\n"
+                        "the fixed n_base>=12 threshold now exceeds june's mean in-row base-point count (10.5-12.3), so it discards valid in-row fits\n"
+                        "not usable standalone on this bag · cannot resolve clean-geometry turns · turn panel withheld"),
+    },
 }
 
 
@@ -586,6 +623,14 @@ def build(bag, only=None):
                          f"generating. Known: {sorted(FRAMES)}.")
     fr = FRAMES[bag]
     done = []
+
+    def panels(items):
+        """Drop panels whose frame is None. A bag may WITHHOLD a whole non-in-row category when no
+        publishable frame of it exists (june: every turn frame contains identifiable people — see the
+        june registry entry). The withheld category's STATISTICS are still reported in the footers and
+        in mitigation_analysis.json; only the imagery is withheld."""
+        return [t for t in items if t[0] is not None]
+
     F = {
         "1":  lambda: plot_in_row_frame(bag, fr["anatomy"], "A", anatomy=True, fname=f"fig1_anatomy_{fr['anatomy']}.png"),
         "2":  lambda: plot_arm_invariance(bag, fr["arm_invariance"]),
@@ -600,15 +645,19 @@ def build(bag, only=None):
         "6":  lambda: plot_non_in_row_frame(bag, fr["turn"], "turn", fname=f"fig6_turn_{fr['turn']}.png"),
         "7":  lambda: plot_non_in_row_frame(bag, fr["transition"], "transition", fname=f"fig7_transition_{fr['transition']}.png"),
         "8":  lambda: plot_non_in_row_frame(bag, fr["transition"], "transition", driven=True, fname=f"fig8_driven_path_{fr['transition']}.png"),
-        "9":  lambda: plot_mitigation_3up(bag, [(fr["stationary"], "stationary", "A"), (fr["turn"], "turn", "A"), (fr["transition"], "transition", "A")],
+        "9":  lambda: plot_mitigation_3up(bag, panels([(fr["stationary"], "stationary", "A"), (fr["turn"], "turn", "A"), (fr["transition"], "transition", "A")]),
                                           "f022", "State gate — reject per category (odometry: speed / |v_y| / heading-rate)", "fig9_f022_3up.png",
                                           accent=ACCENT["state"], footer=fr["f022_footer"]),
-        "10": lambda: plot_mitigation_3up(bag, [(fr["f023_triple"][0], "stationary", "A"), (fr["f023_triple"][1], "turn", "A"), (fr["f023_triple"][2], "transition", "A")],
+        "10": lambda: plot_mitigation_3up(bag, panels([(fr["f023_triple"][0], "stationary", "A"), (fr["f023_triple"][1], "turn", "A"), (fr["f023_triple"][2], "transition", "A")]),
                                           "f023", "Geometry filter — off-nominal catches (firing in-row-p99 threshold labelled)", "fig10_f023_3up.png",
                                           accent=ACCENT["geom"], footer=fr["f023_footer"]),
         "11": lambda: plot_mitigation_frame(bag, fr["turn_blind"], "turn", "turn_blind", fname=f"fig11_turn_blind_{fr['turn_blind']}.png"),
         "12": lambda: fig_complementarity(bag),
     }
+    for fig_id, key in (("6", "turn"), ("11", "turn_blind")):    # figures whose SUBJECT is a withheld category
+        if fr.get(key) is None:
+            F.pop(fig_id)
+            print(f"  fig {fig_id:>3} -- WITHHELD (no publishable '{key}' frame for this bag; see FRAMES['{bag}'])")
     ids = [only] if only else list(F)
     for i in ids:
         p = F[i](); done.append((i, p)); print(f"  fig {i:>3} -> {Path(p).relative_to(PKG)}")
