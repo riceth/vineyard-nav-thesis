@@ -1,0 +1,1130 @@
+{
+  "bag": "april",
+  "tail_min_inliers": 60,
+  "n_negatives": 130,
+  "n_in_tail": 30,
+  "tail": [
+    {
+      "scene": "march_color_image_118",
+      "group": "march",
+      "inliers": 127,
+      "frame_pos": 1367,
+      "bag_frame_msg_index": 13670
+    },
+    {
+      "scene": "march_color_image_107",
+      "group": "march",
+      "inliers": 114,
+      "frame_pos": 706,
+      "bag_frame_msg_index": 7060
+    },
+    {
+      "scene": "march_color_image_147",
+      "group": "march",
+      "inliers": 103,
+      "frame_pos": 1579,
+      "bag_frame_msg_index": 15790
+    },
+    {
+      "scene": "march_color_image_146",
+      "group": "march",
+      "inliers": 98,
+      "frame_pos": 1572,
+      "bag_frame_msg_index": 15720
+    },
+    {
+      "scene": "march_color_image_150",
+      "group": "march",
+      "inliers": 96,
+      "frame_pos": 1601,
+      "bag_frame_msg_index": 16010
+    },
+    {
+      "scene": "march_color_image_114",
+      "group": "march",
+      "inliers": 96,
+      "frame_pos": 1338,
+      "bag_frame_msg_index": 13380
+    },
+    {
+      "scene": "march_color_image_163",
+      "group": "march",
+      "inliers": 94,
+      "frame_pos": 1397,
+      "bag_frame_msg_index": 13970
+    },
+    {
+      "scene": "march_color_image_106",
+      "group": "march",
+      "inliers": 82,
+      "frame_pos": 700,
+      "bag_frame_msg_index": 7000
+    },
+    {
+      "scene": "may_color_image_122",
+      "group": "may",
+      "inliers": 77,
+      "frame_pos": 1396,
+      "bag_frame_msg_index": 13960
+    },
+    {
+      "scene": "may_color_image_120",
+      "group": "may",
+      "inliers": 77,
+      "frame_pos": 1379,
+      "bag_frame_msg_index": 13790
+    },
+    {
+      "scene": "may_color_image_121",
+      "group": "may",
+      "inliers": 75,
+      "frame_pos": 1388,
+      "bag_frame_msg_index": 13880
+    },
+    {
+      "scene": "march_color_image_161",
+      "group": "march",
+      "inliers": 74,
+      "frame_pos": 1409,
+      "bag_frame_msg_index": 14090
+    },
+    {
+      "scene": "march_color_image_148",
+      "group": "march",
+      "inliers": 73,
+      "frame_pos": 1586,
+      "bag_frame_msg_index": 15860
+    },
+    {
+      "scene": "march_color_image_44",
+      "group": "march",
+      "inliers": 72,
+      "frame_pos": 241,
+      "bag_frame_msg_index": 2410
+    },
+    {
+      "scene": "march_color_image_179",
+      "group": "march",
+      "inliers": 71,
+      "frame_pos": 1810,
+      "bag_frame_msg_index": 18100
+    },
+    {
+      "scene": "may_color_image_119",
+      "group": "may",
+      "inliers": 71,
+      "frame_pos": 1369,
+      "bag_frame_msg_index": 13690
+    },
+    {
+      "scene": "march_color_image_149",
+      "group": "march",
+      "inliers": 70,
+      "frame_pos": 1594,
+      "bag_frame_msg_index": 15940
+    },
+    {
+      "scene": "march_color_image_123",
+      "group": "march",
+      "inliers": 70,
+      "frame_pos": 1408,
+      "bag_frame_msg_index": 14080
+    },
+    {
+      "scene": "march_color_image_160",
+      "group": "march",
+      "inliers": 69,
+      "frame_pos": 1674,
+      "bag_frame_msg_index": 16740
+    },
+    {
+      "scene": "march_color_image_115",
+      "group": "march",
+      "inliers": 68,
+      "frame_pos": 1345,
+      "bag_frame_msg_index": 13450
+    },
+    {
+      "scene": "march_color_image_152",
+      "group": "march",
+      "inliers": 67,
+      "frame_pos": 1615,
+      "bag_frame_msg_index": 16150
+    },
+    {
+      "scene": "may_color_image_118",
+      "group": "may",
+      "inliers": 67,
+      "frame_pos": 1361,
+      "bag_frame_msg_index": 13610
+    },
+    {
+      "scene": "march_color_image_121",
+      "group": "march",
+      "inliers": 65,
+      "frame_pos": 1693,
+      "bag_frame_msg_index": 16930
+    },
+    {
+      "scene": "march_color_image_48",
+      "group": "march",
+      "inliers": 63,
+      "frame_pos": 270,
+      "bag_frame_msg_index": 2700
+    },
+    {
+      "scene": "march_color_image_159",
+      "group": "march",
+      "inliers": 63,
+      "frame_pos": 1665,
+      "bag_frame_msg_index": 16650
+    },
+    {
+      "scene": "march_color_image_156",
+      "group": "march",
+      "inliers": 63,
+      "frame_pos": 1644,
+      "bag_frame_msg_index": 16440
+    },
+    {
+      "scene": "march_color_image_120",
+      "group": "march",
+      "inliers": 62,
+      "frame_pos": 1389,
+      "bag_frame_msg_index": 13890
+    },
+    {
+      "scene": "march_color_image_124",
+      "group": "march",
+      "inliers": 61,
+      "frame_pos": 1415,
+      "bag_frame_msg_index": 14150
+    },
+    {
+      "scene": "march_color_image_139",
+      "group": "march",
+      "inliers": 61,
+      "frame_pos": 1524,
+      "bag_frame_msg_index": 15240
+    },
+    {
+      "scene": "march_color_image_153",
+      "group": "march",
+      "inliers": 60,
+      "frame_pos": 1622,
+      "bag_frame_msg_index": 16220
+    }
+  ],
+  "all_sorted": [
+    {
+      "scene": "march_color_image_118",
+      "group": "march",
+      "inliers": 127,
+      "frame_pos": 1367,
+      "bag_frame_msg_index": 13670
+    },
+    {
+      "scene": "march_color_image_107",
+      "group": "march",
+      "inliers": 114,
+      "frame_pos": 706,
+      "bag_frame_msg_index": 7060
+    },
+    {
+      "scene": "march_color_image_147",
+      "group": "march",
+      "inliers": 103,
+      "frame_pos": 1579,
+      "bag_frame_msg_index": 15790
+    },
+    {
+      "scene": "march_color_image_146",
+      "group": "march",
+      "inliers": 98,
+      "frame_pos": 1572,
+      "bag_frame_msg_index": 15720
+    },
+    {
+      "scene": "march_color_image_150",
+      "group": "march",
+      "inliers": 96,
+      "frame_pos": 1601,
+      "bag_frame_msg_index": 16010
+    },
+    {
+      "scene": "march_color_image_114",
+      "group": "march",
+      "inliers": 96,
+      "frame_pos": 1338,
+      "bag_frame_msg_index": 13380
+    },
+    {
+      "scene": "march_color_image_163",
+      "group": "march",
+      "inliers": 94,
+      "frame_pos": 1397,
+      "bag_frame_msg_index": 13970
+    },
+    {
+      "scene": "march_color_image_106",
+      "group": "march",
+      "inliers": 82,
+      "frame_pos": 700,
+      "bag_frame_msg_index": 7000
+    },
+    {
+      "scene": "may_color_image_122",
+      "group": "may",
+      "inliers": 77,
+      "frame_pos": 1396,
+      "bag_frame_msg_index": 13960
+    },
+    {
+      "scene": "may_color_image_120",
+      "group": "may",
+      "inliers": 77,
+      "frame_pos": 1379,
+      "bag_frame_msg_index": 13790
+    },
+    {
+      "scene": "may_color_image_121",
+      "group": "may",
+      "inliers": 75,
+      "frame_pos": 1388,
+      "bag_frame_msg_index": 13880
+    },
+    {
+      "scene": "march_color_image_161",
+      "group": "march",
+      "inliers": 74,
+      "frame_pos": 1409,
+      "bag_frame_msg_index": 14090
+    },
+    {
+      "scene": "march_color_image_148",
+      "group": "march",
+      "inliers": 73,
+      "frame_pos": 1586,
+      "bag_frame_msg_index": 15860
+    },
+    {
+      "scene": "march_color_image_44",
+      "group": "march",
+      "inliers": 72,
+      "frame_pos": 241,
+      "bag_frame_msg_index": 2410
+    },
+    {
+      "scene": "march_color_image_179",
+      "group": "march",
+      "inliers": 71,
+      "frame_pos": 1810,
+      "bag_frame_msg_index": 18100
+    },
+    {
+      "scene": "may_color_image_119",
+      "group": "may",
+      "inliers": 71,
+      "frame_pos": 1369,
+      "bag_frame_msg_index": 13690
+    },
+    {
+      "scene": "march_color_image_149",
+      "group": "march",
+      "inliers": 70,
+      "frame_pos": 1594,
+      "bag_frame_msg_index": 15940
+    },
+    {
+      "scene": "march_color_image_123",
+      "group": "march",
+      "inliers": 70,
+      "frame_pos": 1408,
+      "bag_frame_msg_index": 14080
+    },
+    {
+      "scene": "march_color_image_160",
+      "group": "march",
+      "inliers": 69,
+      "frame_pos": 1674,
+      "bag_frame_msg_index": 16740
+    },
+    {
+      "scene": "march_color_image_115",
+      "group": "march",
+      "inliers": 68,
+      "frame_pos": 1345,
+      "bag_frame_msg_index": 13450
+    },
+    {
+      "scene": "march_color_image_152",
+      "group": "march",
+      "inliers": 67,
+      "frame_pos": 1615,
+      "bag_frame_msg_index": 16150
+    },
+    {
+      "scene": "may_color_image_118",
+      "group": "may",
+      "inliers": 67,
+      "frame_pos": 1361,
+      "bag_frame_msg_index": 13610
+    },
+    {
+      "scene": "march_color_image_121",
+      "group": "march",
+      "inliers": 65,
+      "frame_pos": 1693,
+      "bag_frame_msg_index": 16930
+    },
+    {
+      "scene": "march_color_image_48",
+      "group": "march",
+      "inliers": 63,
+      "frame_pos": 270,
+      "bag_frame_msg_index": 2700
+    },
+    {
+      "scene": "march_color_image_159",
+      "group": "march",
+      "inliers": 63,
+      "frame_pos": 1665,
+      "bag_frame_msg_index": 16650
+    },
+    {
+      "scene": "march_color_image_156",
+      "group": "march",
+      "inliers": 63,
+      "frame_pos": 1644,
+      "bag_frame_msg_index": 16440
+    },
+    {
+      "scene": "march_color_image_120",
+      "group": "march",
+      "inliers": 62,
+      "frame_pos": 1389,
+      "bag_frame_msg_index": 13890
+    },
+    {
+      "scene": "march_color_image_124",
+      "group": "march",
+      "inliers": 61,
+      "frame_pos": 1415,
+      "bag_frame_msg_index": 14150
+    },
+    {
+      "scene": "march_color_image_139",
+      "group": "march",
+      "inliers": 61,
+      "frame_pos": 1524,
+      "bag_frame_msg_index": 15240
+    },
+    {
+      "scene": "march_color_image_153",
+      "group": "march",
+      "inliers": 60,
+      "frame_pos": 1622,
+      "bag_frame_msg_index": 16220
+    },
+    {
+      "scene": "march_color_image_154",
+      "group": "march",
+      "inliers": 59,
+      "frame_pos": 1629,
+      "bag_frame_msg_index": 16290
+    },
+    {
+      "scene": "may_color_image_123",
+      "group": "may",
+      "inliers": 51,
+      "frame_pos": 1400,
+      "bag_frame_msg_index": 14000
+    },
+    {
+      "scene": "march_color_image_45",
+      "group": "march",
+      "inliers": 49,
+      "frame_pos": 246,
+      "bag_frame_msg_index": 2460
+    },
+    {
+      "scene": "may_color_image_125",
+      "group": "may",
+      "inliers": 49,
+      "frame_pos": 1415,
+      "bag_frame_msg_index": 14150
+    },
+    {
+      "scene": "march_color_image_162",
+      "group": "march",
+      "inliers": 48,
+      "frame_pos": 1688,
+      "bag_frame_msg_index": 16880
+    },
+    {
+      "scene": "march_color_image_18",
+      "group": "march",
+      "inliers": 47,
+      "frame_pos": 367,
+      "bag_frame_msg_index": 3670
+    },
+    {
+      "scene": "march_color_image_158",
+      "group": "march",
+      "inliers": 47,
+      "frame_pos": 1658,
+      "bag_frame_msg_index": 16580
+    },
+    {
+      "scene": "march_color_image_14",
+      "group": "march",
+      "inliers": 46,
+      "frame_pos": 2171,
+      "bag_frame_msg_index": 21710
+    },
+    {
+      "scene": "march_color_image_105",
+      "group": "march",
+      "inliers": 42,
+      "frame_pos": 690,
+      "bag_frame_msg_index": 6900
+    },
+    {
+      "scene": "march_color_image_172",
+      "group": "march",
+      "inliers": 41,
+      "frame_pos": 1759,
+      "bag_frame_msg_index": 17590
+    },
+    {
+      "scene": "march_color_image_13",
+      "group": "march",
+      "inliers": 36,
+      "frame_pos": 2176,
+      "bag_frame_msg_index": 21760
+    },
+    {
+      "scene": "may_color_image_117",
+      "group": "may",
+      "inliers": 35,
+      "frame_pos": 1354,
+      "bag_frame_msg_index": 13540
+    },
+    {
+      "scene": "march_color_image_122",
+      "group": "march",
+      "inliers": 35,
+      "frame_pos": 1401,
+      "bag_frame_msg_index": 14010
+    },
+    {
+      "scene": "march_color_image_169",
+      "group": "march",
+      "inliers": 32,
+      "frame_pos": 1738,
+      "bag_frame_msg_index": 17380
+    },
+    {
+      "scene": "may_color_image_124",
+      "group": "may",
+      "inliers": 32,
+      "frame_pos": 1408,
+      "bag_frame_msg_index": 14080
+    },
+    {
+      "scene": "march_color_image_157",
+      "group": "march",
+      "inliers": 31,
+      "frame_pos": 1651,
+      "bag_frame_msg_index": 16510
+    },
+    {
+      "scene": "march_color_image_10",
+      "group": "march",
+      "inliers": 30,
+      "frame_pos": 313,
+      "bag_frame_msg_index": 3130
+    },
+    {
+      "scene": "march_color_image_173",
+      "group": "march",
+      "inliers": 26,
+      "frame_pos": 1765,
+      "bag_frame_msg_index": 17650
+    },
+    {
+      "scene": "march_color_image_177",
+      "group": "march",
+      "inliers": 26,
+      "frame_pos": 1796,
+      "bag_frame_msg_index": 17960
+    },
+    {
+      "scene": "march_color_image_119",
+      "group": "march",
+      "inliers": 25,
+      "frame_pos": 1376,
+      "bag_frame_msg_index": 13760
+    },
+    {
+      "scene": "may_color_image_107",
+      "group": "may",
+      "inliers": 25,
+      "frame_pos": 701,
+      "bag_frame_msg_index": 7010
+    },
+    {
+      "scene": "march_color_image_110",
+      "group": "march",
+      "inliers": 25,
+      "frame_pos": 1298,
+      "bag_frame_msg_index": 12980
+    },
+    {
+      "scene": "march_color_image_116",
+      "group": "march",
+      "inliers": 20,
+      "frame_pos": 1351,
+      "bag_frame_msg_index": 13510
+    },
+    {
+      "scene": "march_color_image_132",
+      "group": "march",
+      "inliers": 19,
+      "frame_pos": 1470,
+      "bag_frame_msg_index": 14700
+    },
+    {
+      "scene": "march_color_image_104",
+      "group": "march",
+      "inliers": 19,
+      "frame_pos": 683,
+      "bag_frame_msg_index": 6830
+    },
+    {
+      "scene": "may_color_image_105",
+      "group": "may",
+      "inliers": 19,
+      "frame_pos": 683,
+      "bag_frame_msg_index": 6830
+    },
+    {
+      "scene": "may_color_image_113",
+      "group": "may",
+      "inliers": 17,
+      "frame_pos": 1365,
+      "bag_frame_msg_index": 13650
+    },
+    {
+      "scene": "march_color_image_113",
+      "group": "march",
+      "inliers": 17,
+      "frame_pos": 1946,
+      "bag_frame_msg_index": 19460
+    },
+    {
+      "scene": "march_color_image_176",
+      "group": "march",
+      "inliers": 17,
+      "frame_pos": 1789,
+      "bag_frame_msg_index": 17890
+    },
+    {
+      "scene": "march_color_image_175",
+      "group": "march",
+      "inliers": 16,
+      "frame_pos": 1781,
+      "bag_frame_msg_index": 17810
+    },
+    {
+      "scene": "march_color_image_145",
+      "group": "march",
+      "inliers": 16,
+      "frame_pos": 55,
+      "bag_frame_msg_index": 550
+    },
+    {
+      "scene": "march_color_image_180",
+      "group": "march",
+      "inliers": 16,
+      "frame_pos": 1817,
+      "bag_frame_msg_index": 18170
+    },
+    {
+      "scene": "march_color_image_17",
+      "group": "march",
+      "inliers": 15,
+      "frame_pos": 360,
+      "bag_frame_msg_index": 3600
+    },
+    {
+      "scene": "march_color_image_151",
+      "group": "march",
+      "inliers": 13,
+      "frame_pos": 20,
+      "bag_frame_msg_index": 200
+    },
+    {
+      "scene": "may_color_image_112",
+      "group": "may",
+      "inliers": 13,
+      "frame_pos": 1607,
+      "bag_frame_msg_index": 16070
+    },
+    {
+      "scene": "may_color_image_110",
+      "group": "may",
+      "inliers": 13,
+      "frame_pos": 1320,
+      "bag_frame_msg_index": 13200
+    },
+    {
+      "scene": "march_color_image_155",
+      "group": "march",
+      "inliers": 11,
+      "frame_pos": 1632,
+      "bag_frame_msg_index": 16320
+    },
+    {
+      "scene": "may_color_image_115",
+      "group": "may",
+      "inliers": 11,
+      "frame_pos": 1964,
+      "bag_frame_msg_index": 19640
+    },
+    {
+      "scene": "march_color_image_111",
+      "group": "march",
+      "inliers": 10,
+      "frame_pos": 187,
+      "bag_frame_msg_index": 1870
+    },
+    {
+      "scene": "march_color_image_135",
+      "group": "march",
+      "inliers": 10,
+      "frame_pos": 1494,
+      "bag_frame_msg_index": 14940
+    },
+    {
+      "scene": "march_color_image_184",
+      "group": "march",
+      "inliers": 10,
+      "frame_pos": 519,
+      "bag_frame_msg_index": 5190
+    },
+    {
+      "scene": "march_color_image_183",
+      "group": "march",
+      "inliers": 10,
+      "frame_pos": 132,
+      "bag_frame_msg_index": 1320
+    },
+    {
+      "scene": "march_color_image_102",
+      "group": "march",
+      "inliers": 10,
+      "frame_pos": 132,
+      "bag_frame_msg_index": 1320
+    },
+    {
+      "scene": "march_color_image_108",
+      "group": "march",
+      "inliers": 10,
+      "frame_pos": 1570,
+      "bag_frame_msg_index": 15700
+    },
+    {
+      "scene": "march_color_image_126",
+      "group": "march",
+      "inliers": 10,
+      "frame_pos": 132,
+      "bag_frame_msg_index": 1320
+    },
+    {
+      "scene": "march_color_image_117",
+      "group": "march",
+      "inliers": 9,
+      "frame_pos": 19,
+      "bag_frame_msg_index": 190
+    },
+    {
+      "scene": "march_color_image_164",
+      "group": "march",
+      "inliers": 9,
+      "frame_pos": 1322,
+      "bag_frame_msg_index": 13220
+    },
+    {
+      "scene": "may_color_image_114",
+      "group": "may",
+      "inliers": 9,
+      "frame_pos": 1653,
+      "bag_frame_msg_index": 16530
+    },
+    {
+      "scene": "may_color_image_116",
+      "group": "may",
+      "inliers": 9,
+      "frame_pos": 1981,
+      "bag_frame_msg_index": 19810
+    },
+    {
+      "scene": "march_color_image_144",
+      "group": "march",
+      "inliers": 9,
+      "frame_pos": 45,
+      "bag_frame_msg_index": 450
+    },
+    {
+      "scene": "may_color_image_109",
+      "group": "may",
+      "inliers": 9,
+      "frame_pos": 1365,
+      "bag_frame_msg_index": 13650
+    },
+    {
+      "scene": "may_color_image_111",
+      "group": "may",
+      "inliers": 9,
+      "frame_pos": 1965,
+      "bag_frame_msg_index": 19650
+    },
+    {
+      "scene": "march_color_image_186",
+      "group": "march",
+      "inliers": 9,
+      "frame_pos": 132,
+      "bag_frame_msg_index": 1320
+    },
+    {
+      "scene": "march_color_image_16",
+      "group": "march",
+      "inliers": 9,
+      "frame_pos": 675,
+      "bag_frame_msg_index": 6750
+    },
+    {
+      "scene": "may_color_image_108",
+      "group": "may",
+      "inliers": 9,
+      "frame_pos": 707,
+      "bag_frame_msg_index": 7070
+    },
+    {
+      "scene": "may_color_image_106",
+      "group": "may",
+      "inliers": 8,
+      "frame_pos": 1364,
+      "bag_frame_msg_index": 13640
+    },
+    {
+      "scene": "march_color_image_109",
+      "group": "march",
+      "inliers": 8,
+      "frame_pos": 20,
+      "bag_frame_msg_index": 200
+    },
+    {
+      "scene": "march_color_image_182",
+      "group": "march",
+      "inliers": 8,
+      "frame_pos": 132,
+      "bag_frame_msg_index": 1320
+    },
+    {
+      "scene": "march_color_image_15",
+      "group": "march",
+      "inliers": 8,
+      "frame_pos": 1370,
+      "bag_frame_msg_index": 13700
+    },
+    {
+      "scene": "march_color_image_185",
+      "group": "march",
+      "inliers": 8,
+      "frame_pos": 1377,
+      "bag_frame_msg_index": 13770
+    },
+    {
+      "scene": "march_color_image_166",
+      "group": "march",
+      "inliers": 8,
+      "frame_pos": 2027,
+      "bag_frame_msg_index": 20270
+    },
+    {
+      "scene": "march_color_image_112",
+      "group": "march",
+      "inliers": 8,
+      "frame_pos": 187,
+      "bag_frame_msg_index": 1870
+    },
+    {
+      "scene": "march_color_image_181",
+      "group": "march",
+      "inliers": 8,
+      "frame_pos": 1824,
+      "bag_frame_msg_index": 18240
+    },
+    {
+      "scene": "march_color_image_140",
+      "group": "march",
+      "inliers": 7,
+      "frame_pos": 1531,
+      "bag_frame_msg_index": 15310
+    },
+    {
+      "scene": "march_color_image_167",
+      "group": "march",
+      "inliers": 7,
+      "frame_pos": 1881,
+      "bag_frame_msg_index": 18810
+    },
+    {
+      "scene": "may_color_image_102",
+      "group": "may",
+      "inliers": 7,
+      "frame_pos": 1371,
+      "bag_frame_msg_index": 13710
+    },
+    {
+      "scene": "may_color_image_11",
+      "group": "may",
+      "inliers": 7,
+      "frame_pos": 469,
+      "bag_frame_msg_index": 4690
+    },
+    {
+      "scene": "may_color_image_126",
+      "group": "may",
+      "inliers": 7,
+      "frame_pos": 152,
+      "bag_frame_msg_index": 1520
+    },
+    {
+      "scene": "march_color_image_141",
+      "group": "march",
+      "inliers": 7,
+      "frame_pos": 1655,
+      "bag_frame_msg_index": 16550
+    },
+    {
+      "scene": "march_color_image_143",
+      "group": "march",
+      "inliers": 7,
+      "frame_pos": 2230,
+      "bag_frame_msg_index": 22300
+    },
+    {
+      "scene": "may_color_image_12",
+      "group": "may",
+      "inliers": 6,
+      "frame_pos": 1381,
+      "bag_frame_msg_index": 13810
+    },
+    {
+      "scene": "march_color_image_103",
+      "group": "march",
+      "inliers": 6,
+      "frame_pos": 1866,
+      "bag_frame_msg_index": 18660
+    },
+    {
+      "scene": "march_color_image_171",
+      "group": "march",
+      "inliers": 6,
+      "frame_pos": 2032,
+      "bag_frame_msg_index": 20320
+    },
+    {
+      "scene": "march_color_image_46",
+      "group": "march",
+      "inliers": 6,
+      "frame_pos": 1582,
+      "bag_frame_msg_index": 15820
+    },
+    {
+      "scene": "may_color_image_103",
+      "group": "may",
+      "inliers": 6,
+      "frame_pos": 1371,
+      "bag_frame_msg_index": 13710
+    },
+    {
+      "scene": "march_color_image_142",
+      "group": "march",
+      "inliers": 6,
+      "frame_pos": 2192,
+      "bag_frame_msg_index": 21920
+    },
+    {
+      "scene": "may_color_image_104",
+      "group": "may",
+      "inliers": 6,
+      "frame_pos": 185,
+      "bag_frame_msg_index": 1850
+    },
+    {
+      "scene": "march_color_image_133",
+      "group": "march",
+      "inliers": 6,
+      "frame_pos": 681,
+      "bag_frame_msg_index": 6810
+    },
+    {
+      "scene": "march_color_image_165",
+      "group": "march",
+      "inliers": 6,
+      "frame_pos": 1360,
+      "bag_frame_msg_index": 13600
+    },
+    {
+      "scene": "march_color_image_100",
+      "group": "march",
+      "inliers": 6,
+      "frame_pos": 2023,
+      "bag_frame_msg_index": 20230
+    },
+    {
+      "scene": "may_color_image_100",
+      "group": "may",
+      "inliers": 6,
+      "frame_pos": 1638,
+      "bag_frame_msg_index": 16380
+    },
+    {
+      "scene": "march_color_image_127",
+      "group": "march",
+      "inliers": 6,
+      "frame_pos": 148,
+      "bag_frame_msg_index": 1480
+    },
+    {
+      "scene": "march_color_image_125",
+      "group": "march",
+      "inliers": 6,
+      "frame_pos": 1376,
+      "bag_frame_msg_index": 13760
+    },
+    {
+      "scene": "march_color_image_130",
+      "group": "march",
+      "inliers": 6,
+      "frame_pos": 1558,
+      "bag_frame_msg_index": 15580
+    },
+    {
+      "scene": "march_color_image_138",
+      "group": "march",
+      "inliers": 6,
+      "frame_pos": 1518,
+      "bag_frame_msg_index": 15180
+    },
+    {
+      "scene": "march_color_image_47",
+      "group": "march",
+      "inliers": 6,
+      "frame_pos": 2194,
+      "bag_frame_msg_index": 21940
+    },
+    {
+      "scene": "march_color_image_49",
+      "group": "march",
+      "inliers": 6,
+      "frame_pos": 2193,
+      "bag_frame_msg_index": 21930
+    },
+    {
+      "scene": "march_color_image_137",
+      "group": "march",
+      "inliers": 6,
+      "frame_pos": 1871,
+      "bag_frame_msg_index": 18710
+    },
+    {
+      "scene": "march_color_image_168",
+      "group": "march",
+      "inliers": 5,
+      "frame_pos": 2029,
+      "bag_frame_msg_index": 20290
+    },
+    {
+      "scene": "march_color_image_134",
+      "group": "march",
+      "inliers": 5,
+      "frame_pos": 2034,
+      "bag_frame_msg_index": 20340
+    },
+    {
+      "scene": "march_color_image_174",
+      "group": "march",
+      "inliers": 5,
+      "frame_pos": 2192,
+      "bag_frame_msg_index": 21920
+    },
+    {
+      "scene": "may_color_image_101",
+      "group": "may",
+      "inliers": 5,
+      "frame_pos": 1658,
+      "bag_frame_msg_index": 16580
+    },
+    {
+      "scene": "march_color_image_129",
+      "group": "march",
+      "inliers": 5,
+      "frame_pos": 1876,
+      "bag_frame_msg_index": 18760
+    },
+    {
+      "scene": "may_color_image_10",
+      "group": "may",
+      "inliers": 5,
+      "frame_pos": 469,
+      "bag_frame_msg_index": 4690
+    },
+    {
+      "scene": "march_color_image_101",
+      "group": "march",
+      "inliers": 5,
+      "frame_pos": 1623,
+      "bag_frame_msg_index": 16230
+    },
+    {
+      "scene": "march_color_image_170",
+      "group": "march",
+      "inliers": 5,
+      "frame_pos": 2192,
+      "bag_frame_msg_index": 21920
+    },
+    {
+      "scene": "march_color_image_136",
+      "group": "march",
+      "inliers": 5,
+      "frame_pos": 1874,
+      "bag_frame_msg_index": 18740
+    },
+    {
+      "scene": "march_color_image_178",
+      "group": "march",
+      "inliers": 5,
+      "frame_pos": 1876,
+      "bag_frame_msg_index": 18760
+    },
+    {
+      "scene": "march_color_image_128",
+      "group": "march",
+      "inliers": 5,
+      "frame_pos": 1908,
+      "bag_frame_msg_index": 19080
+    },
+    {
+      "scene": "march_color_image_131",
+      "group": "march",
+      "inliers": 5,
+      "frame_pos": 1596,
+      "bag_frame_msg_index": 15960
+    }
+  ]
+}

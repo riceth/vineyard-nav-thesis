@@ -11,7 +11,7 @@ detection with its confidence; higher thresholds are obtained by filtering. This
 is exact — NMS never lets a lower-confidence box suppress a higher-confidence one,
 so {detections with conf>=t that survive NMS over conf>=0.10} == {... over conf>=t}.
 
-Precision matches training/eval (half=True, D029).
+Precision matches training/eval (quantize=16 / FP16, D029).
 """
 
 from __future__ import annotations
@@ -66,7 +66,7 @@ def main() -> None:
 
     # Per-image: (list of (conf, polygon)), GT mask. One predict pass at sweep_min.
     per_image = []
-    for r in model.predict(source=str(images_dir), conf=sweep_min, half=True,
+    for r in model.predict(source=str(images_dir), conf=sweep_min, quantize=16,
                            device=device, verbose=False, stream=True):
         h, w = r.orig_shape
         confs = r.boxes.conf.cpu().numpy() if r.boxes is not None else np.array([])
@@ -106,7 +106,7 @@ def main() -> None:
     ax.grid(alpha=.3); ax.legend()
     fig.tight_layout(); fig.savefig(RUN_DIR / f"val_conf_sweep{suffix}.png", dpi=120)
 
-    print(f"Phase B conf sweep on val (n={n} scenes), half=True | grid={grid}")
+    print(f"Phase B conf sweep on val (n={n} scenes), quantize=16 (FP16) | grid={grid}")
     print(f"  {'conf':>6}  {'mean val fg IoU':>16}")
     for t in grid:
         mark = "  <- conf*" if t == conf_star else ""

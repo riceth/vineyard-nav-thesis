@@ -156,7 +156,8 @@ def contamination_census(B) -> dict:
     # 4. D048 gate — attribute the 90 unattributed `color_image_*` scenes to THIS bag (reuses the
     #    coarse bank for shortlisting). present (>=200) folded into the exclusion set below;
     #    needs_review (40-200) recorded and BLOCKS CP-1; absent (<=40) recorded only.
-    gate_rows = SA.gate(bank, coarse_idx, ids, cur, SA.unattributed_scenes())
+    gate_rows = SA.gate(bank, coarse_idx, ids, cur, SA.unattributed_scenes(), fine_half=FINE)
+    SA.apply_confirmations(gate_rows, SA.load_confirmations(OUT), log=print)   # residual band -> human record
     present = sorted((r for r in gate_rows if r["verdict"] == "present"), key=lambda r: r["bag_frame"])
     needs_review = sorted((r for r in gate_rows if r["verdict"] == "needs_review"),
                           key=lambda r: -r["inliers"])
@@ -209,9 +210,11 @@ def contamination_census(B) -> dict:
                                 "shortlist_k": SA.SHORTLIST_K, "orb_nfeatures": SA.ORB_N,
                                 "match_res": SA.MATCH_RES, "lowe": SA.LOWE, "ransac_px": SA.RANSAC_PX}},
             "note": ("prefix scenes: full-stream search, low-confidence (corr<0.60) matches "
-                     "visually spot-checked and verified correct. D048 gate: the 90 unattributed "
-                     "scenes scored by ORB+RANSAC identity; present (>=200) folded into exclusions, "
-                     "needs_review (40-200) blocks CP-1, absent (<=40) recorded only."),
+                     "visually spot-checked and verified correct. D048 gate (two-stage): the 90 "
+                     "unattributed scenes scored by coarse ORB+RANSAC identity; needs_review (40-200) "
+                     "auto-fine-verified (full-res +/-30 frames) then finalised by d048_confirmed.json; "
+                     "present (>=200) folded into exclusions, absent (<=40) recorded, any unconfirmed "
+                     "residual blocks CP-1."),
         },
         "status": ("needs_review" if needs_review else "clear"),
         "summary": {

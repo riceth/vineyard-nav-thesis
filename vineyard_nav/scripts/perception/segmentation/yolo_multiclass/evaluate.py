@@ -125,7 +125,7 @@ def evaluate(run_dir: Path, split: str, weights: str, save_predictions: bool,
         res = model.val(data=str(y), split=split_key, project=str(tmp),
                         name=f"val_{tag}", device=device, plots=False,
                         verbose=False, save_json=False, workers=0,
-                        half=True)   # FP16 to match training-time AMP validation (D029)
+                        quantize=16)   # FP16 to match training-time AMP validation (D029)
         return metric_block(res)
 
     try:
@@ -150,7 +150,7 @@ def evaluate(run_dir: Path, split: str, weights: str, save_predictions: bool,
         pred_dir.mkdir(parents=True, exist_ok=True)
         labels_dir = YOLO_DATA / "labels" / split_key
         rows: List[dict] = []
-        for r in model.predict(source=str(images_dir), conf=predict_conf, half=True,
+        for r in model.predict(source=str(images_dir), conf=predict_conf, quantize=16,
                                device=device, verbose=False, stream=True):
             fn = Path(r.path).name
             stem = Path(fn).stem

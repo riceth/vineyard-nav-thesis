@@ -87,7 +87,7 @@ def main():
 
         a_mask = unet_mask(unet, rgb, device)
 
-        r = yolo.predict(source=str(img_path), conf=CONF, half=True, device=0
+        r = yolo.predict(source=str(img_path), conf=CONF, quantize=16, device=0
                          if device.type == "cuda" else "cpu", verbose=False)[0]
         b_polys = list(r.masks.xy) if r.masks is not None else []
         b_mask = polygons_to_mask(b_polys, h, w)

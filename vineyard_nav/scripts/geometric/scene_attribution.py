@@ -51,6 +51,7 @@ GROUPS = ("march", "april", "may", "june", "july", "september")
 # --- three-band decision thresholds (LOCKED, D048) ---
 T_ABSENT = 40          # ≤ this → absent
 T_PRESENT = 200        # ≥ this → present (exclude)
+FINE_HALF = 30         # fine-verify: full-res ±this-many-frames non-strided search around a coarse hit
 
 _orb = cv2.ORB_create(nfeatures=ORB_N)
 _bf = cv2.BFMatcher(cv2.NORM_HAMMING)
@@ -105,6 +106,21 @@ def decode_gray(cur, msg_id: int) -> np.ndarray:
     return cv2.resize(im, (MATCH_RES, MATCH_RES))
 
 
+def fine_verify(sorb, center_idx: int, ids: list[int], cur, half: int = FINE_HALF) -> int:
+    """Max ORB+RANSAC inliers over the full-res ±`half`-frame neighbourhood (NON-strided) of a coarse
+    hit. The coarse bank strides by COARSE, so a true member's exact source frame is usually skipped
+    -> its best coarse match is a near-neighbour with a moderate (needs_review) score. Decoding every
+    frame within ±half recovers the true frame (a genuine member jumps past T_PRESENT; a look-alike
+    from another session stays down). Validated O019 (one_time/scene_attribution_fineverify.py),
+    promoted into the production gate on the june bag (D048 two-stage rule)."""
+    kpS, desS = sorb
+    lo, hi = max(0, center_idx - half), min(len(ids) - 1, center_idx + half)
+    best = 0
+    for j in range(lo, hi + 1):
+        best = max(best, inliers(kpS, desS, *orb_of(decode_gray(cur, ids[j]))))
+    return best
+
+
 def scene_table() -> dict[str, tuple[str, str]]:
     """base scene → (group, first image path). group = march|…|september|unattributed."""
     files: dict[str, list[str]] = collections.defaultdict(list)
@@ -125,7 +141,7 @@ def unattributed_scenes() -> dict[str, str]:
 
 
 def gate(bank: np.ndarray, coarse_idx: list[int], ids: list[int], cur,
-         scenes: dict[str, str], log=print) -> list[dict]:
+         scenes: dict[str, str], fine_half: int = FINE_HALF, log=print) -> list[dict]:
     """Score each scene against one bag and return per-scene attribution rows.
 
     Reuses the caller's CP-0 coarse bank for shortlisting (recall), then ORB-verifies the
@@ -159,11 +175,50 @@ def gate(bank: np.ndarray, coarse_idx: list[int], ids: list[int], cur,
             n = inliers(kpS, desS, *forb[int(p)])
             if n > best_n:
                 best_n, best_pos = n, int(p)
-        rows.append({"scene": b, "inliers": best_n,
-                     "bag_frame": coarse_idx[best_pos] if best_pos >= 0 else -1,
-                     "verdict": classify(best_n)})
+        bag_frame = coarse_idx[best_pos] if best_pos >= 0 else -1
+        rows.append({"scene": b, "coarse_inliers": best_n, "inliers": best_n,
+                     "bag_frame": bag_frame, "verdict": classify(best_n)})
+
+    # Stage 2 (D048 two-stage rule, promoted on june): fine-verify ONLY the needs_review band. The
+    # coarse stride skips true members' exact frames, so a moderate coarse score is usually a
+    # near-neighbour; the full-res ±fine_half search recovers the true frame (genuine member ->
+    # present; same-vineyard look-alike -> stays down). No cost when the band is empty.
+    nr = [r for r in rows if r["verdict"] == "needs_review" and r["bag_frame"] >= 0]
+    if nr:
+        log(f"    D048 fine-verify: {len(nr)} needs_review scene(s) (full-res ±{fine_half} frames each) ...")
+        for r in nr:
+            r["fine_inliers"] = fine_verify(sorb[r["scene"]], r["bag_frame"], ids, cur, fine_half)
+            r["inliers"] = max(r["coarse_inliers"], r["fine_inliers"])
+            r["verdict"] = classify(r["inliers"])
+        log(f"    D048 fine-verify: {sum(r['verdict']=='present' for r in nr)}/{len(nr)} recovered to "
+            f"present; {sum(r['verdict']=='needs_review' for r in nr)} still needs_review")
+
     rows.sort(key=lambda r: r["inliers"], reverse=True)
     counts = collections.Counter(r["verdict"] for r in rows)
     log(f"    D048 gate: {len(rows)} unattributed scenes -> "
         f"{counts['present']} present, {counts['needs_review']} needs_review, {counts['absent']} absent")
     return rows
+
+
+def load_confirmations(census_path) -> dict:
+    """Human present/absent decisions for scenes still in needs_review after fine-verify, read from
+    `d048_confirmed.json` beside the bag's census: {scene: "present"|"absent"} (keys starting with
+    '_' are ignored as notes). Missing file -> {}. The auditable record of the visual-review step."""
+    p = Path(census_path).parent / "d048_confirmed.json"
+    return {k: v for k, v in json.load(open(p)).items() if not k.startswith("_")} if p.exists() else {}
+
+
+def apply_confirmations(rows: list[dict], confirmed: dict, log=print) -> None:
+    """Finalise residual needs_review rows IN PLACE from the confirmations. A confirmed scene takes
+    'present'/'absent' (marked confirmed_by); an UNconfirmed residual stays needs_review and still
+    BLOCKS CP-1 (fail-closed)."""
+    resid = [r for r in rows if r["verdict"] == "needs_review"]
+    for r in resid:
+        v = confirmed.get(r["scene"])
+        if v in ("present", "absent"):
+            r["verdict"] = v
+            r["confirmed_by"] = "d048_confirmed.json"
+    left = [r["scene"] for r in rows if r["verdict"] == "needs_review"]
+    if resid:
+        log(f"    D048 confirmations: {len(resid)-len(left)}/{len(resid)} residual resolved from "
+            f"d048_confirmed.json; {len(left)} unconfirmed" + (f" -> {left}" if left else ""))

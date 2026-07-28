@@ -16,7 +16,7 @@ FR = PKG / "results/runs/geom_cp1_frames_640"; MAN = json.load(open(PKG/"results
 model = YOLO(str(PKG / "results/runs/phase_c_yolo_multiclass/weights/best.pt"))
 
 def project(img):
-    r = model.predict(source=img, conf=CONF, half=True, device=0, verbose=False)[0]
+    r = model.predict(source=img, conf=CONF, quantize=16, device=0, verbose=False)[0]
     L, R = [], []
     if r.boxes is not None and len(r.boxes):
         xy=r.boxes.xyxy.cpu().numpy(); ar=(xy[:,2]-xy[:,0])*(xy[:,3]-xy[:,1])

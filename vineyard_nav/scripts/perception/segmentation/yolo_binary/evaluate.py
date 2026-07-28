@@ -120,8 +120,8 @@ def evaluate(run_dir: Path, split: str, weights: str, save_predictions: bool,
         res = model.val(data=str(y), split=split_key, project=str(tmp),
                         name=f"val_{tag}", device=device, plots=False,
                         verbose=False, save_json=False, workers=0,   # 64 MB /dev/shm
-                        half=True)   # FP16 to match training-time AMP validation
-        # (verified: half=True reproduces the training epoch-86 val mask mAP@50
+                        quantize=16)   # FP16 to match training-time AMP validation
+        # (verified: this FP16 setting reproduces the training epoch-86 val mask mAP@50
         #  0.629; FP32 gives 0.603. AMP-consistent eval, matches D004/training.)
         return metric_block(res)
 
@@ -151,7 +151,7 @@ def evaluate(run_dir: Path, split: str, weights: str, save_predictions: bool,
         rows: List[dict] = []
         # One deterministic predict pass at the operating-point confidence. Rasterise
         # predicted instance masks -> binary foreground; compare to GT binary mask.
-        for r in model.predict(source=str(images_dir), conf=predict_conf, half=True,
+        for r in model.predict(source=str(images_dir), conf=predict_conf, quantize=16,
                                device=device, verbose=False, stream=True):
             fn = Path(r.path).name
             stem = Path(fn).stem

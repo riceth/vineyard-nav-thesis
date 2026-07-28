@@ -92,7 +92,7 @@ def bin_centre(L, R, lo, hi):
 def process_frame(img, model):
     """Run one frame through the locked pipeline. Returns a result dict with
     'cls' in {two_row, single_row, none} plus offset/heading when available."""
-    r = model.predict(source=img, conf=CONF, half=True, device=0, verbose=False)[0]
+    r = model.predict(source=img, conf=CONF, quantize=16, device=0, verbose=False)[0]
     if r.boxes is None or len(r.boxes) == 0:
         return {"cls": "none", "blob_dropped": 0, "nL": 0, "nR": 0}
     xyxy = r.boxes.xyxy.cpu().numpy()

@@ -24,6 +24,7 @@ import numpy as np, cv2
 
 PKG = Path(__file__).resolve().parents[3]                     # one_time/ adds a level: geometric/one_time/<file>
 sys.path.insert(0, str(PKG)); sys.path.insert(0, str(PKG / "scripts" / "geometric"))
+import cuda_preload  # noqa: E402,F401 — cuDNN cold-init guard; MUST precede torch (D049)
 import torch
 from ultralytics import YOLO
 import albumentations as A
@@ -74,7 +75,7 @@ for ln in Path(B["per_frame_csv"]).read_text().splitlines()[1:]:
 
 # ---------------- base-point cache (inference once; NEAR-independent) ----------------
 def yolo_base(model, img):
-    r = model.predict(source=img, conf=CONF, half=True, device=0, verbose=False)[0]
+    r = model.predict(source=img, conf=CONF, quantize=16, device=0, verbose=False)[0]
     if r.boxes is None or len(r.boxes) == 0: return []
     xy = r.boxes.xyxy.cpu().numpy()
     ar = (xy[:, 2] - xy[:, 0]) * (xy[:, 3] - xy[:, 1])

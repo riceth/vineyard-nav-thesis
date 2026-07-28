@@ -40,7 +40,7 @@ def main():
     gt = polygons_to_mask(yolo_lines_to_polygons(
         (YD / "labels/test" / f"{stem}.txt").read_text().splitlines(), w, h), h, w).astype(bool)
 
-    r = YOLO(str(RUN / "weights/best.pt")).predict(source=str(p), conf=CONF, half=True,
+    r = YOLO(str(RUN / "weights/best.pt")).predict(source=str(p), conf=CONF, quantize=16,
                                                    device=0 if torch.cuda.is_available() else "cpu",
                                                    verbose=False)[0]
     confs = r.boxes.conf.cpu().numpy(); clss = r.boxes.cls.cpu().numpy().astype(int)

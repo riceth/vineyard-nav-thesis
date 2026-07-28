@@ -1,0 +1,95 @@
+{
+  "bag": "april",
+  "T_high": 200,
+  "half": 30,
+  "april_positives_coarse": [
+    {
+      "scene": "april_color_image_104",
+      "coarse": 68,
+      "best_idx": 15930
+    },
+    {
+      "scene": "april_color_image_103",
+      "coarse": 79,
+      "best_idx": 7200
+    },
+    {
+      "scene": "april_color_image_110",
+      "coarse": 324,
+      "best_idx": 13490
+    },
+    {
+      "scene": "april_color_image_100",
+      "coarse": 401,
+      "best_idx": 6940
+    },
+    {
+      "scene": "april_color_image_119",
+      "coarse": 520,
+      "best_idx": 14190
+    },
+    {
+      "scene": "april_color_image_106",
+      "coarse": 568,
+      "best_idx": 13190
+    },
+    {
+      "scene": "april_color_image_116",
+      "coarse": 659,
+      "best_idx": 16930
+    },
+    {
+      "scene": "april_color_image_101",
+      "coarse": 706,
+      "best_idx": 7020
+    },
+    {
+      "scene": "april_color_image_115",
+      "coarse": 768,
+      "best_idx": 13900
+    },
+    {
+      "scene": "april_color_image_114",
+      "coarse": 769,
+      "best_idx": 13810
+    }
+  ],
+  "checks": [
+    {
+      "kind": "weak_positive",
+      "scene": "april_color_image_104",
+      "coarse": 68,
+      "fine": 72,
+      "verdict": "absent",
+      "expected": "recover>=200",
+      "as_expected": false
+    },
+    {
+      "kind": "tail_negative",
+      "scene": "march_color_image_118",
+      "coarse": 127,
+      "fine": 127,
+      "verdict": "absent",
+      "expected": "stay<200",
+      "as_expected": true
+    },
+    {
+      "kind": "tail_negative",
+      "scene": "march_color_image_107",
+      "coarse": 114,
+      "fine": 126,
+      "verdict": "absent",
+      "expected": "stay<200",
+      "as_expected": true
+    },
+    {
+      "kind": "tail_negative",
+      "scene": "march_color_image_147",
+      "coarse": 103,
+      "fine": 103,
+      "verdict": "absent",
+      "expected": "stay<200",
+      "as_expected": true
+    }
+  ]
+}

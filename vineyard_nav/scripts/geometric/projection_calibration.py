@@ -73,6 +73,7 @@ _LIMITATION = (
 
 def _validate():
     import cv2
+    import cuda_preload  # noqa: F401 — cuDNN cold-init guard; MUST precede torch (D049)
     from ultralytics import YOLO
     import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
     PKG = Path(__file__).resolve().parents[2]; GIT = Path(__file__).resolve().parents[3]
@@ -91,7 +92,7 @@ def _validate():
     widths, plotted = [], 0
     for fi in samp:
         img = cv2.imread(str(FR / f"{fi:05d}.jpg"))
-        r = model.predict(source=img, conf=0.25, half=True, device=0, verbose=False)[0]
+        r = model.predict(source=img, conf=0.25, quantize=16, device=0, verbose=False)[0]
         if r.boxes is None or len(r.boxes) == 0:
             continue
         L, R = [], []

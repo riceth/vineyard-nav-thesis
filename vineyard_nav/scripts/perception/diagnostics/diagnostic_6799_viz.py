@@ -54,7 +54,7 @@ def main():
         h, w).astype(bool)
 
     r = YOLO(str(RUN / "weights/best.pt")).predict(
-        source=str(img_path), conf=CONF, half=True,
+        source=str(img_path), conf=CONF, quantize=16,
         device=0 if torch.cuda.is_available() else "cpu", verbose=False)[0]
     confs = r.boxes.conf.cpu().numpy()
     dets = []

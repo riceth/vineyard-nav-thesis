@@ -11,6 +11,7 @@ import sys, json
 from pathlib import Path
 import numpy as np, cv2
 PKG = Path(__file__).resolve().parents[2]; sys.path.insert(0, str(PKG / "scripts" / "geometric"))
+import cuda_preload  # noqa: E402,F401 — cuDNN cold-init guard; MUST precede torch (D049)
 import torch; torch.multiprocessing.set_sharing_strategy("file_system")
 from ultralytics import YOLO
 from cp3_geometry import CONF, BLOB_FRAC, FRAME_PX
@@ -40,7 +41,7 @@ for seed, sub in PATHS.items():
     ndet = nblob = nnear = 0; blobfr = set(); nearfr = set(); maxfrac = 0.0
     for fi in frames:
         img = cv2.imread(str(FR / f"{fi:05d}.jpg"))
-        r = model.predict(source=img, conf=CONF, half=True, device=0, verbose=False)[0]
+        r = model.predict(source=img, conf=CONF, quantize=16, device=0, verbose=False)[0]
         if r.boxes is None or len(r.boxes) == 0: continue
         xy = r.boxes.xyxy.cpu().numpy(); cl = r.boxes.cls.cpu().numpy().astype(int)
         ar = (xy[:, 2] - xy[:, 0]) * (xy[:, 3] - xy[:, 1])

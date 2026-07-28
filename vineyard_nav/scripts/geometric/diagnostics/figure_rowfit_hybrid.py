@@ -68,7 +68,7 @@ def project_side(pts):
     return (np.array(L) if L else np.empty((0, 2))), (np.array(R) if R else np.empty((0, 2)))
 
 def yolo_base(model, img):
-    r = model.predict(source=img, conf=CONF, half=True, device=0, verbose=False)[0]
+    r = model.predict(source=img, conf=CONF, quantize=16, device=0, verbose=False)[0]
     if r.boxes is None or len(r.boxes) == 0: return []
     xy = r.boxes.xyxy.cpu().numpy(); ar = (xy[:,2]-xy[:,0])*(xy[:,3]-xy[:,1])
     return [((x1+x2)/2, y2) for (x1,y1,x2,y2) in xy[ar <= BLOB_FRAC*FRAME_PX*FRAME_PX]]

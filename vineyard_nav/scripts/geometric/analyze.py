@@ -537,6 +537,7 @@ def single_row_analysis(B):
     """In-row ABSTENTION analysis (F024) -> single_row_analysis.json. Re-runs the front-end on the
     single_row frames to recover why the second row side was rejected (mirrors line_fit_infer.py)."""
     import cv2
+    import cuda_preload  # noqa: F401 — cuDNN cold-init guard; MUST precede torch (D049)
     import torch
     from ultralytics import YOLO
     import albumentations as A
@@ -573,7 +574,7 @@ def single_row_analysis(B):
         if cls == "single_row": sr_frames[k].append(int(i))
 
     def yolo_base(model, img):
-        r = model.predict(source=img, conf=CONF, half=True, device=0, verbose=False)[0]
+        r = model.predict(source=img, conf=CONF, quantize=16, device=0, verbose=False)[0]
         if r.boxes is None or len(r.boxes) == 0: return []
         xy = r.boxes.xyxy.cpu().numpy()
         ar = (xy[:, 2] - xy[:, 0]) * (xy[:, 3] - xy[:, 1])

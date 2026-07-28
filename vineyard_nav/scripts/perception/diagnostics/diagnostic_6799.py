@@ -51,7 +51,7 @@ def fg_iou(pred, gt):
 
 def detections(model, fn, conf):
     p = (YOLO_DATA / "images" / "test" / fn).resolve()
-    r = model.predict(source=str(p), conf=conf, half=True,
+    r = model.predict(source=str(p), conf=conf, quantize=16,
                       device=0 if torch.cuda.is_available() else "cpu",
                       verbose=False)[0]
     dets = []

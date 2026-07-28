@@ -45,7 +45,7 @@ def main():
     idir, ldir = YD / "images/val", YD / "labels/val"
 
     per_image = []
-    for r in model.predict(source=str(idir), conf=min(GRID), half=True,
+    for r in model.predict(source=str(idir), conf=min(GRID), quantize=16,
                            device=device, verbose=False, stream=True):
         h, w = r.orig_shape
         confs = r.boxes.conf.cpu().numpy() if r.boxes is not None else np.array([])
@@ -87,7 +87,7 @@ def main():
     ax.grid(alpha=.3); ax.legend()
     fig.tight_layout(); fig.savefig(RUN / "val_conf_sweep_median.png", dpi=130)
 
-    print(f"Median-based conf sweep on val (n={n}), half=True")
+    print(f"Median-based conf sweep on val (n={n}), quantize=16 (FP16)")
     print(f"  {'conf':>6}{'mean':>10}{'median':>10}{'catastrophic(<0.1)':>20}")
     for t in GRID:
         print(f"  {t:>6.2f}{rows[t]['mean']:>10.4f}{rows[t]['median']:>10.4f}"

@@ -19,6 +19,7 @@ import cv2
 PKG = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PKG))
 sys.path.insert(0, str(PKG / "scripts" / "geometric"))
+import cuda_preload  # noqa: E402,F401 — cuDNN cold-init guard; MUST precede torch (D049)
 import torch
 torch.multiprocessing.set_sharing_strategy("file_system")
 from ultralytics import YOLO
@@ -54,7 +55,7 @@ FRAMES = frames_for_scope(MAN, B["scope"])   # eligible (in-row) or non_in_row (
 
 
 def yolo_base(model, img):
-    r = model.predict(source=img, conf=CONF, half=True, device=0, verbose=False)[0]
+    r = model.predict(source=img, conf=CONF, quantize=16, device=0, verbose=False)[0]
     if r.boxes is None or len(r.boxes) == 0:
         return []
     xy = r.boxes.xyxy.cpu().numpy()

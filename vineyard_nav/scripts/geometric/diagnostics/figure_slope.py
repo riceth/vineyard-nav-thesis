@@ -15,7 +15,7 @@ FR = PKG / "results/runs/geom_cp1_frames_640"
 model = YOLO(str(PKG / "results/runs/phase_c_yolo_multiclass/weights/best.pt"))
 
 def base(img):
-    r = model.predict(source=img, conf=CONF, half=True, device=0, verbose=False)[0]
+    r = model.predict(source=img, conf=CONF, quantize=16, device=0, verbose=False)[0]
     if r.boxes is None or len(r.boxes)==0: return []
     xy=r.boxes.xyxy.cpu().numpy(); ar=(xy[:,2]-xy[:,0])*(xy[:,3]-xy[:,1])
     return [((x1+x2)/2,y2) for (x1,y1,x2,y2) in xy[ar<=BLOB_FRAC*FRAME_PX*FRAME_PX]]

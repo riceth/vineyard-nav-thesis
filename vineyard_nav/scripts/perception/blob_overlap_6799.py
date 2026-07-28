@@ -3,7 +3,7 @@
 
 Regenerates the cross-arm / cross-seed blob-geometry comparison on test scene
 color_image_6799: for each supplied run, predicts 6799 with that run's LOCKED
-weights/best.pt at conf 0.25 (half=True, D029), takes the largest-area instance
+weights/best.pt at conf 0.25 (quantize=16 / FP16, D029), takes the largest-area instance
 mask (the blob when present), then computes pairwise mask IoU, centroid distance,
 bounding boxes, and mutual coverage across all runs. Writes overlay PNGs and a
 JSON summary to results/runs/phase_c_blob_overlap_6799/.
@@ -38,7 +38,7 @@ DEFAULT_RUNS = ["phase_b_yolo_binary", "phase_b_yolo_binary_seed43",
 def largest_mask(run: str, rgb, h, w):
     """Largest-area instance mask from run/weights/best.pt on 6799 at conf 0.25."""
     r = YOLO(str(REPO / "results/runs" / run / "weights/best.pt")).predict(
-        source=str(IMG.resolve()), conf=CONF, half=True,
+        source=str(IMG.resolve()), conf=CONF, quantize=16,
         device=0 if torch.cuda.is_available() else "cpu", verbose=False)[0]
     masks = [polygons_to_mask([poly], h, w).astype(bool) for poly in r.masks.xy]
     m = max(masks, key=lambda a: int(a.sum()))
