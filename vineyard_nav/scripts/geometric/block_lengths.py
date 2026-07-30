@@ -105,6 +105,18 @@ def _mean_spacing(rows):
     return float(np.mean(sps)) if sps else 0.05
 
 
+# D053 — CI reliability guard. `decorr` is the first distance-lag at which the paired-difference
+# autocorrelation drops below `thr`; it therefore cannot be located more finely than the spacing of
+# the paired samples themselves. When there are too few samples per decorrelation length the first
+# bin already sits at or beyond the crossing, so `decorr` is returned as a lower bound, L is
+# under-estimated, and the resulting CIs are ANTI-CONSERVATIVE (too narrow). The strand-wide L is
+# already the max across pairs, which protects a single sparse pair (april's B-C sits at 0.98 and is
+# carried by A-B's 11); that protection fails only when every pair is sparse at once, as on july2023.
+# Threshold calibrated on the committed bags: the pair that SETS each strand-wide L scores 4.61-18.69
+# there, against july2023's 1.09 / 1.91 — so 3.0 separates with margin on both sides.
+MIN_SAMPLES_PER_DECORR = 3.0
+
+
 def pooled_block_lengths(per_frame_csv, man, thr=0.1, maxd=3.0, bw=0.15, fallback=1.5):
     """Return {"L_GT1", "L_GT2", "threshold", "reduction", "fallback_m", "per_pair"}.
 
@@ -126,13 +138,27 @@ def pooled_block_lengths(per_frame_csv, man, thr=0.1, maxd=3.0, bw=0.15, fallbac
             dd = _decorr(centres, ac, thr)
             block_m = 2 * (dd if dd else fallback)
             L = max(2, int(round(block_m / sp)))
+            spd = (dd / sp) if dd else None          # paired samples per decorrelation length (D053)
             entry[name] = {"decorr_m": dd, "used_fallback": dd is None,
-                           "block_m": round(block_m, 3), "L": L}
-            store.append(L)
+                           "block_m": round(block_m, 3), "L": L,
+                           "samples_per_decorr": round(spd, 2) if spd is not None else None,
+                           "resolution_limited": bool(spd is not None and spd < MIN_SAMPLES_PER_DECORR)}
+            store.append((L, spd))
         per_pair[f"{x}-{y}"] = entry
-    return {"L_GT1": int(max(L1s)), "L_GT2": int(max(L2s)),
+    # the pair that SETS each strand-wide L is the one whose reliability governs that metric
+    win1 = max(L1s, key=lambda t: t[0])
+    win2 = max(L2s, key=lambda t: t[0])
+    def _rel(w):
+        # a fallback decorr (None) means the crossing lies beyond maxd, i.e. LONGER than the sampling
+        # can bound — the opposite of the resolution-limited failure, so it is not flagged here
+        return {"samples_per_decorr": round(w[1], 2) if w[1] is not None else None,
+                "reliable": bool(w[1] is None or w[1] >= MIN_SAMPLES_PER_DECORR)}
+    return {"L_GT1": int(win1[0]), "L_GT2": int(win2[0]),
             "threshold": thr, "fallback_m": fallback,
-            "reduction": "conservative_max_across_pairs", "per_pair": per_pair}
+            "reduction": "conservative_max_across_pairs",
+            "ci_reliability": {"min_samples_per_decorr": MIN_SAMPLES_PER_DECORR,
+                               "GT1": _rel(win1), "GT2": _rel(win2)},
+            "per_pair": per_pair}
 
 
 if __name__ == "__main__":   # standalone sanity check (prints the derived block lengths for a bag)

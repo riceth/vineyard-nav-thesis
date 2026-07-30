@@ -57,6 +57,29 @@ exec(open(Path(__file__).resolve().parent / "row_model.py").read())   # NEAR, FA
 # ================================================================================================
 # In-row stratum
 # ================================================================================================
+def _ci_warn(bag, bl):
+    """D053: shout when a metric's block length rests on a resolution-limited decorrelation estimate.
+
+    The CI is still written (deleting it would lose information), but it is anti-conservative — too
+    narrow — because `decorr` could not be located more finely than the paired-sample spacing. Silence
+    here is the failure mode this guards against: on july2023 the estimator returned L=2 with no
+    indication anything was wrong, and two contrasts crossed into apparent significance as a result."""
+    rel = bl.get("ci_reliability")
+    if not rel:
+        return
+    bad = [m for m in ("GT1", "GT2") if not rel[m]["reliable"]]
+    if not bad:
+        return
+    detail = "; ".join(f"{m}: {rel[m]['samples_per_decorr']} samples/decorr" for m in bad)
+    print("\n  " + "!" * 76)
+    print(f"  !! [{bag}] CI RELIABILITY WARNING (D053) — {', '.join(bad)}")
+    print(f"  !! {detail}  (minimum for a trustworthy estimate: {rel['min_samples_per_decorr']})")
+    print( "  !! The decorrelation length could not be resolved at this paired-sample spacing, so the")
+    print( "  !! block length is under-estimated and the intervals below are ANTI-CONSERVATIVE (too")
+    print( "  !! narrow). Do not report them as evidence for or against any contrast on this bag.")
+    print("  " + "!" * 76 + "\n")
+
+
 def line_fit_eval(B):
     """Whole-bag line-fit AGGREGATION (D040). Reads the per-frame CSV produced by line_fit_infer.py
     (12-col, all 9 models x every eligible frame) and aggregates it into line_fit_report.json."""
@@ -137,6 +160,7 @@ def line_fit_eval(B):
     # ---- per-arm across-seed moving-block bootstrap CIs (whole-bag Analysis-H block lengths) ---
     bl = BL.pooled_block_lengths(IN_CSV, MAN)
     L_GT1, L_GT2 = bl["L_GT1"], bl["L_GT2"]
+    _ci_warn(B["bag"], bl)
 
     pos = {}
     byp = collections.defaultdict(list)
@@ -243,6 +267,7 @@ def paired_crossarm(B):
 
     bl = BL.pooled_block_lengths(PF, MAN)                       # primary (0.1 threshold), F013 convention
     L_GT1, L_GT2 = bl["L_GT1"], bl["L_GT2"]
+    _ci_warn(B["bag"], bl)
     bl_strict = BL.pooled_block_lengths(PF, MAN, thr=0.05)      # stricter GT-2 robustness (F013's 0.05 check)
     L_GT2_strict = bl_strict["L_GT2"]
 
@@ -372,6 +397,7 @@ def config_analysis(B):
 
     bl = BL.pooled_block_lengths(PF, MAN)
     L_GT1, L_GT2 = bl["L_GT1"], bl["L_GT2"]
+    _ci_warn(B["bag"], bl)
 
     def select(dets, config, T):
         out = []

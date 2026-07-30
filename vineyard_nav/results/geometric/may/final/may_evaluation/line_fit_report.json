@@ -16,6 +16,17 @@
       "threshold": 0.1,
       "fallback_m": 1.5,
       "reduction": "conservative_max_across_pairs",
+      "ci_reliability": {
+        "min_samples_per_decorr": 3.0,
+        "GT1": {
+          "samples_per_decorr": 10.22,
+          "reliable": true
+        },
+        "GT2": {
+          "samples_per_decorr": 8.64,
+          "reliable": true
+        }
+      },
       "per_pair": {
         "A-B": {
           "n_all": 4737,
@@ -24,13 +35,17 @@
             "decorr_m": 0.97,
             "used_fallback": false,
             "block_m": 1.94,
-            "L": 20
+            "L": 20,
+            "samples_per_decorr": 10.22,
+            "resolution_limited": false
           },
           "GT2": {
             "decorr_m": 0.82,
             "used_fallback": false,
             "block_m": 1.64,
-            "L": 17
+            "L": 17,
+            "samples_per_decorr": 8.64,
+            "resolution_limited": false
           }
         },
         "A-C": {
@@ -40,13 +55,17 @@
             "decorr_m": 0.67,
             "used_fallback": false,
             "block_m": 1.34,
-            "L": 14
+            "L": 14,
+            "samples_per_decorr": 6.81,
+            "resolution_limited": false
           },
           "GT2": {
             "decorr_m": 0.82,
             "used_fallback": false,
             "block_m": 1.64,
-            "L": 17
+            "L": 17,
+            "samples_per_decorr": 8.34,
+            "resolution_limited": false
           }
         },
         "B-C": {
@@ -56,13 +75,17 @@
             "decorr_m": 0.22,
             "used_fallback": false,
             "block_m": 0.44,
-            "L": 4
+            "L": 4,
+            "samples_per_decorr": 2.24,
+            "resolution_limited": true
           },
           "GT2": {
             "decorr_m": 0.38,
             "used_fallback": false,
             "block_m": 0.76,
-            "L": 8
+            "L": 8,
+            "samples_per_decorr": 3.86,
+            "resolution_limited": false
           }
         }
       }
