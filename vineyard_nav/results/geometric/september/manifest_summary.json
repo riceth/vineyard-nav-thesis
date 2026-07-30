@@ -1,0 +1,129 @@
+{
+  "summary": {
+    "raw_frames": 28202,
+    "pose_pair_max_offset_ms": 33299.0,
+    "contamination_excluded": 0,
+    "stationary": 23848,
+    "headland": 27941,
+    "headland_or_stationary_excl_noncontam": 27952,
+    "in_row": 261,
+    "eligible": 250,
+    "n_passes": 12,
+    "n_corridors": 5,
+    "corridor_centres_x": [
+      -12.98,
+      -10.66,
+      -8.39,
+      -6.0,
+      -2.45
+    ],
+    "eligible_corridor_frames": {
+      "0": 19,
+      "1": 74,
+      "2": 86,
+      "3": 56,
+      "4": 15
+    },
+    "max_corridor_pct": 34.4,
+    "subsample_1p5m": 33,
+    "path_length_m": 547.9
+  },
+  "per_pass": [
+    {
+      "pass": 0,
+      "corridor": 3,
+      "dir": "down",
+      "t0_s": 274.0,
+      "t1_s": 275.1,
+      "eligible": 15
+    },
+    {
+      "pass": 1,
+      "corridor": 4,
+      "dir": "down",
+      "t0_s": 365.5,
+      "t1_s": 366.5,
+      "eligible": 15
+    },
+    {
+      "pass": 2,
+      "corridor": 3,
+      "dir": "up",
+      "t0_s": 413.0,
+      "t1_s": 414.1,
+      "eligible": 16
+    },
+    {
+      "pass": 3,
+      "corridor": 3,
+      "dir": "up",
+      "t0_s": 419.7,
+      "t1_s": 421.3,
+      "eligible": 25
+    },
+    {
+      "pass": 4,
+      "corridor": 2,
+      "dir": "up",
+      "t0_s": 428.2,
+      "t1_s": 429.2,
+      "eligible": 15
+    },
+    {
+      "pass": 5,
+      "corridor": 1,
+      "dir": "down",
+      "t0_s": 539.7,
+      "t1_s": 540.7,
+      "eligible": 15
+    },
+    {
+      "pass": 6,
+      "corridor": 2,
+      "dir": "down",
+      "t0_s": 586.2,
+      "t1_s": 587.2,
+      "eligible": 15
+    },
+    {
+      "pass": 7,
+      "corridor": 1,
+      "dir": "up",
+      "t0_s": 604.5,
+      "t1_s": 606.7,
+      "eligible": 33
+    },
+    {
+      "pass": 8,
+      "corridor": 0,
+      "dir": "down",
+      "t0_s": 697.5,
+      "t1_s": 698.7,
+      "eligible": 19
+    },
+    {
+      "pass": 9,
+      "corridor": 2,
+      "dir": "up",
+      "t0_s": 877.5,
+      "t1_s": 879.5,
+      "eligible": 29
+    },
+    {
+      "pass": 10,
+      "corridor": 1,
+      "dir": "up",
+      "t0_s": 879.7,
+      "t1_s": 881.5,
+      "eligible": 26
+    },
+    {
+      "pass": 11,
+      "corridor": 2,
+      "dir": "down",
+      "t0_s": 969.6,
+      "t1_s": 971.4,
+      "eligible": 27
+    }
+  ]
+}

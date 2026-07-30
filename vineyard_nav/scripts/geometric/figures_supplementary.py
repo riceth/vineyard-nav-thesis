@@ -37,7 +37,8 @@ from bag_config import resolve  # noqa: E402
 
 SEED = 42
 SEASON = {"march": "bare-vine", "april": "bare-vine", "may": "canopy", "june": "canopy",
-          "july": "canopy", "september": "canopy"}
+          "july": "canopy", "september": "canopy",
+          "july2023": "canopy", "august2023": "canopy"}   # verified from the extracted frames at A3
 C_BARE, C_CANOPY = "#4477aa", "#228833"
 OUT = PKG / "results/geometric/comparison/figures"
 

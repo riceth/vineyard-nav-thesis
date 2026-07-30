@@ -35,9 +35,20 @@ GIT = PKG.parent                                                 # repo root —
 #                     397 s idle gap) + 1 split pair (p7/p8, divided by a 2-frame / 0.14 s dip under
 #                     the threshold while driving straight down the row). The rule behaves
 #                     identically on both; the counts are as-built, not idealised. See D046(a).
-def _bag(stem, frames, scene_prefix=None, expected_passes=None, qa_samples=None):
+#   sources         — OPTIONAL list of ROS1 bag stems that feed this bag's conversion. Omit for the
+#                     usual one-file case (sources = [stem]). Some sessions were recorded as two or
+#                     three consecutive files because the recorder was stopped and restarted mid-
+#                     session; `rosbags-convert` accepts several `--src` and writes them into ONE
+#                     destination in chronological order, so the merge happens AT CONVERSION and
+#                     everything downstream still reads a single ordinary .db3. Only ever list files
+#                     from the SAME session: merging different days would fabricate a recording that
+#                     never happened and would pool between-day variation into the per-bag block
+#                     bootstrap, which assumes a within-session spatial series (D052).
+def _bag(stem, frames, scene_prefix=None, expected_passes=None, qa_samples=None, sources=None):
+    srcs = [stem] if sources is None else list(sources)
     return {"frames_dir": PKG / "results/runs" / frames, "qa_samples": qa_samples,
-            "src_bag": GIT / f"{stem}.bag",
+            "src_bags": [GIT / f"{s}.bag" for s in srcs],   # all ROS1 inputs, in order
+            "src_bag": GIT / f"{srcs[0]}.bag",              # first input (metadata/back-compat)
             "ros2_dir": GIT / f"{stem}_ros2",
             "db3": GIT / f"{stem}_ros2" / f"{stem}_ros2.db3",
             "scene_prefix": scene_prefix, "expected_passes": expected_passes}
@@ -54,6 +65,16 @@ BAGS = {
     "june":      _bag("kg_june_08",      "geom_cp1_frames_640_june",      "june"),
     "july":      _bag("kg_july_13",      "geom_cp1_frames_640_july"),
     "september": _bag("kg_september_09", "geom_cp1_frames_640_september"),
+    # --- 2023 season (D052): same robot, same vineyard, same autonomous topological-navigation
+    # configuration, one year later. Geometric strand only — these sessions did not log /imu/data,
+    # so the control strand is not run on them (check_bag_complete.CONTROL_EXEMPT).
+    # july2023 is ONE session recorded as two consecutive files (recorder stopped/restarted while
+    # the robot was stationary; verified no traverse is cut mid-row), merged at conversion.
+    "july2023":   _bag("kg_july2023",   "geom_cp1_frames_640_july2023",
+                       sources=["rosbag_compressed_2023-07-25-09-27-22",
+                                "rosbag_compressed_2023-07-25-09-39-06"]),
+    "august2023": _bag("kg_august2023", "geom_cp1_frames_640_august2023",
+                       sources=["rosbag_compressed_2023-08-01-09-26-06"]),
 }
 
 
@@ -73,6 +94,7 @@ def resolve(bag, scope="eligible"):
         "manifest": base / "dataset_manifest.json",
         "frames_dir": BAGS[bag]["frames_dir"],       # shared dir; eligible / non-in-row indices are disjoint
         "src_bag": BAGS[bag]["src_bag"],             # downloaded ROS1 bag (input to convert_bag.py)
+        "src_bags": BAGS[bag]["src_bags"],           # all ROS1 inputs; >1 = one session split across files
         "ros2_dir": BAGS[bag]["ros2_dir"],           # ROS2 conversion output dir
         "db3": BAGS[bag]["db3"],
         "qa_samples": base / (BAGS[bag]["qa_samples"] or "diagnostics/frame_samples"),  # CP-1 overlays

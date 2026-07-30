@@ -1,0 +1,54 @@
+{
+  "meta": {
+    "checkpoint": "CP-0",
+    "generated": "2026-07-28T21:44:48",
+    "bag": "september",
+    "src_bag": "kg_september_09.bag",
+    "db3": "kg_september_09_ros2/kg_september_09_ros2.db3",
+    "scene_prefix": null,
+    "camera_topic": "/front/zed_node/rgb/image_rect_color/compressed",
+    "bag_frames": 28202,
+    "params": {
+      "coarse_stride": 10,
+      "fine_halfwidth": 30,
+      "window_sec": 1.0,
+      "window_frames_each_side": 15,
+      "high_conf_corr": 0.6,
+      "descriptor": "128x128 zero-mean L2-norm grayscale",
+      "d048": {
+        "absent_le": 40,
+        "present_ge": 200,
+        "shortlist_k": 30,
+        "orb_nfeatures": 3000,
+        "match_res": 640,
+        "lowe": 0.75,
+        "ransac_px": 5.0
+      }
+    },
+    "note": "prefix scenes: full-stream search, low-confidence (corr<0.60) matches visually spot-checked and verified correct. D048 gate (two-stage): the 90 unattributed scenes scored by coarse ORB+RANSAC identity; needs_review (40-200) auto-fine-verified (full-res +/-30 frames) then finalised by d048_confirmed.json; present (>=200) folded into exclusions, absent (<=40) recorded, any unconfirmed residual blocks CP-1."
+  },
+  "status": "clear",
+  "summary": {
+    "prefix": {
+      "located": 0
+    },
+    "d048_gate": {
+      "scored": 90,
+      "present": 0,
+      "needs_review": 0,
+      "absent": 90,
+      "max_inliers": 11
+    },
+    "n_merged_intervals": 0,
+    "excluded_frames": 0,
+    "excluded_pct_of_bag": 0.0,
+    "eligible_frames_after_exclusion": 28202
+  },
+  "per_scene": [],
+  "d048_gate": {
+    "present": [],
+    "needs_review": [],
+    "absent_max_inliers": 11
+  },
+  "merged_exclusion_intervals_frames": []
+}

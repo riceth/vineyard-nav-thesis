@@ -37,23 +37,32 @@ def main():
     ap.add_argument("--dry-run", action="store_true", help="print the command without running it")
     a = ap.parse_args()
     B = resolve(a.bag)
-    src, dst, db3 = B["src_bag"], B["ros2_dir"], B["db3"]
+    srcs, dst, db3 = B["src_bags"], B["ros2_dir"], B["db3"]
 
-    if not src.exists():
+    missing = [s for s in srcs if not s.exists()]
+    if missing:
         raise SystemExit(
-            f"source ROS1 bag not found: {src}\n"
-            f"Download the {a.bag} BLT bag and place it at that path (see the repository README).")
+            "source ROS1 bag(s) not found:\n  " + "\n  ".join(str(s) for s in missing) +
+            f"\nDownload the {a.bag} BLT bag(s) and place them at those paths (see the repository README).")
     if db3.exists():
         print(f"[{a.bag}] already converted -> {db3} ({db3.stat().st_size / 1e9:.1f} GB); nothing to do.")
         return
 
     free = shutil.disk_usage(dst.parent).free
-    need = src.stat().st_size
-    print(f"[{a.bag}] source {src.name} {need / 1e9:.1f} GB | free {free / 1e9:.1f} GB")
+    need = sum(s.stat().st_size for s in srcs)
+    if len(srcs) == 1:
+        print(f"[{a.bag}] source {srcs[0].name} {need / 1e9:.1f} GB | free {free / 1e9:.1f} GB")
+    else:
+        # one session recorded as several consecutive files: rosbags-convert merges them into a
+        # single destination in chronological order, so the pipeline still reads one .db3
+        print(f"[{a.bag}] MERGING {len(srcs)} source files ({need / 1e9:.1f} GB total) "
+              f"| free {free / 1e9:.1f} GB")
+        for s in srcs:
+            print(f"    {s.name} ({s.stat().st_size / 1e9:.1f} GB)")
     if free < need * 1.1:
         raise SystemExit(f"not enough free disk: need ~{need * 1.1 / 1e9:.0f} GB, have {free / 1e9:.0f} GB")
 
-    cmd = ["rosbags-convert", "--src", str(src), "--dst", str(dst)]
+    cmd = ["rosbags-convert", "--src", *[str(s) for s in srcs], "--dst", str(dst)]
     print("  " + " ".join(cmd), flush=True)
     if a.dry_run:
         return

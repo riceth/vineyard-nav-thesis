@@ -100,6 +100,10 @@ Fourth seasonal bag (`kg_june_08`, the **second canopy** bag). Locked pipeline, 
 
 `kg_july_13` was converted and taken through CP-0/CP-1. The D048 gate is **clean** (0/90 present). CP-1 yields **1 pass / 40 eligible frames / 1 corridor**, because the bag was driven stop-start (350 stationary blocks vs june's 59) and the contiguous-pass detector cannot resolve that — despite july covering the same block and 452 m of along-row motion. Excluded rather than special-cased; see **D050** for the evidence, the rejected global fix and the deferred july-only option. **Evaluated set remains march / april / may / june.**
 
+### September — NOT EVALUATED (RTK fix lost; D051)
+
+`kg_september_09` was converted and taken through CP-0/CP-1. The D048 gate is **clean** (0/90 present). CP-1 yields **250 eligible frames of 28,202 (0.9%)** in twelve 1–3 second "passes". Root cause: **`/health/gps/error_std` p90 15.20 m / max 41.96 m, 25.8% of the session above 1 m** — the RTK fix was lost for roughly a quarter of the recording, so `/robot_pose` degenerates to a 0.26 Hz step function with snaps up to 18.84 m, and the twelve passes are pose jumps rather than traverses. Because the pose **is** the driven-path reference (yardstick: the 3.8 cm RTK floor), this is unrecoverable by any frame-selection change. See **D051**. **Evaluated set is final: march / april / may / june.**
+
 *Planning-phase history (retained for context):* A1 submitted early; supervisor → three-arm design (U-Net binary + YOLO binary + YOLO multiclass) + Config A/B/C sweep on Phase C; split changed to 70/20/10 stratified; Roboflow `roboflow-3-n-seg` reference-only.
 
 ---

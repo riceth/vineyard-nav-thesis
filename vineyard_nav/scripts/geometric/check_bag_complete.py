@@ -21,11 +21,16 @@ DESIGN_BAG = "march"          # findings established here, not "confirmed" -> ex
 EVAL_JSONS = ["line_fit_report.json", "paired_crossarm.json", "config_analysis.json",
               "lidar_crosscheck.json", "single_row_analysis.json"]                    # Stage C (in-row)
 FINAL_JSONS = ["non_in_row_evaluation/non_in_row_analysis.json",                      # Stage D
-               "mitigation_evaluation/mitigation_analysis.json",
-               "mitigation_evaluation/state_gate_native.json",
-               "command_evaluation/command_summary.json",                            # Stage F (control)
-               "command_evaluation/gain_kfold.json",
-               "command_evaluation/command_smoothness.json"]
+               "mitigation_evaluation/mitigation_analysis.json"]
+CONTROL_JSONS = ["mitigation_evaluation/state_gate_native.json",                      # Stage F (control)
+                 "command_evaluation/command_summary.json",
+                 "command_evaluation/gain_kfold.json",
+                 "command_evaluation/command_smoothness.json"]
+# Bags evaluated on the GEOMETRIC strand only. The 2023 sessions did not log /imu/data, which the
+# control strand needs in three places (state_gate_native, command_generator's IMU-gyro p99 omega_max,
+# gain_kfold's sign-corrected reference). Running it on a different gyro would silently change the
+# locked gains and break comparability with the four control bags, so it is declared not-run (D052).
+CONTROL_EXEMPT = {"july2023", "august2023"}
 N_FIGURES = 15                                                                        # Stage E
 # Bags that legitimately publish fewer figures. june WITHHOLDS its `turn` category — every one of its
 # 40 turn frames contains identifiable people (its only turning episode coincides with people walking
@@ -41,7 +46,8 @@ def check(bag):
     missing = []
     for j in EVAL_JSONS:
         if not (B["out_dir"] / j).exists(): missing.append(f"{bag}_evaluation/{j}")
-    for j in FINAL_JSONS:
+    required = FINAL_JSONS + ([] if bag in CONTROL_EXEMPT else CONTROL_JSONS)
+    for j in required:
         if not (final / j).exists(): missing.append(j)
     figs = list((final / "figures").rglob("*.png")) if (final / "figures").is_dir() else []
     n_expect = FIGURE_EXCEPTIONS.get(bag, N_FIGURES)
