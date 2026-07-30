@@ -117,6 +117,15 @@ marker actually sees) are recorded in **§5a**.
 > the fig9/fig10 footers and in `mitigation_analysis.json` (F022 turn 69.1 %, F023 turn 70.9 %).
 > March/april/may screened clean and are unaffected. Screen a new bag's picks before curating it.
 
+> **Supplementary figures (added 28 July 2026) — outside this locked set.** `figures_supplementary.py`
+> writes three cross-bag figures to `results/geometric/comparison/figures/`, deliberately **not** into any
+> bag's `final/figures/`, so the locked per-bag set below is untouched and its count is unchanged:
+> `cmp_model_outputs_<bag>.png` (what each arm actually outputs on one scene — A's per-pixel mask, B's
+> instance masks, C's class-labelled instances), `cmp_season_contrast.png` (a bare-vine frame beside a
+> canopy frame, each that bag's median-detection frame, privacy-screened) and `cmp_coverage_trend.png`
+> (coverage against the 70% viability floor, the season-invariant pole contribution, and the base-point
+> collapse). They support the progress update / Notion pages; they are not part of the report figure set.
+
 **In-row (6) — F013 / F017 / F018 / F024:**
 
 | # | File | Shows | Frame(s) |

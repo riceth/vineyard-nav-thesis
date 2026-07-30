@@ -240,8 +240,9 @@ footgun is gone; `--only name[,name]` selects a subset here too.
 > needs no registry (data-only; runs on any bags whose JSONs exist).
 
 ```bash
-python3 scripts/geometric/figures.py          --bag april            # 15 per-bag figures
-python3 scripts/geometric/figures_compare.py  --bags march april     # 4 cross-bag comparison figures
+python3 scripts/geometric/figures.py               --bag april            # 15 per-bag figures
+python3 scripts/geometric/figures_compare.py       --bags march april     # 4 cross-bag comparison figures
+python3 scripts/geometric/figures_supplementary.py --bags march april     # supplementary cross-bag figures
 ```
 - **`figures.py`** needs the 9 checkpoints (it re-renders per-frame panels) and
   every JSON from Stages C/D. Produces `results/geometric/april/final/figures/`
@@ -327,6 +328,8 @@ is the step this gate exists to enforce (it was missed for May).
 | `analyze.py` | all in-row analyses (`line_fit_eval`, `paired_crossarm`, `config_analysis`, `single_row_analysis`, `lidar_crosscheck`); with `--non-in-row`, `non_in_row_analysis` + `mitigation`. `--only name[,name]` selects a subset | C, D3+D4 |
 | `figures.py` | the 15 committed per-bag report figures (per-bag frame registry) | E |
 | `figures_compare.py` | cross-bag comparison figures (`--bags …`) | E |
+| `figures_supplementary.py` | supplementary cross-bag figures (per-arm model outputs, bare-vine↔canopy contrast, coverage/base-point trend), written to `comparison/figures/` — deliberately **outside** the locked per-bag set so those 15 stay untouched | E |
+| `check_bag_complete.py` | completion gate: required artefacts + figure count (`FIGURE_EXCEPTIONS` for bags that withhold a category) + the STATUS `Confirmed on <bag>` summary; auto-invoked by `control.py` | G |
 
 **Shared modules (imported, not run directly):** `bag_config.py` (per-bag paths;
 add a bag = one `BAGS` entry), `cp3_geometry.py` (the CP-3 locked geometry library —
@@ -335,7 +338,9 @@ pipeline and diagnostics), `scene_attribution.py` (the D048 ORB+RANSAC
 unattributed-scene gate used by `prep.py` CP-0; validated in
 `one_time/scene_attribution_orb.py`), `row_model.py` (the row fit; `exec`'d by
 drivers + figures), `projection_calibration.py` (image→ground IPM),
-`block_lengths.py` (per-bag CI block lengths, shared so estimators can't drift).
+`block_lengths.py` (per-bag CI block lengths, shared so estimators can't drift),
+`cuda_preload.py` (deterministic cuDNN preload — imported *before* `torch` in every
+GPU entry point so a cold process cannot miss the wheel libraries, D049).
 
 **`one_time/`** — one-off studies, not pipeline steps (`near_seed_sensitivity.py`
 = Stage C6; `unattributed_scene_probe.py` = the O019 attribution probe).
@@ -343,7 +348,9 @@ drivers + figures), `projection_calibration.py` (image→ground IPM),
 **`diagnostics/`** — dev/investigation scripts (`autocorrelation_block_analysis.py`
 measures decorrelation distance and cross-checks the block lengths; `slope_analysis.py`
 found the ~2.3° common tilt; the `figure_rowfit_*` scripts predate `figures.py`
-and regenerate older dev-era validation PNGs, not the committed report figures).
+and regenerate older dev-era validation PNGs, not the committed report figures;
+`figure_blob_audit.py` renders whatever blob-scale detections `cache/blob_audit.json`
+logs for a bag, so the F007 guard's counts can be inspected visually).
 
 **`superseded/`** — the retired val/test-split evaluators, kept as an audit trail
 after the whole-bag pooling change, plus the relocated CP-3 dry-run reproducer
