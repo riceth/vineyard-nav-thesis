@@ -1,0 +1,43 @@
+{
+  "config": {
+    "blob_frac": 0.15,
+    "frame_px": 640,
+    "guard_thresh_px": 61440.0,
+    "near_lo_px": 40960.0,
+    "conf": 0.25,
+    "arm": "C (Phase C multiclass)",
+    "note": "F007 canopy-blob audit. Detections whose bbox area exceeds the D035 15% guard (blob-scale, dropped from the stream) + the 10-15% near-blob band (kept). Emitted at the guard's own site over the same inference as base-point extraction -> free; runs on every bag."
+  },
+  "per_seed": {
+    "42": {
+      "n_det": 16033,
+      "n_blob_dropped": 0,
+      "n_frames_with_blob": 0,
+      "n_near_blob_10_15pct": 7,
+      "n_frames_near_blob": 7,
+      "max_area_frac": 0.136
+    },
+    "43": {
+      "n_det": 12227,
+      "n_blob_dropped": 0,
+      "n_frames_with_blob": 0,
+      "n_near_blob_10_15pct": 2,
+      "n_frames_near_blob": 2,
+      "max_area_frac": 0.1441
+    },
+    "44": {
+      "n_det": 14257,
+      "n_blob_dropped": 0,
+      "n_frames_with_blob": 0,
+      "n_near_blob_10_15pct": 1,
+      "n_frames_near_blob": 1,
+      "max_area_frac": 0.1459
+    }
+  },
+  "blobs": [],
+  "summary": {
+    "bag": "part2",
+    "total_blob_dropped": 0,
+    "max_area_frac_overall": 0.1459
+  }
+}

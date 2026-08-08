@@ -1,0 +1,93 @@
+{
+  "summary": {
+    "raw_frames": 4291,
+    "pose_pair_max_offset_ms": 1889.4,
+    "contamination_excluded": 0,
+    "stationary": 237,
+    "headland": 2558,
+    "headland_or_stationary_excl_noncontam": 2558,
+    "in_row": 1733,
+    "eligible": 1733,
+    "n_passes": 7,
+    "n_corridors": 7,
+    "corridor_centres_x": [
+      -12.4,
+      -7.29,
+      -3.04,
+      0.1,
+      1.91,
+      6.71,
+      10.05
+    ],
+    "eligible_corridor_frames": {
+      "0": 196,
+      "1": 229,
+      "2": 183,
+      "3": 327,
+      "4": 177,
+      "5": 261,
+      "6": 360
+    },
+    "max_corridor_pct": 20.8,
+    "subsample_1p5m": 69,
+    "path_length_m": 256.4
+  },
+  "per_pass": [
+    {
+      "pass": 0,
+      "corridor": 6,
+      "dir": "up",
+      "t0_s": 36.7,
+      "t1_s": 72.3,
+      "eligible": 360
+    },
+    {
+      "pass": 1,
+      "corridor": 5,
+      "dir": "down",
+      "t0_s": 77.0,
+      "t1_s": 103.0,
+      "eligible": 261
+    },
+    {
+      "pass": 2,
+      "corridor": 4,
+      "dir": "down",
+      "t0_s": 169.0,
+      "t1_s": 185.8,
+      "eligible": 177
+    },
+    {
+      "pass": 3,
+      "corridor": 3,
+      "dir": "up",
+      "t0_s": 202.7,
+      "t1_s": 238.9,
+      "eligible": 327
+    },
+    {
+      "pass": 4,
+      "corridor": 2,
+      "dir": "down",
+      "t0_s": 245.7,
+      "t1_s": 266.0,
+      "eligible": 183
+    },
+    {
+      "pass": 5,
+      "corridor": 1,
+      "dir": "down",
+      "t0_s": 331.5,
+      "t1_s": 355.1,
+      "eligible": 229
+    },
+    {
+      "pass": 6,
+      "corridor": 0,
+      "dir": "down",
+      "t0_s": 401.3,
+      "t1_s": 422.7,
+      "eligible": 196
+    }
+  ]
+}

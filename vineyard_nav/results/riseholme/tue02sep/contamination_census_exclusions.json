@@ -1,0 +1,20 @@
+{
+  "meta": {
+    "bag": "tue02sep",
+    "scene_prefix": null,
+    "status": "vacuous_no_scenes_from_site",
+    "note": "SemanticBLT contains no Riseholme imagery; site is out-of-distribution. Verified by inspection of all 90 unattributed scenes (RISEHOLME.md 12.5 item 7), not assumed."
+  },
+  "summary": {
+    "scenes_located": 0,
+    "scenes_total": 0,
+    "d048_unattributed_total": 90,
+    "d048_present": 0,
+    "d048_needs_review": 0,
+    "d048_absent": 90,
+    "excluded_frames": 0,
+    "excluded_pct": 0.0
+  },
+  "per_scene": [],
+  "merged_exclusion_intervals_frames": []
+}

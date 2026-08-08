@@ -1,0 +1,21 @@
+{
+  "bag": "tue02sep",
+  "reference": "surveyed mid-row line (D057)",
+  "frames_with_reference": 6949,
+  "assumption_budget_mm": {
+    "lookahead_m": 2.0,
+    "lateral_assumption_error_m": 0.07,
+    "lateral_induced_offset_mm": 70.0,
+    "yaw_assumption_error_deg": 3.2,
+    "yaw_induced_offset_mm": 111.8,
+    "combined_worst_case_mm": 181.8,
+    "ktima_effect_size_mm": "19.5-24.1 (A-B / A-C GT-1 on july2023)"
+  },
+  "per_arm_absolute_rms_m": {
+    "A": 0.31407905790619717,
+    "B": 0.30294225735594055,
+    "C": 0.3118459322045704
+  },
+  "sign_convention": "vision offset is in the camera-view base frame (+Y left of a REARWARD view = right of travel); the surveyed-line offset is negated when the robot travels with the line's stored direction",
+  "caveat": "absolute values caveated per D059; paired differences are primary; D053 refuses CIs on this bag"
+}

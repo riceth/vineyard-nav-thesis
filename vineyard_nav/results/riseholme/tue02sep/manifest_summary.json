@@ -1,0 +1,149 @@
+{
+  "summary": {
+    "raw_frames": 10798,
+    "pose_pair_max_offset_ms": 1945.8,
+    "contamination_excluded": 0,
+    "stationary": 2134,
+    "headland": 7742,
+    "headland_or_stationary_excl_noncontam": 7742,
+    "in_row": 3056,
+    "eligible": 3056,
+    "n_passes": 13,
+    "n_corridors": 11,
+    "corridor_centres_x": [
+      -12.4,
+      -9.23,
+      -7.29,
+      -5.64,
+      -2.88,
+      0.1,
+      2.25,
+      5.39,
+      6.71,
+      10.06,
+      11.79
+    ],
+    "eligible_corridor_frames": {
+      "0": 196,
+      "1": 185,
+      "2": 229,
+      "3": 185,
+      "4": 427,
+      "5": 327,
+      "6": 411,
+      "7": 240,
+      "8": 261,
+      "9": 363,
+      "10": 232
+    },
+    "max_corridor_pct": 14.0,
+    "subsample_1p5m": 120,
+    "path_length_m": 511.3
+  },
+  "per_pass": [
+    {
+      "pass": 0,
+      "corridor": 1,
+      "dir": "down",
+      "t0_s": 87.9,
+      "t1_s": 104.8,
+      "eligible": 185
+    },
+    {
+      "pass": 1,
+      "corridor": 4,
+      "dir": "up",
+      "t0_s": 198.4,
+      "t1_s": 221.4,
+      "eligible": 244
+    },
+    {
+      "pass": 2,
+      "corridor": 6,
+      "dir": "up",
+      "t0_s": 270.3,
+      "t1_s": 294.6,
+      "eligible": 234
+    },
+    {
+      "pass": 3,
+      "corridor": 7,
+      "dir": "down",
+      "t0_s": 319.9,
+      "t1_s": 343.0,
+      "eligible": 240
+    },
+    {
+      "pass": 4,
+      "corridor": 10,
+      "dir": "up",
+      "t0_s": 434.5,
+      "t1_s": 457.8,
+      "eligible": 232
+    },
+    {
+      "pass": 5,
+      "corridor": 9,
+      "dir": "up",
+      "t0_s": 609.1,
+      "t1_s": 645.0,
+      "eligible": 363
+    },
+    {
+      "pass": 6,
+      "corridor": 8,
+      "dir": "down",
+      "t0_s": 649.7,
+      "t1_s": 675.7,
+      "eligible": 261
+    },
+    {
+      "pass": 7,
+      "corridor": 6,
+      "dir": "down",
+      "t0_s": 741.7,
+      "t1_s": 758.5,
+      "eligible": 177
+    },
+    {
+      "pass": 8,
+      "corridor": 5,
+      "dir": "up",
+      "t0_s": 775.4,
+      "t1_s": 811.6,
+      "eligible": 327
+    },
+    {
+      "pass": 9,
+      "corridor": 4,
+      "dir": "down",
+      "t0_s": 818.4,
+      "t1_s": 838.7,
+      "eligible": 183
+    },
+    {
+      "pass": 10,
+      "corridor": 3,
+      "dir": "up",
+      "t0_s": 870.7,
+      "t1_s": 890.3,
+      "eligible": 185
+    },
+    {
+      "pass": 11,
+      "corridor": 2,
+      "dir": "down",
+      "t0_s": 904.2,
+      "t1_s": 927.8,
+      "eligible": 229
+    },
+    {
+      "pass": 12,
+      "corridor": 0,
+      "dir": "down",
+      "t0_s": 974.0,
+      "t1_s": 995.4,
+      "eligible": 196
+    }
+  ]
+}

@@ -1266,3 +1266,81 @@ Within abstaining frames the dominant cause stays `too_few_near_seed` (73.2 / 72
 **Cross-references.** F018 (the question this answers), F001 (perception canopy gain), F011 (coverage), F013 (arm-invariance), F024 (abstention), F025 (near-seed optimum widens to 7.0–7.5 m on canopy — same starvation mechanism), D026 (sweep is arm-C-specific), D040 (whole-bag pooling).
 
 **Citation map.** Ours: `final/{bag}_evaluation/config_analysis.json`, `line_fit_report.json`, `single_row_analysis.json` for all four bags (march, april, may, june); F001 (`perception` canopy/bare-vine split). No paper support (contribution).
+
+---
+
+### F030 — Coverage degradation out of distribution reproduces across three independent OOD datasets, with an identical arm ordering
+
+**Claim.** The three arms degrade **unequally** out of distribution, and the ordering is the same every time it has been measured.
+
+| dataset | out-of-distribution in | A (U-Net binary) | B (YOLO binary) | C (YOLO multiclass) |
+|---|---|---|---|---|
+| july2023 (Ktima) | season + year | 38.3% | 34.8% | 25.9% |
+| **tue02sep (Riseholme)** | **site + camera hardware + viewing direction** | **26.2 ± 2.0%** | **25.3 ± 4.5%** | **21.6 ± 4.0%** |
+| part2 (Riseholme, path validation only) | as above | 31.5% | 31.4% | 26.9% |
+
+**A > B > C in all three.** The failure rate mirrors it — `none` classification: A 50.2%, B 56.2%, C 59.3% — as does the mean base-point count: A 11.8, B 8.0, C 6.9. The two Riseholme rows are not independent (part2 is 94.1% contained in tue02sep, D055) and are never pooled; part2 is shown for transparency, not as a third sample.
+
+**Why this is the most robust Riseholme result.** Coverage requires **no camera extrinsics and no positional ground truth**. It is therefore untouched by the assumed lateral/yaw degrees of freedom (D056), by the "calculated" geojson reference and the 39–62 mm GNSS floor (D057), and by the D053 CI refusal (F031). Nothing that limits the Riseholme accuracy metrics limits this one.
+
+**Interpretation.** Arm C's richer supervision does not transfer as robustly as the binary arms'. The multiclass arm loses the most coverage under distribution shift at an unseen season *and* at an unseen site with different camera hardware and the opposite viewing direction. This extends F011's coverage result out of distribution and is consistent with F029's canopy mechanism: what shift removes first is base-point availability.
+
+**Supporting — the configuration sweep has no viable regime at Riseholme.** Class-filtered cells collapse further: `pole_only` reaches **0.4%** two-row coverage, `trunk_only` 11.8%, and **no cell clears F018's 70% viability floor** (max 21.5%). F018's argmin and tie-break are therefore skipped, as designed, rather than reported over a sub-viable regime.
+
+**What this does NOT claim.**
+- ✗ that arm A is *more accurate* out of distribution — this is availability, not accuracy (see F031).
+- ✗ that the Riseholme drop is attributable to site alone — it confounds site, season, camera hardware and viewing direction (D055).
+- ✗ any interval estimate on the ordering; the differences are not CI-tested, and D053 refuses intervals on this bag.
+
+**Cross-references.** F011 (in-distribution coverage), F029 (canopy mechanism), F018 (config sweep, no viable regime here), D052 (july2023, the first OOD observation), D055 (RH scope and the four-way confound), D059 (reporting asymmetry), O007 (OOD evaluation).
+
+**Citation map.** Ours: `results/riseholme/tue02sep/final/tue02sep_evaluation/line_fit_report.json`, `config_analysis.json`, `line_fit_per_frame.csv`; `results/geometric/july2023/final/july2023_evaluation/line_fit_report.json`. No paper support (contribution).
+
+---
+
+### F031 — At Riseholme's reference precision the arms cannot be separated on absolute accuracy, and the paired contrasts are sub-floor noise
+
+**Per-arm absolute accuracy — reported, heavily caveated (D059). Not to be read as precise.**
+
+| arm | n | GT-1 RMS | GT-2 RMS |
+|---|---|---|---|
+| A | 571 | 0.172 m | 2.474° |
+| B | 530 | 0.138 m | 2.538° |
+| C | 382 | 0.143 m | 2.404° |
+
+These 138–172 mm sit at **the same order as the 182 mm** contributed by the assumed extrinsics alone (70 mm from the lateral assumption + 112 mm from yaw, at the 2 m look-ahead; `projection_calibration.sensitivity()`). The measurement is dominated by what is not known about the mounting. **That budget was computed before the run, not fitted afterwards** — the prediction that the arms would be inseparable was made a priori and is confirmed here.
+
+**The D053 guard fired on a bag it was not built for.** GT-1 **1.84** and GT-2 **0.60** samples per decorrelation length, against a 3.0 minimum. Increasing the data 1.76× from part2 (1.57 / 0.44) moved the ratio but did not cross the threshold: the binding constraint is paired-sample *spacing*, not frame count. **Every confidence interval on this bag is anti-conservative and none is reported as evidence.** The guard, built for july2023 (D053), generalised to a different site, camera and session without retuning.
+
+**Paired cross-arm contrasts — reported as they fall.**
+
+| pair | GT-1 mean diff | GT-1 signs | GT-2 mean diff | GT-2 signs |
+|---|---|---|---|---|
+| A–B | +16.5 mm | `+ + −` ✗ | −0.431° | `− − −` ✓ |
+| A–C | — | `+ + −` ✗ | −0.202° | `− − −` ✓ |
+| B–C | −12.2 mm | `− − −` ✓ | +0.294° | `+ + +` ✓ |
+
+Only **B–C** is sign-consistent on GT-1, at −12.2 mm (−32.2% of the 3.8 cm RTK floor). A–B and A–C flip sign between seeds and are **withheld**, on the same basis july2023's B–C was withheld (D052). Sign-consistency is independent of the CI machinery, so it survives D053 where the intervals do not — but with unreliable intervals these are **directional observations, not interval estimates**.
+
+**The pair that appears "robust" reverses between the two OOD datasets, and that reversal is itself evidence for the null.** At july2023 the sign-consistent GT-1 pairs were **A–B and A–C**, with B–C inconsistent; at tue02sep it is exactly the reverse — **B–C** is consistent and A–B / A–C are not. If any of these contrasts reflected a real, systematic architecture-level effect, the *same* pair would show sign-consistency across different out-of-distribution datasets. That the identity of the "robust" pair flips between bags is the signature of **sub-floor noise landing on either side of zero by chance**, not of a reproducible effect. The two OOD datasets together therefore support F013's arm-invariance conclusion rather than qualifying it.
+
+**The reference itself contributes a per-row systematic of ~±13 cm** (per-row mean residuals span −0.229 to +0.148 m, std 0.128 m, against within-row scatter of 0.216 m). Whether this is placement error in the "calculated" geojson lines or row-dependent canopy geometry cannot be separated with the available data; either way it bounds the absolute metric from below.
+
+**The paired contrasts are demonstrably invariant to this.** A sign-convention error in the surveyed reference that shifted every per-arm absolute value by ~130 mm left the paired differences bit-identical, and they match an independent computation that never uses the geojson at all (+16.5 / −12.2 mm vs +13.9 / −12.8 mm, identical sign patterns) — the common-mode cancellation of D059 verified empirically rather than argued.
+
+**The measurement zone also differs between the sites.** The Riseholme camera cannot see ground closer than **2.48 m** (1.269 m high, pitched 5.75° down), against **1.76 m** at Ktima, so the shared look-ahead bin is populated over only 2.48–3.0 m here versus 1.76–3.0 m there — 26% of the bin against 62% (D058). This is a further reason the absolute values are not Ktima-comparable. It does **not** affect F030, which is classification-based, nor the paired contrasts, since the measurement zone is identical for all three arms on the same frames and cancels in the difference like every other common-mode term.
+
+**The surveyed reference was independently confirmed to be real.** A sanity-check overlay drawing the surveyed line as a single line, with no uncertainty band, places it inside the inter-row corridor in every frame examined — on the bare-earth strip between the vine rows, not on a row or in the margin (`diagnostics/gt_line_sanity.py`). The reference's *existence and placement* is therefore established separately from, and independently of, the question of how precisely it is known. Across the dataset the finite surveyed segment falls within the camera's visible ground window for **74.8%** of publishable two-row frames, and the extended line for 100%; the 25.2% difference is frames where the robot has driven past a surveyed row end.
+
+**Where the vision and the reference disagree, the disagreement exceeds the calibration band alone** — the vision centreline lies outside the ±182 mm assumed-extrinsics envelope in some frames. This is consistent with the two further error sources already documented, not with anything unexplained: the reference's own ~130 mm per-row systematic (above), and genuine vision error of the reported 138–172 mm magnitude. The ±182 mm band is therefore never merged with the per-row term into a single envelope — keeping the sources separable is the point of D059.
+
+**What this finding is about.** It is a finding about the **reference**, not about the arms. Riseholme cannot rank the arms on accuracy because its reference — a "calculated" mid-row line, RTK at 39–62 mm short-scale, and two unmeasured extrinsic degrees of freedom — is 2–9× coarser than the 19.5–24.1 mm effect being sought. This is why D059 makes the paired contrasts primary and the absolute values explicitly caveated.
+
+**What this does NOT claim.**
+- ✗ that the arms *are* equivalent in absolute accuracy at Riseholme — the measurement cannot decide it either way.
+- ✗ that B–C's −12.2 mm is a real effect — see the reversal argument above.
+- ✗ any interval estimate whatsoever on this bag; D053 refuses them all.
+
+**Cross-references.** F013 (arm-invariance, the same measurand at Ktima), D052 (july2023's withheld contrasts), D053 (the CI guard, which fired here), D056 (the assumed extrinsics and their 182 mm budget), D057 (the reference and its limits), D059 (reporting asymmetry), F030 (what *can* be concluded at Riseholme).
+
+**Citation map.** Ours: `results/riseholme/tue02sep/final/tue02sep_evaluation/paired_crossarm.json`, `line_fit_report.json`; `scripts/riseholme/projection_calibration.py::sensitivity()`. Polvara et al. 2024 §5 (3.8 cm RTK floor, used as the effect-size yardstick). No paper support for the finding itself (contribution).

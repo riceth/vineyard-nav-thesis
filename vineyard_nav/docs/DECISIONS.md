@@ -922,6 +922,10 @@ March separates cleanly; april does **not** — a cross-session same-place tail 
 
 **Decision.** Two 2023 sessions are adopted as the fifth and sixth bags of the **geometric** evaluation: **`july2023`** (2023-07-25, one session recorded as two consecutive files, merged at conversion) and **`august2023`** (2023-08-01, single file). The **control strand (F026/F027/F028) is not run** on them. The evaluated set becomes **six bags geometric / four bags control** — bare-vine march + april, canopy may + june + july2023 + august2023.
 
+> **⚠️ Superseded in part (31 July 2026) — august2023 is withdrawn by D054.** That session's camera recorded no imagery: all 8,916 frames are one byte-identical blank white JPEG, discovered when Stage B1 returned zero detections. The adopted set is therefore **`july2023` only**, and the evaluated set is **five bags geometric / four control** — bare-vine march + april, canopy may + june + july2023.
+>
+> Everything below on **provenance, calibration validation, session selection and merge policy stands unchanged** — it was established from pose, `tf` and topic metadata, none of which the camera fault touches. Read every "both 2023 bags" claim as applying to **july2023 alone** for anything downstream of the camera.
+
 **Provenance (supervisor-confirmed, 29 July 2026).** Same robot, same vineyard, and the **same autonomous topological-navigation configuration** as the 2022 bags — one year later. These are not a second dataset, and not the Riseholme platform (a genuinely different robot, unrelated to these files). What differs between 2022 and 2023 is **which sensors were logged in a given session**, not the platform. Corroborated independently: april 2022 and both 2023 bags publish the *same* URDF frame names (`pipe1_2`, `2_zed2_*`, `sensor_box_1`, `bat0/1`, `corner0-3`, `top0-3`) and identical camera intrinsics.
 
 **O020 framing holds unchanged.** Because the navigation configuration is identical, the driven-path reference means the same thing on these bags as on march/april/may/june: GT-1/GT-2 measure agreement between the vision-estimated centreline and the platform's **autonomous** GPS/topological driven path (Polvara 2024 §3.3.3). No amendment to O020 or D014 is required; the absence of `/closest_node` / `/current_node` from these recordings is a logging difference, not a change of navigation mode.
@@ -969,6 +973,125 @@ March separates cleanly; april does **not** — a cross-session same-place tail 
 **Retrospective backfill.** The new fields were added to the four committed bags' `line_fit_report.json`, `paired_crossarm.json` and `config_analysis.json` (12 files) by `one_time/backfill_ci_reliability.py` — a **pure recalculation**, no pipeline stage re-run. The three reports per bag carry an identical `block_lengths` block, so all three are updated together; `command_evaluation/command_smoothness.json` is deliberately untouched, as it borrows the geometric L rather than deriving a per-pair structure and carries its own separate caveat. Verified four ways: `git` shows +29/−6 per file with every removal a pure comma reflow (`"L": 9` → `"L": 9,`) and **zero genuine deletions**; stripping the added keys reproduces each file **identically to HEAD**; and a live re-derivation matches the written files exactly. The script derives the new fields from that live re-derivation rather than from the stored numbers, because `mean_spacing_m` is stored rounded to 4 dp and the rounded quotient differs from the estimator's by up to 0.01 — enough that the files would not have matched a future re-run. It is idempotent (strips before re-adding).
 
 **Cross-references.** D052 (july2023, the bag that exposed it), F013 (the paired contrasts these CIs support), D040 (whole-bag pooling), Analysis H / `block_lengths.py` (the estimator), `one_time/backfill_ci_reliability.py`.
+
+## D054 — august2023 excluded: the session's camera recorded no imagery
+**Date:** 31 July 2026
+**Status:** LOCKED
+
+**Decision.** `august2023` (2023-08-01) is **excluded from the evaluation**, reversing its adoption in D052. The evaluated set is **five bags geometric / four control** — bare-vine march + april, canopy may + june + july2023.
+
+**Observed.** Stage B1 returned **0 detections** over 5,961 eligible frames × 3 seeds — against 145,726 on july2023 and 252,741 on june. Every one of the bag's **8,916** frames on `/front/zed_node/rgb/image_rect_color/compressed` is the *same* JPEG: one distinct payload (md5 `5fa51a606949…`) in a constant 33,351-byte message, decoding to 1920×1080 with `mean 255.0, std 0.0` and a single distinct pixel value across all ~6.2 M channel samples. Verified **exhaustively over all 8,916 frames**, not sampled.
+
+**Not an artefact of our tooling.** The ROS1 source bag reads identically (one payload, mean 255.0, std 0.0), so the blank frames were recorded as such — `rosbags-convert` and every pipeline stage are exonerated. The fault covers the whole camera, not just the RGB channel: `/depth_republish/compressedDepth` is likewise one constant 18,285-byte payload across all 8,918 messages. No alternative RGB topic exists in the recording. A saturated *camera* would still vary frame to frame and could not compress to a byte-identical payload; a single repeated payload indicates a fixed placeholder buffer, i.e. the sensor was not imaging at all.
+
+**Why every prior check passed.** D052 selected this session on pose rate (4.14 Hz, highest of the four 2023 days), moving fraction (85.2%), GPS quality and single-file simplicity — all measured on **non-camera** topics, none capable of detecting a dead camera. The pipeline agreed: CP-0 clean (0 of 90 unattributed scenes present), CP-1 healthy with 13 passes, 5 corridors and **5,961 eligible frames (66.9% — the highest eligible fraction of any bag)**. The robot drove the rows correctly and logged it correctly; only the imagery is absent. The 15.6 GB the bag contains is LiDAR and pose.
+
+**Why this is an exclusion, not a narrowed reporting scope.** july2023 (D052) was narrowed because some contrasts were measured too imprecisely to report. august2023 admits no such treatment: with no imagery there is no measurement to qualify — nothing to report, withhold, or call null. It joins D050 (july-2022) and D051 (september-2022) as a data-integrity exclusion.
+
+**Consequences.** F029's canopy characterisation **remains at n = 2** (may, june) — as D052 already concluded for july2023 on separate grounds. O007's out-of-distribution observation rests on july2023 alone.
+
+**Artefacts discarded (31 July 2026).** The ROS2 conversion (15 GB), the 5,961 extracted blank frames (47 MB) and `results/geometric/august2023/` were deleted; the ROS1 source bag is retained by Edosa. The bag's `bag_config` entry is left in place: it is inert once the bag is not run, and removing it would erase the record of what was attempted.
+
+**Cross-references.** D052 (adoption, now amended), D050/D051 (the other integrity exclusions), D048 (CP-0 gate — passed, and correctly so), F029 (canopy characterisation, n = 2), O007.
+
+## D055 — Riseholme adopted as a supplementary generalisation strand
+**Date:** 7 August 2026
+**Status:** LOCKED
+
+**Decision.** The Riseholme datasets are adopted as a **supplementary generalisation strand**, separate from and subordinate to the five-bag Ktima evaluation. Riseholme is **not** a second evaluation of the research question and produces no result comparable to F013's Ktima contrasts.
+
+**What it is.** Riseholme (University of Lincoln) is a different site, a different camera, and a different viewing direction. Any Ktima↔Riseholme difference therefore confounds **four** factors — site, season, **camera hardware** (Stereolabs ZED2 forward-facing vs Intel RealSense D435I rear-facing), and **viewing direction**. Stated positively this makes it a *hardware-and-viewpoint* generalisation test as well as a site one, which is a stronger claim than site transfer — but only if the confound is stated rather than glossed. It must be stated wherever Riseholme results appear.
+
+**Data and roles.** `Tue-02-Sep` (2025-09-02, 16.65 min recovered, RTK-fixed, manually driven) is the evaluation bag. `part2_2_9_2025` is **94.1% contained within it** and is used for **path validation only**; the two are never pooled, because doing so would double-count the same physical traverses and spuriously shrink the CIs — the failure D040's whole-bag pooling and D053's guard exist to prevent. `rh_july2026` (SBAS GNSS, 29.6% autonomous) is retained as the only autonomous Riseholme data. The August-2024 RealSense/RTK set is parked: camera-only, no robot pose, no established clock synchronisation.
+
+**Out-of-distribution status verified, not assumed.** BLT covers Riseholme (5 sessions, 2023) as well as Ktima, so training contamination was checked rather than presumed. SemanticBLT's 405 month-less images resolve to **exactly 90** source scenes — matching the 90 unattributed scenes of D048 — and all show Mediterranean architecture, arid ground and red row-end roses, matching the Ktima july2023 frames, with none of Riseholme's glasshouse or water tank. **Riseholme is genuinely out-of-distribution and uncontaminated.** D048's "0 of 90 present" on the Riseholme-adjacent bags is correct for the right reason.
+
+**Cross-references.** D048 (contamination gate), D052 (july2023, the first OOD observation), O007 (OOD evaluation), D056–D059, F030, F031.
+
+## D056 — Riseholme camera extrinsics: empirically derived, partially locked
+**Date:** 7 August 2026
+**Status:** LOCKED
+
+**Decision.** Three of the six degrees of freedom are adopted as an empirically derived, cross-verified calibration. The other three are **explicitly not adopted** and are set to a stated baseline, with every downstream number conditional on them.
+
+| DOF | value | basis |
+|---|---|---|
+| **height** | **1.269 m** | 1.269 (rh_july2026, n = 59) vs 1.278 (part2, n = 51) — **9 mm** apart, eleven months apart |
+| **pitch** | **+5.75° down** | 58 of 59 samples positive; terrain excluded (below) |
+| **roll** | **+0.75°** | mean of 0.98 (rh_july2026) and 0.45 (part2) |
+| lateral | 0.0 m **ASSUMED** | two estimates **33 mm** apart, exceeding the 19.5–24.1 mm effect GT-1 resolves |
+| yaw | 0.0° **ASSUMED** | `/scan` gives +3.21°, IQR [+1.89, +5.16], which excludes the collector's stated 0° |
+| longitudinal | 0.0 m **ASSUMED** | never estimated; no available method constrains it |
+
+**Why empirical rather than read from the robot.** The camera was never published to this robot's `tf` tree. Verified by exhaustive `frame_id` enumeration over `/tf` and `/tf_static` on three bags across two sessions (25,063 + 11,241 + 8,611 messages), dumping every frame rather than substring-matching for "cam"; the leg and wheel URDF transforms are present and correct throughout, so this is not a reading failure. An earlier hypothesis — that the re-recording's topic list dropped `/tf_static` — was **falsified**: `part1_2_9_2025` captured `/tf_static` from a near-complete replay and the camera was still absent. No original fragment will supply it. No public source documents this mounting either: BLT (Polvara 2024) used two ZED2 cameras at both sites, and every published Thorvald + D435i configuration is forward-facing.
+
+**Terrain excluded as an explanation for the pitch.** The field slopes 3.78° (±2.93° along the row axis), so a camera mounted at 0° pitch would yield a distribution centred on zero with roughly half the samples negative. Observed: median +5.746°, std 1.458, **1 of 59 negative**. The spread is consistent with terrain riding on a fixed tilt; the offset is not.
+
+**The two lateral estimates are not fully independent.** Both derive the camera's view of the rows from the *same* depth ground-plane fit, and both inherit the same ~5% canopy-versus-trunk bias (0.952 on part2, 0.930 on rh_july2026). They differ only in the *second* sensor used to locate the robot — 2D LiDAR in `base_link` for one, RTK GNSS against the surveyed geometry for the other. This is supporting evidence, not two-source confirmation in the sense of D052's four-decimal `tf`-versus-Table-3 match.
+
+**Adopted without the data collector's confirmation.** The checks above stand on their own method. If his account later contradicts these values, that contradiction is a finding to investigate on its own evidence, not grounds for having withheld them.
+
+**Cross-references.** D052 (the contrasting, tf-validated case), D057, D059, F031, `docs/RISEHOLME.md` §§4, 12, 13.
+
+## D057 — Riseholme reference: the surveyed mid-row line, not the driven path
+**Date:** 7 August 2026
+**Status:** LOCKED
+
+**Decision.** Riseholme lateral error is measured against the **surveyed mid-row line** in `riseholme.geojson`. **O020/D014's autonomous-driven-path framing does not transfer to this site.**
+
+**Why it cannot transfer.** Ktima's GT-1 is the RMS of the vision-estimated centreline offset *about zero*, which is meaningful only because the robot is **autonomously following the row**, so its driven path defines the row centre. The September 2025 Riseholme sessions were **manually driven** — stated by the data collector and corroborated independently by the complete absence of an `/auto_mode` topic on both 2025 bags, where `rh_july2026` records it at 10.84 Hz. A human operator may sit deliberately off-centre, so RMS-about-zero conflates vision error with real driving deviation. That term is **not small**: the robot's true offset from the surveyed line has **std 0.296 m**, comparable to or larger than the vision error being sought.
+
+**What replaces it.** `error = vision_estimated_offset − true_offset_from_surveyed_line`, computed in `scripts/riseholme/rh_evaluate.py`. This is a **new file**: `analyze.py`'s driven-path-is-centre assumption is correct for Ktima and must not be altered, so the shared code is left untouched (D058).
+
+**Row correspondence is solved exactly.** WayPoint *N* lies on the mid-row line between `row_(g+2)` and `row_(g+1)` where `g = ⌊(N−1)/12⌋` — 108 of 108 waypoints assigned, exactly 12 per line, none left over, established geometrically via a map→WGS84 fit (rotation −0.879°, residual 25.6 cm median) against 2.5 m row spacing. The geojson and the robot's topological map are the same map under two naming schemes; no string-level overlap exists between them.
+
+**Limits of this reference.** The geojson lines are `measured_or_calculated: "calculated"` — derived geometry, not surveyed, with accuracy inheriting from a source the file does not name. Robot position comes from RTK GNSS at 39–62 mm short-scale residual. Both bound the **absolute** metric; neither affects the **paired** contrasts, which is the basis of D059.
+
+**Cross-references.** O020, D014 (the Ktima framing that does not transfer), D055, D059, F031.
+
+## D058 — Riseholme code isolation and the algorithm-parity gate
+**Date:** 7 August 2026
+**Status:** LOCKED
+
+**Decision.** Riseholme runs from `scripts/riseholme/`, which neither imports from nor is imported by `scripts/geometric/`. Every file constituting the measurement is **byte-identical** across the two trees, enforced mechanically by `scripts/riseholme/verify_algorithm_parity.py`, which must pass before any Riseholme evaluation and after any edit to either tree.
+
+**Why.** Two reasons, both load-bearing. First: if the two sites' results differ, that difference must be attributable to the data, never to the code — a comparison whose arms ran different algorithms would be worthless. Second: D046f recorded that extending a single-bag-shaped code path to a second bag produced **five** defects sharing one shape, **four of them silent**, two already latent in committed results. Repeating that against a committed five-bag result weeks from submission is an unacceptable risk.
+
+**Shared, byte-identical (7 files).** `row_model.py`, `cp3_geometry.py`, `block_lengths.py`, `extract_detections.py`, `line_fit_infer.py`, `analyze.py`, `cuda_preload.py`. Consequently the tuned constants — `NEAR_M`, `TOL`, `INL`, `BINS`, `LOOKAHEAD_BIN`, `CONF`, `BLOB_FRAC`, `HALF`, seeds 42/43/44 — are not merely "kept the same"; **they are the same bytes**. They were tuned for a ZED2 at 0.763 m and 1.95° pitch and may well be suboptimal for a D435i at 1.269 m and 5.75°. **Changing them would destroy comparability, so they stand unchanged and the mismatch is recorded as a limitation rather than tuned away.**
+
+**A concrete consequence, quantified.** The two cameras see different ground windows: the image bottom projects to **2.48 m at Riseholme** (1.269 m high, 5.75° down) against **1.76 m at Ktima** (0.763 m, 1.95°). The shared look-ahead bin `BINS[0] = (1.0, 3.0)` m is therefore populated over 2.48–3.0 m at Riseholme and 1.76–3.0 m at Ktima — **26% of the bin against 62%**. The "2 m look-ahead" is consequently **not the same measurand at the two sites**: at Riseholme it is measured further out, over a narrower window, with fewer base points contributing. Retuning `BINS` would make Riseholme internally cleaner but incomparable with Ktima, so the constants stand unchanged and this is recorded as a limitation. It affects only the already-caveated absolute per-arm values (F031); coverage (F030) is classification-based and untouched, and the paired contrasts are unaffected because the measurement zone is identical for all three arms on the same frames and cancels in the difference (D059).
+
+**Permitted differences, all declared and machine-checked.** (a) One `sys.path` token naming the tree a file lives in — hashing normalises it, so identity is still proven over every constant and every line of logic, and the gate prints where it applied. (b) `prep.py`'s CP-1 body, diffed function-by-function and verified to differ in **only two operator-facing error strings**. (c) Five input/output and calibration files: `bag_config.py` (presents the *identical* `resolve()` interface), `projection_calibration.py`, `prep.py`, `extract_frames.py`, `check_bag_complete.py`. Five further Ktima files are declared not-ported. **Any untriaged Ktima file fails the gate**, so a new script cannot slip in unclassified.
+
+**Cross-references.** D046f (the defect class this prevents), D049 (cuDNN preload), D055, D056.
+
+## D059 — Riseholme reporting asymmetry: absolute caveated, paired primary
+**Date:** 7 August 2026
+**Status:** LOCKED
+
+**Decision.** Both quantities are reported, always together, with the trust asymmetry made explicit in **every** caption, table and passage in which they appear:
+
+- **Per-arm absolute lateral RMS — reported, heavily caveated.** Never to be read as a precise accuracy figure.
+- **Paired cross-arm differences (A−B, A−C, B−C) — the primary, defensible Riseholme result**, and the same measurand as F013 at Ktima.
+
+**Why the asymmetry is principled, not presentational.** For two arms evaluated on the *same frame* against the *same* true offset:
+
+```
+err_A − err_B  =  (vis_A − true) − (vis_B − true)  =  vis_A − vis_B
+```
+
+The unknown true offset cancels **exactly**. So does the calibration bias: lateral and yaw are properties of **one physical camera shared by all three arms**, so an incorrect assumption displaces every arm identically and vanishes in the subtraction. This is the same common-mode-cancellation principle already relied upon elsewhere in this work for RTK bias and for sensor tilt, applied to a new situation.
+
+| quantity | limited by |
+|---|---|
+| absolute per-arm RMS | **±182 mm** from the assumed extrinsics (70 mm lateral + 112 mm yaw at the 2 m look-ahead), plus 39–62 mm GNSS short-scale and the "calculated" geojson |
+| paired differences | sample density only, gated by D053 |
+
+**The individual numbers are not dropped.** Removing them would conceal the absolute accuracy achieved out of distribution, which a reader is entitled to see. They are shown with their uncertainty band and an explicit statement that they are contaminated by the unknown calibration and driving-offset terms.
+
+**Made visible, not merely captioned.** A sensitivity plot reports RMS as a function of the assumed lateral offset and yaw, demonstrating directly that the paired differences stay flat against those assumptions while the absolute values do not. `projection_calibration.sensitivity()` prints the budget alongside every Riseholme GT-1 figure, so the caveat travels with the number rather than living only in prose.
+
+**Cross-references.** D053 (CI reliability guard), D056 (the assumed DOF), D057 (the reference), F013 (the same measurand at Ktima), F031.
 
 ---
 
