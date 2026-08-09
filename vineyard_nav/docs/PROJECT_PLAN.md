@@ -14,7 +14,7 @@ Does a class-aware segmentation formulation (over trunk and pole classes distinc
 
 ## 2. Contribution
 
-The methodological contribution is the **controlled comparison itself**: a three-arm experimental design that isolates two independent axes of variation — architecture (U-Net vs YOLO-seg) and class-structure (binary vs multiclass with class-aware downstream). No published work has done this comparison for vineyard centreline detection. Whichever direction the results land, the comparison informs practice.
+The methodological contribution is the **controlled comparison itself**: a three-arm experimental design that varies two axes — pipeline generation (U-Net baseline vs YOLO-seg) and class-structure (binary vs multiclass with class-aware downstream). No published work has done this comparison for vineyard centreline detection. Whichever direction the results land, the comparison informs practice.  *(Correction, 8 Aug 2026: only the class-structure axis is controlled. Arms A and B differ in at least thirteen respects, so A ↔ B is a baseline-versus-modernised-pipeline contrast, not an architecture-isolating one — see the correction at D006/D021. No architecture-attributable claim rests on it.)*
 
 ## 3. Three-arm design
 
@@ -137,7 +137,7 @@ The A2 Methodology chapter must contain a "Refinements from proposal" subsection
 
 | A1 said | A2 does | Reason |
 |---|---|---|
-| Multiclass semantic segmentation (U-Net, scratch) | Three-arm design: U-Net binary + YOLO binary + YOLO multiclass | Supervisor feedback on architecture modernity; three-arm design cleanly isolates architecture from class-structure effects |
+| Multiclass semantic segmentation (U-Net, scratch) | Three-arm design: U-Net binary + YOLO binary + YOLO multiclass | Supervisor feedback on architecture modernity; three-arm design isolates class-structure at fixed architecture (B↔C); A↔B is a pipeline-generation contrast, not architecture-isolating — see D006/D021 correction |
 | U-Net trained from scratch | U-Net with ImageNet-pretrained encoder | Reduces training risk; enables direct architectural comparison with YOLO's COCO pretraining; scratch justification (educational depth) less critical when U-Net is one of three arms |
 | Multiclass training over all 6 annotated classes | Multiclass training on trunk + pole only | Only trunk and pole feed downstream; tighter controlled experiment; all-6 kept as optional supplementary |
 | Roboflow default split (95/5/2, 966/46/23) | 70/20/10 stratified resplit with augmentation-leakage guard | Supervisor feedback; 23 test frames insufficient for statistical inference |

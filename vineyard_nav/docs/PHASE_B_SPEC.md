@@ -3,7 +3,7 @@
 **Scope:** Implementation contract for Phase B — YOLOv11-seg binary baseline.
 **Audience:** Claude Code (and any future implementer). Read fully before writing code.
 **Status:** Locked.
-**Role in three-arm design:** Modernised binary baseline. Comparison against Phase A isolates architecture effect; comparison against Phase C isolates class-structure effect.
+**Role in three-arm design:** Modernised binary baseline. Comparison against Phase C **isolates the class-structure effect** — same backbone, hyperparameters, data and augmentation, differing only in label granularity. Comparison against Phase A is a **baseline-versus-modernised-pipeline contrast, not a controlled architecture comparison**: the two arms differ in at least thirteen respects (see the correction at D006/D021), so no architecture-attributable claim may rest on it.
 
 ---
 

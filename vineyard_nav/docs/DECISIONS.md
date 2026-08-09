@@ -55,7 +55,9 @@ Statuses:
 **Date:** 28 June 2026
 **Status:** LOCKED
 **Decision:** Binary foreground = pixels/instances covered by COCO annotations with `category_id ∈ {3, 5}` (pole, trunk). Background = everything else: pipe (cat 2), building (cat 1), robot (cat 4), vehicle (cat 6), and unannotated pixels.
-**Rationale:** Both binary arms (Phase A U-Net binary, Phase B YOLO binary) apply the same collapsing rule so the A ↔ B comparison isolates architecture only. Pipe is excluded from foreground by design, not oversight (documented in A2 Methodology).
+**Rationale:** Both binary arms (Phase A U-Net binary, Phase B YOLO binary) apply the same collapsing rule so the A ↔ B comparison isolates architecture only.
+
+> **Correction (8 August 2026, additive — the text above is unchanged, and the decision it records stands).** The phrase describing **A ↔ B as isolating architecture is inaccurate and must not be reproduced in the dissertation.** Arms A and B differ in at least **thirteen** respects, verified against `configs/phase_a_unet_binary.yaml` and `configs/phase_b_yolo_binary_train.yaml`: architecture (U-Net/ResNet-34 vs YOLOv11-seg), pre-training corpus (ImageNet vs COCO), segmentation paradigm (semantic per-pixel vs instance), optimiser (Adam vs SGD), learning rate (1e-4 vs 1e-2, a factor of 100), weight decay (1e-5 vs 5e-4), schedule (cosine annealing vs linear), epochs (60 vs 100), batch size (8 vs 16), loss (0.5·CE + 0.5·Dice vs the YOLO box/seg/cls/dfl composite), early-stopping patience (10 vs 30), augmentation policy (minimal vs mosaic/HSV/affine), and output representation (dense argmax map vs instance masks with boxes). A ↔ B is therefore a **baseline-versus-modernised-pipeline comparison**, not a controlled architecture contrast, and no architecture-attributable claim may rest on it. **Only B ↔ C is controlled** — same backbone, same hyperparameters, same data, same augmentation, differing solely in label granularity — which is why the class-structure question is answerable and the architecture question is not. Pipe is excluded from foreground by design, not oversight (documented in A2 Methodology).
 
 ---
 
@@ -210,6 +212,8 @@ These are documented for the A2 Methodology reproducibility subsection.
 - Arm 3 (Phase C): YOLOv11-seg multiclass (trunk + pole)
 
 Isolated comparisons: A ↔ B (architecture effect, binary fixed); B ↔ C (class-structure effect, YOLO fixed).
+
+> **Correction (8 August 2026, additive — the text above is unchanged, and the decision it records stands).** The phrase describing **A ↔ B as isolating architecture is inaccurate and must not be reproduced in the dissertation.** Arms A and B differ in at least **thirteen** respects, verified against `configs/phase_a_unet_binary.yaml` and `configs/phase_b_yolo_binary_train.yaml`: architecture (U-Net/ResNet-34 vs YOLOv11-seg), pre-training corpus (ImageNet vs COCO), segmentation paradigm (semantic per-pixel vs instance), optimiser (Adam vs SGD), learning rate (1e-4 vs 1e-2, a factor of 100), weight decay (1e-5 vs 5e-4), schedule (cosine annealing vs linear), epochs (60 vs 100), batch size (8 vs 16), loss (0.5·CE + 0.5·Dice vs the YOLO box/seg/cls/dfl composite), early-stopping patience (10 vs 30), augmentation policy (minimal vs mosaic/HSV/affine), and output representation (dense argmax map vs instance masks with boxes). A ↔ B is therefore a **baseline-versus-modernised-pipeline comparison**, not a controlled architecture contrast, and no architecture-attributable claim may rest on it. **Only B ↔ C is controlled** — same backbone, same hyperparameters, same data, same augmentation, differing solely in label granularity — which is why the class-structure question is answerable and the architecture question is not.
 **Rationale:** Supervisor feedback on architecture modernity. Preserves de Silva 2024 as reproduced baseline (Phase A) while adding modernised binary baseline (Phase B) and modernised multiclass contribution (Phase C). Two independent axes cleanly isolated — no confounding between architecture and class-structure effects. Also collapses what was previously a separate Phase C robustness check into the primary design.
 **Consequences:**
 - D002, D003, D008 superseded (no scratch U-Net)
@@ -413,7 +417,7 @@ YOLOv11-seg-nano (yolo11n-seg, 2.8M parameters) was selected as the study's YOLO
 
 Compute constraint: RTX 5050 8GB VRAM. Larger variants (yolo11s-seg, yolo11m-seg, yolo11l-seg) would likely produce higher aggregate mAP scores but were not tested. yolo11m-seg at 640×640 typically requires 10-12GB training VRAM at batch size 16, potentially not fitting our hardware without batch-size reduction that would affect training dynamics.
 
-Since the three-arm study isolates architecture (A↔B) and class-structure (B↔C) effects at fixed variant, the study's internal validity is not affected by choice of variant. External comparison to arbitrary published YOLO numbers is not the study's objective; the controlled comparisons are.
+Since the three-arm study contrasts pipelines (A↔B) and isolates class-structure (B↔C) at fixed variant *(A↔B is not a controlled architecture comparison — see the correction at D006/D021)*, the study's internal validity is not affected by choice of variant. External comparison to arbitrary published YOLO numbers is not the study's objective; the controlled comparisons are.
 
 **Cross-references:**
 - F007: architectural failure mode analysis; variant choice does not affect the mode's architectural availability.
