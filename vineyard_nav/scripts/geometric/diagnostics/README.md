@@ -26,6 +26,29 @@ that the fit tracks the detected dots. Run in the order the row model evolved:
   a projection/mounting offset looks like.
 - `figure_slope.py` — renders that distribution (`linefit/slope_hist.png`).
 
+## Evidence for exclusion decisions
+
+Scripts here regenerate the evidence behind a decision to **exclude** a bag, so the finding can be
+re-checked rather than taken on trust. They are not pipeline stages and none of the reported
+results depends on them — an excluded bag contributes nothing to any finding.
+
+- `figure_august2023_blank_camera.py` — the evidence for **D054**: august2023's camera recorded no
+  imagery. Decodes frames straight from each bag's `.db3`, with no pipeline stage in between, and
+  puts august2023 beside july2023 at comparable elapsed times; per-frame pixel mean and standard
+  deviation are annotated, and a standard deviation of 0 is a mathematically uniform image. The
+  bag's ROS2 conversion and extracted frames were discarded, but the **ROS1 source bag is retained**,
+  so the figure can be regenerated from it.
+
+*D050 (july-2022) and D051 (september) predate this convention and have no such script — their
+evidence is recorded only as prose in `docs/DECISIONS.md`. If either is ever revisited, add the
+regenerating script here.*
+
+## Detection-scale audit
+
+- `figure_blob_audit.py` — renders the blob-scale detections recorded in each bag's
+  `cache/blob_audit.json` by the F007 canopy-blob audit (detections whose bbox exceeds the D035 15%
+  guard, plus the 10–15% near-blob band that passes it).
+
 ## Bootstrap block-length exploration
 
 - `autocorrelation_block_analysis.py` — measures the distance over which consecutive frames stay

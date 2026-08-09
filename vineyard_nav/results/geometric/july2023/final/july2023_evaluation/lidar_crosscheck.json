@@ -1,0 +1,195 @@
+{
+  "config": {
+    "bag": "july2023",
+    "anchors": [
+      6097,
+      6102,
+      5651,
+      5652,
+      11164,
+      11165,
+      10185,
+      10186,
+      2222,
+      2223,
+      9284,
+      9285,
+      1317,
+      1318
+    ],
+    "per_corridor": 2,
+    "corridors": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "band": "z 0.2-1.2m, x 1-8m, |y|<2.6m",
+    "extrinsic": "Table 3 identity (x-0.098, z+1.0)",
+    "camera_heading": "mean across 9 models (tilt arm-independent)"
+  },
+  "anchors": [
+    {
+      "frame": 6097,
+      "corridor": 0,
+      "nL": 1991,
+      "nR": 1491,
+      "mL": 0.0367,
+      "mR": 0.0886,
+      "lidar_hdg": 3.58,
+      "cam_hdg": 0.04,
+      "diff": 3.54
+    },
+    {
+      "frame": 6102,
+      "corridor": 0,
+      "nL": 2084,
+      "nR": 1359,
+      "mL": 0.03,
+      "mR": 0.0616,
+      "lidar_hdg": 2.62,
+      "cam_hdg": 0.15,
+      "diff": 2.48
+    },
+    {
+      "frame": 5651,
+      "corridor": 1,
+      "nL": 1655,
+      "nR": 968,
+      "mL": 0.0435,
+      "mR": 0.1212,
+      "lidar_hdg": 4.71,
+      "cam_hdg": 1.03,
+      "diff": 3.68
+    },
+    {
+      "frame": 5652,
+      "corridor": 1,
+      "nL": 1829,
+      "nR": 966,
+      "mL": 0.04,
+      "mR": 0.1123,
+      "lidar_hdg": 4.35,
+      "cam_hdg": 2.56,
+      "diff": 1.8
+    },
+    {
+      "frame": 11164,
+      "corridor": 2,
+      "nL": 2041,
+      "nR": 1366,
+      "mL": -0.0326,
+      "mR": 0.0411,
+      "lidar_hdg": 0.24,
+      "cam_hdg": 0.35,
+      "diff": -0.1
+    },
+    {
+      "frame": 11165,
+      "corridor": 2,
+      "nL": 2027,
+      "nR": 1457,
+      "mL": -0.0338,
+      "mR": 0.0422,
+      "lidar_hdg": 0.24,
+      "cam_hdg": 0.32,
+      "diff": -0.08
+    },
+    {
+      "frame": 10185,
+      "corridor": 3,
+      "nL": 1251,
+      "nR": 1815,
+      "mL": -0.0331,
+      "mR": 0.2504,
+      "lidar_hdg": 6.2,
+      "cam_hdg": 2.05,
+      "diff": 4.15
+    },
+    {
+      "frame": 10186,
+      "corridor": 3,
+      "nL": 1251,
+      "nR": 1815,
+      "mL": -0.0331,
+      "mR": 0.2504,
+      "lidar_hdg": 6.2,
+      "cam_hdg": 1.71,
+      "diff": 4.49
+    },
+    {
+      "frame": 2222,
+      "corridor": 4,
+      "nL": 1937,
+      "nR": 1624,
+      "mL": -0.0159,
+      "mR": 0.0604,
+      "lidar_hdg": 1.28,
+      "cam_hdg": 0.47,
+      "diff": 0.8
+    },
+    {
+      "frame": 2223,
+      "corridor": 4,
+      "nL": 1908,
+      "nR": 1620,
+      "mL": -0.0116,
+      "mR": 0.0629,
+      "lidar_hdg": 1.47,
+      "cam_hdg": -1.17,
+      "diff": 2.64
+    },
+    {
+      "frame": 9284,
+      "corridor": 5,
+      "nL": 1833,
+      "nR": 1507,
+      "mL": -0.0214,
+      "mR": 0.0352,
+      "lidar_hdg": 0.4,
+      "cam_hdg": 1.34,
+      "diff": -0.94
+    },
+    {
+      "frame": 9285,
+      "corridor": 5,
+      "nL": 1833,
+      "nR": 1507,
+      "mL": -0.0214,
+      "mR": 0.0352,
+      "lidar_hdg": 0.4,
+      "cam_hdg": 1.25,
+      "diff": -0.86
+    },
+    {
+      "frame": 1317,
+      "corridor": 6,
+      "nL": 1821,
+      "nR": 1824,
+      "mL": 0.0628,
+      "mR": 0.1173,
+      "lidar_hdg": 5.15,
+      "cam_hdg": 0.81,
+      "diff": 4.34
+    },
+    {
+      "frame": 1318,
+      "corridor": 6,
+      "nL": 1786,
+      "nR": 1641,
+      "mL": 0.06,
+      "mR": 0.1165,
+      "lidar_hdg": 5.04,
+      "cam_hdg": 0.94,
+      "diff": 4.1
+    }
+  ],
+  "mean_lidar_hdg": 2.99,
+  "sd_lidar_hdg": 2.21,
+  "mean_cam_hdg": 0.85,
+  "camera_minus_lidar": -2.15,
+  "n_fitted": 14
+}
