@@ -4,11 +4,19 @@ If the two sites' results differ, that difference has to be attributable to the 
 code. This asserts that every file in the SHARED set is byte-identical between
 scripts/geometric/ and scripts/riseholme/, and that every divergence is declared with a reason.
 
+It also gates a reporting rule that spans both trees: **no working-doc identifiers in rendered figure
+captions**. A marker reading the report has no access to DECISIONS.md or FINDINGS.md, so a caption
+reading "F013: near-identical centrelines" is unreadable to its actual audience. The identifiers stay
+in the docs and in code comments, never on the canvas.
+
 Run before any Riseholme evaluation, and after any edit to either tree:
     python3 scripts/riseholme/verify_algorithm_parity.py
-Exit status 0 = parity holds. Non-zero = a shared file drifted, or a file is untriaged.
+Exit status 0 = parity holds. Non-zero = a shared file drifted, a file is untriaged, or a figure
+caption carries a decision/finding identifier.
 """
+import ast
 import hashlib
+import re
 import sys
 from pathlib import Path
 
@@ -102,6 +110,70 @@ def check_near_identical():
     return bad
 
 
+# --------------------------------------------------------------------------------------------
+# Caption hygiene: no D0xx/F0xx in anything that reaches a figure canvas.
+#
+# Scope is deliberately narrow -- AST string literals that are (a) arguments to a matplotlib text
+# renderer, or (b) values under a dict key whose name marks it as caption text (figures.py holds
+# its per-bag caption strings in the FRAMES dict and passes them through `caption_extra`).
+# Module docstrings, comments and developer notes are NOT scanned: citing F013 next to the code
+# that implements it is good practice, and only the rendered string is the reader's problem.
+CAPTION_ID = re.compile(r"\b[DF]0\d{2}\b")
+_RENDERERS = {"suptitle", "set_title", "title", "text", "annotate",
+              "set_xlabel", "set_ylabel", "legend", "figtext"}
+_CAPTION_KEY = re.compile(r"caption|footer|banner|title|label", re.I)
+
+
+def _figure_scripts():
+    """Every figure-producing script in BOTH trees, plus perception diagnostics."""
+    root = RH.parent
+    found = set(root.rglob("figures*.py")) | set(root.rglob("*/diagnostics/*.py"))
+    return sorted(p for p in found if p.is_file())
+
+
+def scan_captions(path):
+    """-> [(lineno, where, [ids])] for identifiers that would render onto a figure."""
+    try:
+        tree = ast.parse(path.read_text())
+    except SyntaxError as e:
+        return [(getattr(e, "lineno", 0), "SYNTAX ERROR", [str(e)])]
+
+    hits = []
+
+    def literals(node):
+        for s in ast.walk(node):
+            if isinstance(s, ast.Constant) and isinstance(s.value, str) and CAPTION_ID.search(s.value):
+                yield s.lineno, CAPTION_ID.findall(s.value)
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            fn = node.func.attr if isinstance(node.func, ast.Attribute) else getattr(node.func, "id", "")
+            if fn in _RENDERERS:
+                hits += [(ln, fn, ids) for ln, ids in literals(node)]
+        elif isinstance(node, ast.Dict):
+            for k, v in zip(node.keys, node.values):
+                if isinstance(k, ast.Constant) and isinstance(k.value, str) and _CAPTION_KEY.search(k.value):
+                    hits += [(ln, f"dict[{k.value}]", ids) for ln, ids in literals(v)]
+    return sorted(set((ln, w, tuple(i)) for ln, w, i in hits))
+
+
+def check_captions():
+    print("\nCAPTION HYGIENE — no decision/finding identifiers on any figure canvas")
+    fail = []
+    for path in _figure_scripts():
+        hits = scan_captions(path)
+        rel = path.relative_to(RH.parent.parent)
+        if not hits:
+            continue
+        fail.append(str(rel))
+        print(f"  IDS  {rel}")
+        for ln, where, ids in hits:
+            print(f"        line {ln:4} in {where}: {', '.join(ids)}")
+    if not fail:
+        print(f"  OK   {len(_figure_scripts())} figure scripts, zero identifiers rendered")
+    return fail
+
+
 def main():
     fail = []
     print("SHARED — must be byte-identical")
@@ -138,12 +210,15 @@ def main():
         print(f"\nUNTRIAGED Ktima files (classify them in this script): {stray}")
         fail.extend(stray)
 
+    fail.extend(check_captions())
+
     print()
     if fail:
         print(f"PARITY FAILED: {fail}")
         return 1
     print(f"PARITY OK — {len(SHARED)} shared files identical, "
-          f"{len(DIVERGENT)} declared divergences, {len(NOT_PORTED)} not ported")
+          f"{len(DIVERGENT)} declared divergences, {len(NOT_PORTED)} not ported, "
+          f"{len(_figure_scripts())} figure scripts caption-clean")
     return 0
 
 
