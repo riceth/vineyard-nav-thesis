@@ -78,9 +78,14 @@ Path root: `results/geometric/<bag>/final/figures/`
   to the arm.*
 
 - **Fig 3** — *Camera-derived heading against an independent LiDAR estimate at ten anchor positions in each
-  of five corridors. Both means are positive (camera +1.86°, LiDAR +2.57°, difference −0.71°), so the
+  of five corridors. Both means are positive (camera +2.29°, LiDAR +2.53°, difference −0.24°), so the
   apparent tilt is common to both sensors rather than an artefact of the vision pipeline.*
-  **Bag-specific:** three numbers from `lidar_crosscheck.json`.
+  **Bag-specific:** three numbers from `lidar_crosscheck.json` (`mean_cam_hdg`, `mean_lidar_hdg`,
+  `camera_minus_lidar`).
+  > These are the **post-D047** values, after the anchor-selection fix regenerated march's artefact.
+  > The pre-fix figures (+1.86 / +2.57 / −0.71) survived in `FIGURE_SPEC.md` and were copied here; both
+  > are corrected. The **rendered PNG was never stale** — it reads the JSON at render time, and a
+  > re-render reproduces the committed file byte-for-byte.
 
 - **Fig 4** — *Multiclass output on the anatomy frame. Trunks (blue) supply almost all of the near-field
   base points that seed the fit; poles (yellow) contribute mainly at range. The line fit itself is
@@ -108,8 +113,8 @@ Path root: `results/geometric/<bag>/final/figures/`
 - **Fig 5** — *The pipeline emits a confident two-row centreline while the robot is stationary outside a
   corridor. Nothing in the per-frame output distinguishes this from a valid in-row fit.*
 - **Fig 5b** — *Rate of spurious two-row output per non-in-row category and per arm. Turning frames are
-  the worst case (76–80% on this bag). The failure is a property of the geometry stage, not of any one
-  segmentation arm.*
+  the worst case (76.0 / 80.5 / 78.7% for U-Net binary, YOLO binary and YOLO multiclass on this bag).
+  The failure is a property of the geometry stage, not of any one segmentation arm.*
 - **Fig 6** — *A spurious centreline produced mid-turn in the headland. The fit is geometrically
   well-formed and carries no indication that the robot is not in a row.*
 - **Fig 7** — *A corridor transition. The recovered heading is +13°, far outside the in-row distribution,
@@ -173,7 +178,7 @@ Path root: `results/geometric/comparison/figures/`
 
 | File | Shows | Caption |
 |---|---|---|
-| `cmp_coverage_trend.png` | Two-row coverage across four bags, two seasons | *Two-row coverage for each arm across the four bags. Coverage drops sharply from the bare-vine season to the canopy season, and the ordering of the arms is preserved throughout.* |
+| `cmp_coverage_trend.png` | Two-row coverage across four bags, two seasons | *Two-row coverage for each arm across the four bags. Coverage drops sharply from the bare-vine season to the canopy season. The multiclass arm is lowest on every bag; the two binary arms are not separable from each other, and their order reverses between the bare-vine and canopy bags.* |
 | `cmp_season_contrast.png` | One bare-vine and one canopy frame side by side | *Two seasons at their typical frame, showing the detections available to the row fit. Under canopy, foliage occludes the trunk bases the fit depends on.* |
 | `cmp_model_outputs_march.png` | Raw output of each arm on one March frame | *What each arm actually outputs on the same frame: a binary mask (U-Net), binary instances (YOLO binary), and class-labelled instances (YOLO multiclass). The three representations differ; the geometry derived from them does not.* |
 | `cmp_model_outputs_april.png` | as above, April | as above, substituting the bag and season |

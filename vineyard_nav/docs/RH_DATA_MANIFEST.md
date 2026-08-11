@@ -439,7 +439,7 @@ different GNSS hardware quality**, is the strongest single calibration result av
 | Lateral offset | −0.068 m (`/scan`, n = 29) | −0.035 m (geojson+GNSS, n = 51) | **33 mm** |
 | Yaw | +3.21°, IQR [+1.89, +5.16] (`/scan`) | 0° (collector's account) | IQR **excludes** 0 |
 
-**33 mm exceeds the 19.5–24.1 mm effect GT-1 must resolve**, and the geojson-anchored estimate's
+**33 mm exceeds the 19.0–20.2 mm effect GT-1 must resolve**, and the geojson-anchored estimate's
 IQR spans 48 cm. Both DOF bias GT-1 directly, so neither is adopted.
 
 ### 12.3 ⚠️ Caveat — the two lateral estimates are NOT fully independent
@@ -618,7 +618,7 @@ two different second sensors (2D LiDAR vs RTK GNSS + survey geometry). **Mild su
 for a centred or near-centred mount.**
 
 It is **not** a measurement. The two empirical estimates differ by **33 mm** — larger than the
-19.5–24.1 mm effect GT-1 resolves on Ktima — and the geojson estimate's IQR alone spans 48 cm.
+19.0–20.2 mm effect GT-1 resolves on Ktima — and the geojson estimate's IQR alone spans 48 cm.
 *Converging on "small" is not the same as knowing the number.* See §12.3 for why the two are not
 fully independent.
 
@@ -650,6 +650,6 @@ account later contradicts the locked values, that is a finding to investigate on
 not a reason to have withheld them, since the checks here stand independently of his agreement.
 
 **What this does not fix.** Even a perfect calibration leaves the reference-precision limit: GNSS
-short-scale residual on `part2` is 39.2 / 44.2 / 56.6 mm (5/9/15-fix) against a 19.5–24.1 mm effect.
+short-scale residual on `part2` is 39.2 / 44.2 / 56.6 mm (5/9/15-fix) against a 19.0–20.2 mm effect.
 The reference is 2–3× coarser than the quantity, so a per-arm GT-1 ranking at Riseholme is expected
 to be **indistinguishable regardless of calibration**. The calibration was never the only blocker.

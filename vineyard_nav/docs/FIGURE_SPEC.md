@@ -133,7 +133,7 @@ marker actually sees) are recorded in **§5a**.
 | 1 | `in_row/fig1_anatomy_10247.png` | Methodology anatomy: driven trajectory (red dotted, odometry) vs predicted centreline (green), 2 m look-ahead (★), offset/heading, IPM bird's-eye | 10247, arm A |
 | 2 | `in_row/fig2_arm_invariance_7397.png` | F013: 3-up A/B/C, near-identical centrelines (offset +0.157/+0.157/+0.156) | 7397 |
 | 2b | `in_row/fig2b_forest_paired.png` | F013: paired cross-arm bootstrap forest — GT-1 all CIs include 0; GT-2 sub-noise-floor | `paired_crossarm.json` |
-| 3 | `in_row/fig3_tilt_sensor_common.png` | F017: camera vs LiDAR heading across 10 anchors × 5 corridors — both means positive (cam +1.86°, LiDAR +2.57°, diff −0.71°), sensor-common tilt | `lidar_crosscheck.json` |
+| 3 | `in_row/fig3_tilt_sensor_common.png` | F017: camera vs LiDAR heading across 10 anchors × 5 corridors — both means positive (cam **+2.29°**, LiDAR **+2.53°**, diff **−0.24°**), sensor-common tilt | `lidar_crosscheck.json` |
 | 4 | `in_row/fig4_mechanism_10247_C.png` | F018: Phase-C class colours (blue trunks load-bearing near-field, yellow poles), class-agnostic fit | 10247, arm C |
 | 4b | `in_row/fig4b_abstention_13820.png` | **F024** + **F025**: `single_row` — no centreline emitted (left side has only 1 detection *within* the 5 m near-seed window, D037 requires ≥2 to seed; right side has 6, fits); caption also cites the F025 sensitivity result (5 m near-optimal) | 13820, arm A |
 
@@ -142,7 +142,7 @@ marker actually sees) are recorded in **§5a**.
 | # | File | Shows | Frame(s) |
 |---|---|---|---|
 | 5 | `non_in_row/fig5_stationary_6.png` | F020: spurious two_row, robot stationary | 6 |
-| 5b | `non_in_row/fig5b_output_distribution.png` | F020: spurious two_row rate by category×arm (turn spikes 76–80%) | `non_in_row_analysis.json` |
+| 5b | `non_in_row/fig5b_output_distribution.png` | F020: spurious two_row rate by category×arm (turn spikes **A 76.0 / B 80.5 / C 78.7 %**) | `non_in_row_analysis.json` |
 | 6 | `non_in_row/fig6_turn_10111.png` | F020: spurious centreline, robot in headland manoeuvre | 10111 |
 | 7 | `non_in_row/fig7_transition_11264.png` | F020: off-nominal spurious geometry (heading +13°), robot in corridor transition | 11264 |
 | 8 | `non_in_row/fig8_driven_path_11264.png` | F021: spurious centreline (green) vs actual driven path (red dotted, odometry) — `driven_path_error` | 11264 |
@@ -174,7 +174,7 @@ single frame can show arm-invariance or camera-vs-LiDAR agreement (a single fram
 even has m_L=−0.029, so "both positive, near-equal" is false per-frame — it is a **pooled** property).
 Fig 3 is therefore a summary: camera (line-fit centreline, mean of 9 models) vs LiDAR (independent
 row-plane fit) heading across the 10 pooled anchors (2 per corridor, all 5 corridors). Both means are
-positive (cam +1.86°, LiDAR +2.57°, diff −0.71°) and the sensors **track the corridor-dependent tilt**;
+positive (cam +2.29°, LiDAR +2.53°, diff −0.24°) and the sensors **track the corridor-dependent tilt**;
 that an independent sensor sees the same tilt shows it is a real robot-to-row geometry offset
 (sensor-common), not a camera-projection artefact — superseding the camera-yaw hypothesis (F015).
 Honest: in the flattest corridor (1) the camera heading dips slightly negative (−0.72°/−0.79°) while
@@ -192,7 +192,7 @@ heading, kinematics) vary by frame; the fixed caption text is shown.
 | 1 | `frame 10247 · arm A · two_row · offset=… m, heading=…°  (centreline_error_rms convention)` + line 2 `red dotted = driven trajectory (odometry) · green = predicted centreline · lateral gap = this frame's offset (single frame, not the pooled RMS)` (driven path on both panels; 2 m look-ahead green star) |
 | 2 | suptitle `Arm-invariance · frame 7397 (near-identical centrelines; lateral offset indistinguishable across arms)` + line 2 `red dotted = driven trajectory (odometry); gap = per-frame offset (single frame, not the pooled RMS)`; per-arm `arm A/B/C · offset=… hdg=…` (driven path + 2 m star per panel) |
 | 2b | suptitle `Paired cross-arm bootstrap (moving-block, whole-bag) · blue = CI includes 0`; panels `Lateral offset — all CIs include 0` / `Heading — sub-noise-floor difference`; axes `cross-arm Δ lateral offset (m)` / `cross-arm Δ heading (°)` |
-| 3 | `Sensor-common tilt — camera vs LiDAR heading, 10 anchors × 5 corridors (cam +1.86°, LiDAR +2.57°, diff −0.71°)`; legend `camera (line-fit centreline, mean of 9 models)` / `LiDAR (independent row-plane fit)` |
+| 3 | `Sensor-common tilt — camera vs LiDAR heading, 10 anchors × 5 corridors (cam +2.29°, LiDAR +2.53°, diff −0.24°)`; legend `camera (line-fit centreline, mean of 9 models)` / `LiDAR (independent row-plane fit)` |
 | 4 | `frame 10247 · arm C · two_row · offset=… (centreline_error_rms convention)` + line 2 `Phase-C classes: trunks (blue) load-bearing in the near field; the row fit is class-agnostic` + line 3 `red dotted = driven trajectory (odometry) · green = predicted centreline · lateral gap = this frame's offset (single frame, not the pooled RMS)` |
 | 4b | `frame 13820 · arm A · single_row — no centreline emitted (in-row abstention)` + `Left side: 1 detection within the 5 m near-seed window (fit needs >=2 to seed) · right side: 6, fits` + `the 5 m near-seed window is empirically near-optimal — widening to 6 m recovers ~28% of abstentions / at ~4% RMS cost; wider degrades the full-set metric via adjacent-row corruption (adjacency guard needed)` + `red dotted = driven trajectory (odometry) — robot driving in-row; the pipeline still abstained here`; bird's-eye annotation `5 m near-seed window` |
 | 5 | `frame 6 · stationary · arm A · spurious two_row output · offset=… heading=…  (driven_path_error)` + line 2 `robot stationary  ·  v=… m/s, \|v_y\|=…` |
