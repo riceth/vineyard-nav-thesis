@@ -149,6 +149,39 @@ For scale, the full eligible set is ≈ 11,800 frames (val + test), ≈ 350 at t
 - **Complementary:** RMS heading error (deg, GT-2); per-pass lateral bias (GT-1).
 - **Cross-arm:** paired-difference bootstrap CIs (as in F001/F003, on the paired subsample), not overlapping single-arm CIs.
 
+### 5a. Three GT-1 numbers exist. They are not interchangeable. (added 9 August 2026)
+
+`line_fit_report.json` and `paired_crossarm.json` each publish a GT-1 RMS, computed over a
+**different frame set**. On march arm A they read 0.209, 0.197 and a paired difference — three
+numbers for what a careless reading calls "the accuracy". Always name which one is meant.
+
+| name | artefact · key | frame set | march A | what it answers |
+|---|---|---|---|---|
+| **per-model** | `line_fit_report.json` · `per_arm` | each seed's own `two_row` frames; RMS per seed, then **mean ± SD across the three seeds** | **0.209 ± 0.003 m** | *How accurate is one trained model in deployment?* |
+| **per-arm (seed-intersection)** | `line_fit_report.json` · `per_arm_ci` | frames where **that arm** fitted on **all three seeds** (n = 6,163); RMS of the **seed-averaged** error, moving-block bootstrap CI | **0.197 m** [0.188, 0.204] | *How accurate is the arm, with seed noise averaged out?* |
+| **paired cross-arm** | `paired_crossarm.json` · `across_seed` | frames where **both arms of the pair** fitted on all three seeds (`cx & cy`, ~5,800/pair) | reported as a **difference**, never an absolute | *Do two arms differ?* |
+
+Constructed at `scripts/geometric/analyze.py:197` (per-arm intersection) and `:308–310` (pair
+intersection).
+
+**Why per-arm reads lower than per-model.** Averaging the error across three seeds before taking
+the RMS cancels seed-to-seed noise; per-model takes the RMS first and averages after. The ~12 mm
+gap is that cancellation, not a better pipeline. Quoting 0.197 as deployment accuracy overstates
+it by ~6%.
+
+**Which to use where.**
+
+- **Headline absolute accuracy → per-model (0.209 ± 0.003).** It is what a deployed model achieves.
+  This is the number for the Results table.
+- **Anywhere a CI is shown → per-arm**, labelled as seed-intersection. It is the only one of the
+  three that carries a per-arm interval.
+- **Any cross-arm claim → paired.** Absolutes must never be differenced to compare arms: the frame
+  sets differ between arms (A n = 6,163, B 6,029, C 6,034 on march), so a difference of absolutes
+  is partly a difference of *which frames were scored*. Pairing removes the scene; that is the whole
+  reason F013 rests on it.
+
+**Never** mix them in one sentence or one table column without saying which is which.
+
 ---
 
 ## 6. Image-to-world projection via camera calibration

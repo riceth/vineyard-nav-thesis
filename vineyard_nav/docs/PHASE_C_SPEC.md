@@ -243,11 +243,21 @@ Two plots saved to `sensitivity_plots/`:
 
 Given test metrics from Phases A, B, and C (at locked config for C), produce the 3-way comparison narrative:
 
-1. **A ↔ B:** architecture effect. Does modernising architecture change binary performance? Report ΔRMS lateral error with bootstrap CI and effect size.
+1. **A ↔ B:** *pipeline-generation* effect — **not an architecture effect**. Does the modernised binary pipeline as a whole change binary performance? Report ΔRMS lateral error with bootstrap CI and effect size, **reported as a system-level contrast only**.
 2. **B ↔ C:** class-structure effect. Does class-aware pipeline improve over class-agnostic YOLO? Report ΔRMS lateral error with bootstrap CI and effect size.
 3. **B ↔ C-configC (from sweep):** does the class-aware downstream logic itself matter, or does the multiclass model just detect better? Report ΔRMS lateral error between YOLO-binary and multiclass-detected-but-class-agnostic-processed.
 
 Attribution paragraph written to `attribution_summary.md` and appended to DECISIONS.md.
+
+> **Correction (9 August 2026, additive — the analysis steps above are unchanged; item 1's *label* is
+> corrected and its permitted interpretation narrowed).** Arms A and B differ in at least **thirteen**
+> respects (D006/D021): architecture, pre-training corpus, segmentation paradigm, optimiser, learning
+> rate (100×), weight decay, schedule, epochs, batch size, loss, early-stopping patience, augmentation
+> policy, and output representation. **A ↔ B therefore attributes nothing to architecture** — it is a
+> baseline-versus-modernised-pipeline contrast. **Only B ↔ C is controlled** (same backbone, same
+> hyperparameters, same data, same augmentation; label granularity is the sole difference), so items 2
+> and 3 carry the attributable claims. This entry is called out specifically because it *instructs the
+> analysis*: any attribution paragraph generated from item 1 must not name architecture as the cause.
 
 ### 10.2 Statistical framework
 

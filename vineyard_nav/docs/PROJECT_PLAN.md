@@ -1,10 +1,10 @@
 # PROJECT_PLAN.md
 
-**Project:** Multiclass Semantic Segmentation for In-Row Vineyard Navigation: A Comparative Study Against the Binary-Mask Baseline
+**Project:** Multiclass Instance Segmentation for In-Row Vineyard Navigation: A Controlled Comparison Against the Binary-Mask Baseline
 **Student:** Edosa Ebohon (30436293), MSc Robotics and Artificial Intelligence, University of Lincoln
 **Module:** CMP9140 Research Project
 **Timeline:** 13 June 2026 → 26 August 2026 (A2 submission)
-**Status:** Design locked. Implementation pending.
+**Status:** Design locked. **Implementation complete** — five bags evaluated end-to-end (march, april, may, june, july2023) across three arms x three seeds; the Riseholme generalisation strand is complete and boxed pending the calibration reply. Write-up in progress.
 
 ---
 
@@ -28,10 +28,10 @@ Three model arms, all feeding the same downstream pipeline and evaluated by the 
 
 Two isolated comparisons emerge:
 
-- **A ↔ B:** architecture effect at fixed binary labelling. Answers: does modernising the architecture change binary-mask performance?
+- **A ↔ B:** **pipeline-generation** effect at fixed binary labelling. Answers: does the modernised binary pipeline as a whole change binary-mask performance? **Not an architecture effect** — see the correction below.
 - **B ↔ C:** class-structure effect at fixed YOLO architecture. Answers: does making class identity available (and using it downstream) improve centreline detection?
 
-The two axes are independent, uncorrelated with each other, and each isolable — the methodological property that makes the design defensible against confounded-comparison criticism.
+> **Correction (9 August 2026, additive — the two comparisons above are unchanged; the A ↔ B *label* and the isolability claim that followed are corrected).** A and B differ in at least **thirteen** respects (D006/D021): architecture, pre-training corpus, segmentation paradigm, optimiser, learning rate (100×), weight decay, schedule, epochs, batch size, loss, early-stopping patience, augmentation policy, output representation. **A ↔ B is therefore a baseline-versus-modernised-pipeline contrast and isolates nothing.** Only **B ↔ C** is controlled — same backbone, same hyperparameters, same data, same augmentation, differing solely in label granularity. The design remains defensible against confounded-comparison criticism **because the class-structure question rests on B ↔ C alone**, not because both axes are isolable. The superseded sentence read: *"The two axes are independent, uncorrelated with each other, and each isolable — the methodological property that makes the design defensible against confounded-comparison criticism."*
 
 ## 4. Pipeline architecture
 
