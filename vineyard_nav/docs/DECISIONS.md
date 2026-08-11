@@ -138,6 +138,8 @@ Statistical treatment: bootstrap CIs over per-frame metric differences for pairw
 
 > **Amendment (19 July 2026, additive — the original D014 text above is unchanged).** D014's **"teleoperator commands" / "teleoperator trajectory"** language is **imprecise** and should be read with this correction going forward. The March bag carries `/current_node` and `/closest_node` (`std_msgs/String`, the topological-navigation stack), indicating the BLT run was **very likely under existing autonomous navigation, not hand-teleoperation**. The command-level strand's evaluation reference (`/odometry/base_raw.twist.angular.z`) should therefore be described as **"executed yaw-rate from the BLT autonomy run,"** not "teleoperator commands." (The geometric-strand phrase "teleoperator trajectory" is already footnoted *"driven-path in current terminology; BLT autonomous, Polvara 2024"* at strands 1–2 above and at D031/D-F; this amendment extends the same correction to strand 3.) See **D042** (native-twist signal source) and **PID_PIPELINE_SPEC.md**.
 
+> **Confirmed at primary source (9 August 2026, additive — no change of position; the hedge is removed).** The amendment above inferred autonomy from the presence of topological-navigation topics and called it *"very likely."* Polvara et al. (2024) states it directly. §3.2: *"we use the Topological Navigation Toolkit to enable autonomous navigation along all the corridors."* §1: *"driving autonomously along the crop rows."* **O020 is therefore established by the dataset paper, not inferred from topic names** — the platform ran autonomous topological navigation, and "teleoperator" is wrong as a matter of record rather than of probability. The convention *name* remains deliberately retained where it appears in `GEOMETRY_PIPELINE_SPEC.md` to match committed artefact keys.
+
 ---
 
 ## D015 — Logging: TensorBoard + CSV
@@ -184,6 +186,27 @@ These are documented for the A2 Methodology reproducibility subsection.
 **Status:** LOCKED (dissertation framing)
 **Decision:** A2 Methodology and Discussion must retire the A1 proposal's "poles remain visible" framing. Replace with: "both trunks and poles degrade in visibility across canopy state, but both retain enough signal for class-aware combination to extract complementary information."
 **Rationale:** Empirical data: pole retention ~24% vs trunk retention ~35% across canopy state. The A1 framing was overstated. Contribution argument survives — never depended on relative pole/trunk robustness.
+
+> **Correction (9 August 2026, additive — the text above is unchanged and the retirement decision stands; the *grouping* the numbers describe was mislabelled, and the numbers themselves are replaced).** The entry states neither its grouping nor its deduplication basis. Both are now fixed, from `scripts/perception/diagnostics/output/per_image_stats.csv`.
+>
+> **The numbers reproduce, but they are not canopy-state numbers.** 24% / 35% is the **month-extreme** pair — mean instances per image in `unknown` against `march` (pole 24.1%, trunk 35.4%, all 1,035 rows). It is not a bare-vine → canopy contrast, which is what the entry claims. `unknown` (405 rows) is an *attribution bucket*, not a season.
+>
+> **Canonical replacement — pole 31.8%, trunk 37.3%**, grouped **bare-vine (march + april) → canopy (may + unknown)** and computed on the **230 deduplicated unique scenes** (`is_duplicate` excluded; 805 of the 1,035 rows are augmented variants of those same 230 scenes). Deduplication is not optional here: six augmentations of one photograph are one observation, and including them inflates n more than four-fold while adding no information — it would also weight scenes unequally, since augmentation counts are not uniform. For completeness, the same canopy grouping **with** duplicates gives pole 29.6% / trunk 36.4%, and the month-extreme pair deduplicated gives pole 25.4% / trunk 36.1%; all four variants are reported here so the choice is auditable.
+>
+> **What the retraction rests on.** Not the gap between the classes — under the correct grouping that gap *narrows* (31.8 vs 37.3, a 5.5 pp spread, against 24.1 vs 35.4), making the two classes **more** similar, not less. The retraction rests on **pole retention being 31.8% in absolute terms**: poles lose roughly **68% of their instances** under canopy, so they do **not** "remain visible" on a density measure. That is the whole argument, and it does not depend on any trunk comparison.
+>
+> **Two measures disagree, and both must be named.** On an image-level **presence** measure — the fraction of frames containing at least one instance — **poles are in 99.2% of canopy frames while trunks fall to 77.5%** (bare-vine: poles 100%, trunks 99.1%; 230 unique scenes). A1's wording is therefore **defensible on presence and wrong on density**: something pole-like is nearly always somewhere in the image, but the *number* of usable pole instances collapses by two-thirds.
+>
+> | measure | bare-vine → canopy, poles | bare-vine → canopy, trunks |
+> |---|---|---|
+> | **density** (mean instances/image) — *used here* | 12.06 → 3.84 (**31.8%**) | 15.96 → 5.96 (**37.3%**) |
+> | presence (% frames with ≥ 1) | 100 → **99.2%** | 99.1 → **77.5%** |
+>
+> **Why this work uses density.** The row fit consumes **base points**, and a side seeds only when at least two fall inside the near-seed window (D037). One pole in frame contributes one base point and cannot seed a side; the fit is driven by *how many* instances are available, not by whether any exist. Presence is therefore the wrong measure for this pipeline even though it is the measure on which A1's wording survives. State the measure explicitly wherever either number appears — the two support opposite readings of the same data.
+>
+> Cite **31.8% / 37.3% density, bare-vine → canopy, 230 unique scenes** in A2, with the presence figures alongside as the honest counterpoint.
+>
+> **Independent sensor support for the direction (9 August 2026, additive).** The retraction's direction is corroborated by a different sensor entirely. Polvara et al. (2024) §5.1: *"Moving from late winter across spring and into summer, poles disappear from the map because the plants are now covered by leaves."* That is a **LiDAR mapping** observation, independent of the image annotations these percentages are counted from, and it runs the same way: pole availability falls as the canopy closes. Two measurement modalities, one direction — which is stronger support for retiring "poles remain visible" than the annotation counts alone. It corroborates the **direction only**; the 31.8% magnitude remains an annotation-density figure.
 
 ---
 
@@ -269,6 +292,8 @@ Isolated comparisons: A ↔ B (architecture effect, binary fixed); B ↔ C (clas
 **Rationale:** Only trunk and pole feed downstream RANSAC. Training on all 6 classes introduces confounding: YOLO binary vs YOLO multiclass would differ in both class count AND supervision signal from unrelated classes. Trunk + pole only isolates purely "does distinguishing trunk from pole improve the pipeline?"
 **Supplementary experiment:** All-6-classes multiclass kept as optional Phase C.2 if time permits. Would test whether richer supervision transfers back to trunk/pole detection quality.
 **A2 documentation:** Methodology chapter documents refinement from A1's all-6-classes commitment.
+
+> **Class identity sourced (9 August 2026, additive — no change to the decision; `pipe` is still dropped).** The repo's only gloss on `pipe` is in a regenerable diagnostic output (`scripts/perception/diagnostics/output/quality_observations.md`), which reads *"`pipe` (irrigation/trellis wire)"* — naming two different objects and committing to neither. **Polvara et al. (2024) Figure 9 caption commits:** *"Only the vertical poles and the horizontal water pipe are present in these two time snapshots."* The class is **irrigation water pipe**, not trellis wire. This does not affect D025 — `pipe` is dropped from training either way — but the Methodology chapter should name it correctly, and the ambiguous gloss should not be quoted.
 
 ---
 
@@ -956,6 +981,16 @@ March separates cleanly; april does **not** — a cross-session same-place tail 
 
 **Note on O007.** The perception models were trained on 2022 data; these bags are 2023 — a different season *and* year from the training distribution, and therefore a closer approximation to the out-of-distribution evaluation O007 registers than any existing bag. The coverage collapse above is that distribution shift measured, so this is now an evidenced observation rather than a hoped-for one. Not a substitute for labelled OOD data, but worth reporting as partial mitigation.
 
+> **Correction (9 August 2026, additive — the text above is unchanged and the adoption decision stands; three numeric/robustness claims in the "Reported — robust" paragraph are corrected).** Discovered by a prose-vs-artefact reconciliation pass over every D and F entry. **Root cause: D052 cites no artefact at all** — it is the only entry in either document that states measured values with zero `.json`/`.csv` citations, so nothing ever cross-checked it.
+>
+> **(a) The GT-1 contrasts are wrong.** `results/geometric/july2023/final/july2023_evaluation/paired_crossarm.json` gives **A–B −20.2 mm (−53.1% of the 3.8 cm RTK floor)** and **A–C −19.0 mm (−50.1%)**. The entry's −19.5 mm / −24.1 mm appear nowhere in that artefact, nor in any other; its "51–63% of the floor" is internally consistent with those two figures and inconsistent with the measurement. **Use −20.2 mm and −19.0 mm.** Note the corrected pair is nearly *equal* (−20.2 vs −19.0), where the superseded pair implied A–C was ~25% the larger effect — the corrected numbers weaken any claim that the two contrasts are separable.
+>
+> **(b) "Robust" is withdrawn.** The same artefact records `ci_reliability: GT1 samples_per_decorr 1.09, reliable: false` (GT2 1.91, also false) against D053's 3.0 minimum — **D053's guard refuses this bag, so no interval estimate on july2023 is admissible.** What survives is sign-consistency, which is computed independently of the CI machinery: `A–B GT1 − − −` and `A–C GT1 − − −` are both `consistent: true` across the three seeds. **july2023's lateral contrasts are therefore a DIRECTIONAL OBSERVATION with no interval estimate** — exactly the status Riseholme's contrasts hold under D059, and for the same reason. B–C GT-1 is sign-inconsistent (`+ − −`) and remains withheld.
+>
+> **(c) The block-length stability claim is withdrawn as unreproducible.** "Stable at every block length tested (L = 2, 9, 23, 37)" has no persisted computation: the artefact records only `L_GT1 = 2` (strict-threshold variant 3) and `L_GT2 = 4`, and no sweep output exists anywhere under `results/`. The related claim in the same entry — that "the B–C GT-2 exclusion disappears by L = 23 and A–C GT-2 by L = 9" — is unpersisted for the same reason. **Both are withdrawn.** This is a departure from the project's own convention: F025's near-seed sweeps are persisted as `near_seed_sensitivity.json` for march, april and may. Either regenerate the block-length sweep to an artefact and restore the claim, or leave it withdrawn; it must not stand unsupported.
+>
+> **Unaffected.** F030's coverage ordering (A 38.3 / B 34.8 / C 25.9 %) is a **classification** result — it needs no interval and no block length, and none of (a)–(c) touches it. The domain-generalisation framing, the arm-C base-point collapse, and the scoping of july2023 as separate from the B–C class-structure question all stand.
+
 **Cross-references.** O020/D014 (autonomous driven-path framing), D045 (paths), D048 (unattributed-scene gate — runs on these bags as on every other), D050/D051 (the excluded 2022 bags, for contrast), D026 (arm-C-only precedent for strand asymmetry), F029 (canopy characterisation — **unchanged at n = 2**, see the correction above), D053 (the CI-reliability guard this bag prompted), O007 (OOD evaluation).
 
 ## D053 — CI reliability guard: detect when paired-frame density cannot support the block-length estimator
@@ -1023,7 +1058,7 @@ March separates cleanly; april does **not** — a cross-session same-place tail 
 | **height** | **1.269 m** | 1.269 (rh_july2026, n = 59) vs 1.278 (part2, n = 51) — **9 mm** apart, eleven months apart |
 | **pitch** | **+5.75° down** | 58 of 59 samples positive; terrain excluded (below) |
 | **roll** | **+0.75°** | mean of 0.98 (rh_july2026) and 0.45 (part2) |
-| lateral | 0.0 m **ASSUMED** | two estimates **33 mm** apart, exceeding the 19.5–24.1 mm effect GT-1 resolves |
+| lateral | 0.0 m **ASSUMED** | two estimates **33 mm** apart, exceeding the **19.0–20.2 mm** effect GT-1 resolves (corrected 9 Aug 2026 from 19.5–24.1; see the D052 correction — the argument is unchanged and slightly strengthened, since 33 mm now exceeds the *whole* range rather than sitting inside it) |
 | yaw | 0.0° **ASSUMED** | `/scan` gives +3.21°, IQR [+1.89, +5.16], which excludes the collector's stated 0° |
 | longitudinal | 0.0 m **ASSUMED** | never estimated; no available method constrains it |
 
