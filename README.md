@@ -147,18 +147,34 @@ date, not an acquisition month — see the note on bag coverage below.
 
 ---
 
-## Which bags are evaluated (why six are registered but two are done)
+## Which recordings are evaluated (eight registered, five evaluated, three excluded)
 
-The pipeline is bag-parametrised: `--bag <month>` selects the recording. Six
-bags are registered in `scripts/geometric/bag_config.py`, but only two have been
-evaluated so far:
+The pipeline is bag-parametrised: `--bag <name>` selects the recording. **Eight**
+bags are registered in `scripts/geometric/bag_config.py`. **Five** are evaluated;
+three were excluded on documented data-integrity grounds, each after conversion
+and inspection rather than on assumption.
 
-| Bag | Status |
-|---|---|
-| `march` | ✅ evaluated (the primary bag; all findings anchored here) |
-| `april` | ✅ evaluated (second season; confirms the March findings) |
-| `may` | ⏭️ next — unblocked, not yet run |
-| `june`, `july`, `september` | ⏳ armed — run the CP-0 D048 gate at their turn; proceed unless it flags `needs_review` |
+| Bag | Season | Status |
+|---|---|---|
+| `march` | bare-vine | ✅ evaluated — primary bag; most findings anchored here |
+| `april` | bare-vine | ✅ evaluated — second session |
+| `may` | canopy | ✅ evaluated |
+| `june` | canopy | ✅ evaluated |
+| `july2023` | canopy, +1 year | ✅ evaluated — out-of-distribution (season **and** year) |
+| `july` (2022) | — | ❌ excluded (D050) — stop-start recording defeats the contiguous-pass detector; CP-1 yielded 1 pass / 40 frames |
+| `september` (2022) | — | ❌ excluded (D051) — RTK-GNSS fix lost, driven-path reference invalid |
+| `august2023` | — | ❌ excluded (D054) — the session's camera recorded no imagery |
+
+**Evaluated set: march / april / may / june / july2023 — five geometric, four
+control** (the control strand was not run on july2023).
+
+A **supplementary generalisation strand** sits outside this set: two Riseholme
+recordings (`tue02sep`, `part2`) at a different site, with different camera
+hardware and a rear-facing mount. It is deliberately subordinate to the Ktima
+evaluation and is not a second test of the research question — any Ktima↔Riseholme
+difference confounds four factors at once (D055). It runs from an isolated code
+tree whose measurement-carrying files are byte-identical to the Ktima ones,
+enforced by an automated parity gate (D058).
 
 **O019 — resolved and wired (D048).** 90 of the 230 labelled SemanticBLT scenes
 carry no month in their filename (39% of the dataset, of unknown origin — summer-
@@ -168,9 +184,11 @@ now handled automatically at **CP-0** for every bag: the D048 gate
 (`scripts/geometric/scene_attribution.py`) scores those 90 scenes against the bag
 by ORB+RANSAC identity and either excludes them (≥200 inliers), flags them for
 review (40–200, which blocks the bag's evaluation until confirmed), or clears them
-(≤40). March and April measured all 90 as absent. June/July/September are no
-longer hard-blocked — they simply run the gate at their CP-0 and proceed unless it
-raises `needs_review`. Full rationale: `docs/DECISIONS.md` (D046, D048) and
+(≤40). **March, April and May measured all 90 as absent. On June the gate fired** —
+88 of the 90 scored as present, excluding 1,229 frames (7.6% of the bag) as
+perception-training contamination, resolved by a two-stage rule plus six visual
+confirmations. That is the gate doing its job on a bag where the risk was real, and
+it is why June's results are not contaminated. Full rationale: `docs/DECISIONS.md` (D046, D048) and
 `docs/STATUS.md` (O019).
 
 ---
@@ -273,16 +291,28 @@ Each strand README is self-contained and followable from a clean checkout:
   geometric and command metrics compare our vision-derived centreline against
   that *driven path*. This matters: the platform did not steer from vision, which
   is why the recorded steering cannot be used to *tune* a vision controller
-  (finding F027). Some older documents still say "teleoperator"; that wording is
-  superseded and scheduled for correction (STATUS.md follow-up item).
+  (finding F027). Confirmed at primary source: Polvara et al. (2024) §3.2 states
+  "we use the Topological Navigation Toolkit to enable autonomous navigation along
+  all the corridors". The "teleoperator" wording was corrected throughout in July
+  2026 (O020); where the phrase survives it is a **retained convention name**, kept
+  deliberately so it matches committed artefact keys, with the characterisation
+  corrected in place.
 - **The pipeline's "bag-agnostic" claim became true only after April.** Several
   code paths were implicitly correct only while one bag existed and were silently
   wrong for a second; they were found and fixed during the April run (DECISIONS
-  D046f). Treat any path not yet exercised by a second bag as unproven.
-- **What is verified in this repo:** the March and April geometric + non-in-row
-  + control results, and the figures, were produced and checked during the most
-  recent session. Perception *training* was not re-run then — those results date
-  from earlier phases and are recorded in `docs/DECISIONS.md` (O003).
+  D046f). Five bags have since exercised those paths, but the principle stands:
+  treat any path not yet run on a second recording as unproven.
+- **What is verified in this repo:** the geometric, non-in-row and control results
+  and the figures for all five evaluated bags, plus the Riseholme supplementary
+  strand, were produced and checked from committed artefacts. Perception *training*
+  has not been re-run since — those results date from earlier phases and are
+  recorded in `docs/DECISIONS.md` (O003).
+- **Corrections are additive, and there is an index for them.** `DECISIONS.md` and
+  `FINDINGS.md` are append-only: where a position changed the original text was left
+  in place and a correction added beneath it. `vineyard_nav/docs/SUPERSESSION_INDEX.md`
+  classifies every entry as CURRENT / AMENDED / PARTIAL / DEAD so superseded text is
+  not mistaken for current. It is generated, and its `--check` mode fails if it
+  drifts from the source documents.
 
 ---
 
