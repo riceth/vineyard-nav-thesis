@@ -1230,6 +1230,51 @@ The three secondary results reproduce: (i) the D043 **dual metric still matters*
 - ✗ treat the blob-seed comparison as evidence in either direction (opposite signs across arms, n = 3, indirect link).
 - ✗ interpret any of this as closed-loop stability (the loop is never closed on this data).
 
+> **Amendment (11 August 2026, additive — may and june third/fourth bags; F028's march and april numbers and conclusions above stand). The future-work item is discharged, and the answer is NOT a universal null.**
+>
+> F028 above covers **march and april only**. Its own future-work item (i) — *"Multi-bag: re-run `command_smoothness.py --bag <bag>` on April+ to test whether the null holds across seasons"* — **is hereby discharged.** The runs had in fact already been executed and committed (`results/geometric/{may,june}/final/command_evaluation/command_smoothness.json`); they were never analysed into this entry. **The null does not hold across seasons.**
+>
+> **All four bags, both variants, all three pairs — 24 tests, 6 excluding zero.**
+>
+> | bag | variant | pair | Δ RMS Δω̂ (rad/s per frame) | 95% CI | n | excludes 0 |
+> |---|---|---|---|---|---|---|
+> | march | inclusive | A–B | -0.000322 | [-0.001387, +0.000645] | 1631 | no |
+> | march | inclusive | A–C | -0.000313 | [-0.001419, +0.000683] | 1631 | no |
+> | march | inclusive | B–C | +0.000009 | [-0.000874, +0.000879] | 1631 | no |
+> | march | exclusive | A–B | -0.000417 | [-0.001935, +0.000572] | 1278 | no |
+> | march | exclusive | A–C | -0.000336 | [-0.001610, +0.000886] | 1272 | no |
+> | march | exclusive | B–C | +0.000067 | [-0.000532, +0.001110] | 1280 | no |
+> | april | inclusive | A–B | -0.000294 | [-0.001251, +0.000248] | 2259 | no |
+> | april | inclusive | A–C | -0.000103 | [-0.001066, +0.000402] | 2259 | no |
+> | april | inclusive | B–C | +0.000191 | [-0.000268, +0.000587] | 2259 | no |
+> | april | exclusive | A–B | -0.000038 | [-0.001441, +0.000635] | 1654 | no |
+> | april | exclusive | A–C | -0.000017 | [-0.001549, +0.000579] | 1642 | no |
+> | april | exclusive | B–C | +0.000023 | [-0.000465, +0.000506] | 1651 | no |
+> | may | inclusive | A–B | +0.000810 | [+0.000204, +0.001484] | 1984 | **YES** |
+> | may | inclusive | A–C | +0.000423 | [-0.000468, +0.001429] | 1984 | no |
+> | may | inclusive | B–C | -0.000387 | [-0.000870, +0.000184] | 1984 | no |
+> | may | exclusive | A–B | +0.000799 | [+0.000281, +0.001225] | 1162 | **YES** |
+> | may | exclusive | A–C | +0.000314 | [-0.000990, +0.000779] | 1117 | no |
+> | may | exclusive | B–C | -0.000796 | [-0.001534, -0.000074] | 1130 | **YES** |
+> | june | inclusive | A–B | +0.000409 | [+0.000035, +0.001378] | 1625 | **YES** |
+> | june | inclusive | A–C | +0.000902 | [-0.000107, +0.001910] | 1625 | no |
+> | june | inclusive | B–C | +0.000493 | [-0.000451, +0.000831] | 1625 | no |
+> | june | exclusive | A–B | +0.000957 | [+0.000018, +0.002002] | 910 | **YES** |
+> | june | exclusive | A–C | +0.001418 | [+0.000350, +0.001893] | 886 | **YES** |
+> | june | exclusive | B–C | +0.000713 | [-0.000058, +0.001175] | 895 | no |
+>
+> **(a) The inclusive/exclusive distinction is load-bearing and must not be collapsed (D043).** *Inclusive* counts held commands (hold-last repeats the previous value); *exclusive* drops them. The two disagree in **two** places: **may B–C** excludes zero on exclusive (−0.000796 [−0.001534, −0.000074]) but not on inclusive (−0.000387 [−0.000870, +0.000184]); and **june A–C** excludes on exclusive (+0.001418 [+0.000350, +0.001893]) but not on inclusive (+0.000902 [−0.000107, +0.001910]). Reporting one variant alone would either manufacture or erase a result.
+>
+> **(b) The single B–C exception, stated not smoothed.** Across the **eight** B–C command tests (4 bags × 2 variants), exactly **one** excludes zero: **may, exclusive**, at **−0.000796 rad/s per frame, CI [−0.001534, −0.000074]**. The upper bound sits **7.4 × 10⁻⁵ from zero** — it excludes by a hair, on one variant of one bag, in the direction of C being *smoother* than B. Every other B–C test spans zero. A write-up reporting "7 of 8" must name this one.
+>
+> **(c) Which contrast resolves, and where.** A–B excludes zero on **all four canopy-bag tests** (may inclusive and exclusive, june inclusive and exclusive) and on neither bare-vine bag. A–C excludes on **june exclusive** only. This is the same shape as the geometric level, where may resolves A–B (−4.1 mm) and A–C (−5.4 mm) while B–C stays null.
+>
+> **(d) Summary position — what the artefacts do and do not support.** They support: **B↔C is null on all four bags at the geometric level (`ci_excludes_zero: false` for every bag) and on 7 of 8 command tests**, and **A-vs-{B,C} resolves sub-floor differences on the canopy bags at both levels**. One qualification is required for accuracy: **june's geometric contrasts are all null** (A–B −2.3 mm, A–C −0.4 mm, B–C +1.7 mm, none excluding zero), so "resolves on the canopy bags at both levels" holds *in aggregate across may and june*, not bag-by-bag at every level. The precise statement is: may resolves A-vs-{B,C} geometrically; may and june both resolve A–B at the command level; june additionally resolves A–C on the exclusive variant; and **no B↔C contrast resolves anywhere except may/exclusive.**
+>
+> **Why this strengthens rather than weakens F028.** The controlled contrast stays null at both levels while the uncontrolled one resolves on the harder bags — two independent measurement levels agreeing on *which* contrast separates and which does not. That is a more informative result than a flat null at both, and it is consistent with F013 and F030: the arms are separable on availability and on system-level pipeline differences, not on the class-structure variable.
+>
+> **Effect sizes remain operationally negligible.** The largest command difference anywhere in the table is **1.4 × 10⁻³ rad/s per frame** (june exclusive A–C), against per-arm RMS Δω̂ of ~4–10 × 10⁻³. The resolved differences are statistical, not operational; nothing here licenses ranking the arms for deployment.
+
 **Future work.** (i) Multi-bag: re-run `command_smoothness.py --bag <bag>` on April+ to test whether the null holds across seasons. (ii) The block length is reused from the offset/heading series; differencing whitens a series, so the true block length for Δω̂ is likely shorter and these CIs are conservative — a dedicated decorrelation estimate on Δω̂ would tighten them. (iii) A closed-loop or simulated evaluation would let smoothness be measured under the controller's own trajectory rather than a replayed one.
 
 **Citation map.** Ours: `final/command_evaluation/command_smoothness.json` (F028); `scripts/control/command_smoothness.py`; upstream stream `command_per_frame.csv` + `command_summary.json` (F027-A gains). D014 (strand-3), D043 (dual metric), F013 (convergence), F019 (micro-difference precedent), F007/O009 (blob seeds). No paper support (contribution).
@@ -1330,6 +1375,21 @@ Within abstaining frames the dominant cause stays `too_few_near_seed` (73.2 / 72
 >
 > **The three-seed spread is nonetheless carried in every reported figure.** All `per_arm` values in this entry are mean ± SD **across seeds 42/43/44**, and the separation test above is built on exactly that SD — so seed-to-seed variation is what the "not separable" verdicts are measured against, not something omitted. **Three seeds is a small basis for an inference about training**, and no claim here should be read as resting on more than that.
 
+> **Per-arm coverage with across-seed SD — the table the separation test is computed from (11 August 2026, additive).**
+> Recorded here because the contribution rests on it and it existed only as JSON. Two-row coverage %, mean ± SD across seeds 42/43/44, from each dataset's `line_fit_report.json` · `per_arm.two_row_pct`.
+>
+> | dataset | A (U-Net binary) | B (YOLO binary) | C (YOLO multiclass) | B−C sign | A−B sign |
+> |---|---|---|---|---|---|
+> | march | 81.3 ± 0.50 | 81.6 ± 0.93 | 80.8 ± 0.12 | + | − |
+> | april | 77.4 ± 0.39 | 78.2 ± 0.97 | 76.5 ± 0.17 | + | − |
+> | may | 67.6 ± 1.07 | 65.1 ± 2.67 | 63.0 ± 1.24 | + | + |
+> | june | 67.8 ± 1.27 | 64.9 ± 4.08 | 61.5 ± 0.96 | + | + |
+> | july2023 | 38.3 ± 2.91 | 34.8 ± 5.21 | 25.9 ± 5.29 | + | + |
+> | tue02sep | 26.2 ± 1.99 | 25.3 ± 4.50 | 21.6 ± 3.96 | + | + |
+> | part2 | 31.5 ± 2.91 | 31.4 ± 5.55 | 26.9 ± 5.00 | + | + |
+>
+> **B−C is positive on 7 of 7; A−B changes sign between the bare-vine and canopy bags.** The separation verdicts for these same gaps are in the table above (B−C separates on april only; A−B on none). Note B's SD grows with difficulty — 0.93 (march) → 2.67 (may) → 4.08 (june) → 4.50 (tue02sep) → 5.21 (july2023) — which is why no A−B gap clears its noise band.
+>
 > **Unexplained observation, logged not explained.** Arm B yields **more base points per frame than arm A on all four Ktima bags** — march 31.5 vs 26.2, april 27.6 vs 24.7, may 16.8 vs 14.9, june 12.3 vs 10.5 — *including may, june and july2023, where A's two-row coverage is nonetheless higher*. More base points, less coverage. The relation **inverts on tue02sep** (A 11.8, B 8.0). Recorded here so it is not lost; **no mechanism is proposed** — a distribution effect (where the points fall relative to the near-seed window) and a count effect are both consistent with these numbers, and the data in hand cannot separate them. Artefacts: `line_fit_report.json` · `per_model[].mean_base` for each bag.
 
 **A > B > C in all three.** The failure rate mirrors it — `none` classification: A 50.2%, B 56.2%, C 59.3% — as does the mean base-point count: A 11.8, B 8.0, C 6.9. The two Riseholme rows are not independent (part2 is 94.1% contained in tue02sep, D055) and are never pooled; part2 is shown for transparency, not as a third sample.
