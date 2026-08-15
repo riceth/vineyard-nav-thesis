@@ -1,0 +1,137 @@
+\section{Background and motivation}
+\label{sec:intro-background}
+
+Autonomous robots that drive between crop rows underpin a range of
+precision-agriculture tasks --- high-throughput phenotyping, targeted spraying,
+mechanical weeding --- that larger over-canopy machinery cannot perform
+\citep{sivakumar2021}. Each of them depends on the same primitive capability:
+staying in the row, reliably, for the length of a season.
+
+That capability is limited by localisation. Satellite positioning, the default
+answer elsewhere in outdoor robotics, degrades under plant canopy;
+\citet{higuti2019} report measuring over \SI{0.4}{\metre} of error beneath a
+sorghum canopy with a high-end real-time kinematic receiver, and
+\citet{navone2025} identify tall, dense vegetation as the primary cause of
+satellite signal blockage in tree-row environments. Vision is the practical
+alternative, and the question that follows is how the robot should represent
+what it sees.
+
+This dissertation sits at the intersection of computer vision, robotics and
+control that defines the MSc in Robotics and Artificial Intelligence: a learned
+perception module, a geometric stage that converts its output into a
+navigable line, and a controller that converts that line into motion. The
+contribution is not a new architecture for any one of those stages, but a
+controlled measurement of how a design decision taken in the first propagates
+into the last.
+
+Three terms are used throughout in their established senses
+\citep{kirillov2019}. \emph{Semantic} segmentation assigns a class label to
+every pixel without separating individual objects. \emph{Instance}
+segmentation detects and segments each object separately. \emph{Panoptic}
+segmentation combines the two. The distinction matters here because the
+formulations compared in this study do not all belong to the same paradigm.
+
+\section{The problem}
+\label{sec:intro-problem}
+
+Vision-based row following has not converged on a single representation, but
+one recurring choice is a binary crop mask: every pixel assigned either to
+vegetation or to background, with all structure collapsed into a single
+foreground class. \citet{desilva2024} state the design decision plainly,
+representing a crop row ``as a single object rather than individual plants'',
+and \citet{aghi2021} carry the same representation into vineyards.
+
+The formulation is under challenge, though not from a single direction.
+Recent work objects that it depends on the sky being visible above the row
+\citep{navone2025}, that the free-space region it relies on degenerates under
+sparse vegetation \citep{liu2023}, that pixel-wise segmentation is the wrong
+intermediate representation altogether \citep{sivakumar2024}, and that learned
+segmentation costs more annotation and computation than it returns
+\citep{ahmadi2022}. What none of these objections addresses is the question of
+how many classes such a mask should carry.
+
+That question is worth asking in a vineyard because a vineyard row is not a
+continuous band of foliage. It is defined by discrete rigid elements --- vine
+trunks rooted in the ground and vertical trellis poles --- which remain
+geometrically meaningful whether or not the sky is visible and whether or not
+foliage has closed over the corridor. Class identity is already exploited in
+vineyards on this basis, but for localisation rather than navigation, and the
+two published class selections disagree with one another: \citet{papadimitriou2022}
+retain trunks for their stability of appearance across seasons, while
+\citet{desilva2025} retain trunks and discard poles because uniform shapes
+frustrate feature matching. Both criteria belong to feature matching. Neither
+asks what a line-fitting stage needs.
+
+The question has therefore not been tested where it would bite: downstream of
+perception, in a crop whose structure survives canopy closure, and under
+conditions where the answer can be attributed to the formulation rather than
+to the reference it is measured against.
+
+\section{Research question and scope}
+\label{sec:intro-question}
+
+The study asks whether the choice of segmentation formulation --- a binary
+crop mask, or a class-aware representation preserving trunk and pole identity
+--- materially affects downstream centreline estimation and steering-command
+generation for in-row vineyard navigation, and how large any such effect is.
+
+The question is posed as a measurement rather than as a directional
+hypothesis. A finding that formulation choice does not affect the navigation
+output is as useful to a practitioner as a finding that it does, provided the
+comparison is controlled tightly enough, and the resulting interval narrow
+enough, that indistinguishability cannot be mistaken for insufficient
+measurement.
+
+Three perception arms share a single downstream pipeline.The first is a semantic model producing a binary crop mask, in which all structure is collapsed into a single foreground class. The second is an instance model producing the same binary
+mask. The third is
+an instance model preserving trunk and pole as distinct classes. Only the
+second-to-third contrast is controlled: it holds architecture, training regime
+and data fixed and varies the label scheme alone. The first-to-second contrast
+varies many things at once and is treated throughout as a comparison of
+complete systems rather than an attribution to architecture.
+
+Three constraints bound the work. The evaluation is offline, against recorded
+robot deployments, which supports per-frame analysis but not closed-loop
+tracking. The reference trajectory in those recordings was produced under
+autonomous topological navigation \citep{polvara2024} rather than by a human
+driver, so the executed steering reflects a different sensing
+modality from visual row following and cannot serve as a tuning target for the
+visual controller; controller gains are instead derived from first principles.
+And the annotation scheme folds foliage into background, so foliage cannot be
+exploited as a navigation cue.
+
+\section{Contributions}
+\label{sec:intro-contributions}
+
+This dissertation makes four contributions.
+
+First, a controlled comparison of binary against class-aware segmentation for
+downstream centreline extraction in a discrete-structure crop. No such
+comparison appears in the vineyard navigation literature reviewed here, and
+the controlled contrast is verified empirically rather than asserted.
+
+Second, a null result established at two independent levels of measurement.
+The three arms produce centreline estimates that are statistically
+indistinguishable on the primary geometric metric across four recordings
+spanning bare-vine and canopy conditions, and steering commands that are
+likewise indistinguishable. The intervals are narrow enough to bound any
+effect to a small fraction of the reference's own precision, so the result is
+not simply an absence of evidence; and the two levels of measurement, which
+fail in different ways, agree.
+
+Third, an evaluation of availability alongside accuracy. The multiclass arm
+yields a usable centreline less often than either binary arm, consistently in
+direction across every dataset evaluated, including recordings from a later
+season and from a second site with different camera hardware. Measuring both
+outcomes gives a practitioner both halves of an answer that either alone would
+misrepresent: the additional class detail buys no measurable accuracy and
+costs availability.
+
+Fourth, an account of what the comparison depends on. The error measured
+against the recorded trajectory is separated into a component contributed by
+the reference and a component contributed by the pipeline. The reference
+component is shown to affect all three arms identically, and the arms are
+therefore compared only through paired differences, in which it cancels. Six
+independent groups report that no absolute reference is obtainable in this
+setting; this study establishes rather than assumes that its findings do not
+rest on one.

@@ -108,3 +108,18 @@ desktop.ini
 # Jupyter
 # ============================================
 .ipynb_checkpoints/
+
+# ============================================
+# LaTeX build artefacts
+# ============================================
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg

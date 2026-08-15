@@ -6,6 +6,8 @@ Comparison Against the Binary-Mask Baseline.**
 **Author:** Edosa Ebohon (30436293) · MSc Robotics and Artificial Intelligence,
 University of Lincoln · CMP9140 Research Project · A2 submission 26 August 2026.
 
+📄 **[Read the dissertation (PDF)](MSc-Dissertation.pdf)** — work in progress, updated as it is written.
+
 This repository compares three perception formulations for estimating the row
 centreline a vineyard robot would steer down, under a controlled experiment that
 isolates one variable at a time:
@@ -16,9 +18,12 @@ isolates one variable at a time:
 | B | YOLOv11-seg | Binary | Modernised binary baseline |
 | C | YOLOv11-seg | Multiclass (trunk, pole distinct) | The contribution |
 
-A-vs-B isolates the architecture effect; B-vs-C isolates the class-structure
-effect. Each arm is evaluated at three levels — perception, geometric
-(centreline), and command (steering) — across multiple seasonal recordings.
+**B-vs-C is the controlled comparison** — same backbone, hyperparameters, data and
+augmentation, differing only in label granularity. A-vs-B is *not* an architecture
+comparison: the two arms differ in at least thirteen respects, so it is reported as a
+baseline-versus-modernised-pipeline contrast and no architecture claim rests on it.
+Each arm is evaluated at three levels — perception, geometric (centreline), and
+command (steering) — across multiple seasonal recordings.
 
 **Headline result so far:** across two seasons (March + April), the three arms
 are statistically indistinguishable at the navigation output — both the
