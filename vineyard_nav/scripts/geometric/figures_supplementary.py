@@ -219,10 +219,110 @@ def fig_coverage_trend(bags):
     return p
 
 
+# --------------------------------------------------------------------------------------------
+# 4. cmp_coverage_signs.png -- the coverage result across every dataset evaluated.
+#
+# cmp_coverage_trend covers the four in-season bags and asks what canopy costs. This asks a
+# different question: does the multiclass arm yield a usable centreline less often, everywhere?
+# No single dataset can answer it -- almost every individual gap sits inside its own noise band.
+# The evidence is that the sign never changes, so the figure has to show sign and noise together
+# or it would flatter the result.
+#
+# Data-only: reads each dataset's committed line_fit_report.json. No checkpoints, no inference.
+
+# Riseholme lives in a separate results tree; these are read as data, not via its code (the two
+# code trees stay isolated -- see the parity gate).
+_RH = PKG / "results/riseholme"
+_KT = PKG / "results/geometric"
+
+# part2 is NOT an evaluation dataset. D055 assigns it "path validation only" -- it is 94.1%
+# contained within tue02sep, so it is the same physical traverses re-measured, and the two are
+# never pooled. Plotting it as a seventh dataset would promote it to a role the decision denies
+# it, and would inflate the sign test with a duplicate. It is excluded here and its agreement is
+# reported in prose instead.
+EXCLUDED_ROLE = {"part2": "path validation only (D055); 94.1% contained in tue02sep"}
+
+
+def _cov_report(ds):
+    for root in (_KT, _RH):
+        p = root / ds / "final" / f"{ds}_evaluation" / "line_fit_report.json"
+        if p.exists():
+            return json.load(open(p))
+    raise SystemExit(f"no line_fit_report.json for {ds}")
+
+
+def fig_coverage_signs(datasets):
+    rows = []
+    for ds in datasets:
+        pa = _cov_report(ds)["per_arm"]
+        cov = {a: pa[a]["two_row_pct"] for a in "ABC"}          # [mean, sd] across seeds
+        rows.append({
+            "ds": ds,
+            "bc": cov["B"][0] - cov["C"][0], "bc_sd": cov["B"][1] + cov["C"][1],
+            "ab": cov["A"][0] - cov["B"][0], "ab_sd": cov["A"][1] + cov["B"][1],
+            "covA": cov["A"][0],
+        })
+
+    x = np.arange(len(rows))
+    fig, ax = plt.subplots(1, 2, figsize=(13.5, 4.9), sharey=False)
+
+    for k, (key, sd_key, title, note) in enumerate((
+            ("bc", "bc_sd",
+             "Multiclass against binary: lower on every dataset",
+             "positive = the multiclass arm yields a centreline less often"),
+            ("ab", "ab_sd",
+             "The two binary arms: no stable direction",
+             "the sign reverses between the bare-vine and the later recordings"))):
+        v = np.array([r[key] for r in rows])
+        sd = np.array([r[sd_key] for r in rows])
+        sep = np.abs(v) > sd
+        cols = ["#d1341c" if s else "#4477aa" for s in sep]
+        ax[k].bar(x, v, 0.62, color=cols, edgecolor="0.25", lw=0.6, zorder=3)
+        ax[k].errorbar(x, v, yerr=sd, fmt="none", ecolor="0.35", capsize=4, lw=1.1, zorder=4)
+        ax[k].axhline(0, color="0.2", lw=1.0, zorder=2)
+        # label clear of the whisker, not the bar, or the two collide on the tall-error datasets
+        span = float(np.max(v + sd) - min(0.0, float(np.min(v - sd))))
+        for i, r in enumerate(rows):
+            top = v[i] + sd[i] if v[i] >= 0 else v[i] - sd[i]
+            off = 0.035 * span * (1 if v[i] >= 0 else -1)
+            ax[k].annotate(f"{v[i]:+.1f}", (i, top + off), ha="center",
+                           va="bottom" if v[i] >= 0 else "top", fontsize=8, color="0.2")
+        ax[k].margins(y=0.16)
+        ax[k].set_xticks(x)
+        ax[k].set_xticklabels([r["ds"] for r in rows], rotation=20, ha="right", fontsize=8.5)
+        ax[k].set_ylabel("difference in two-row coverage (pp)")
+        ax[k].set_title(f"{title}\n{note}", fontsize=9)
+        ax[k].grid(axis="y", color="0.9", zorder=0)
+
+    n_pos = sum(1 for r in rows if r["bc"] > 0)
+    n_sep = sum(1 for r in rows if abs(r["bc"]) > r["bc_sd"])
+    fig.suptitle(
+        "Availability across every dataset evaluated — the multiclass arm is lowest every time\n"
+        f"bars are the coverage gap, whiskers the summed across-seed spread; "
+        f"red = gap exceeds it ({n_sep} of {len(rows)})",
+        fontsize=10, y=1.04)
+    fig.text(0.5, -0.06,
+             f"The multiclass gap is positive on {n_pos} of {len(rows)} evaluated datasets, spanning "
+             f"two seasons, two years, two sites and two camera systems. Almost none of the individual "
+             f"gaps clears its own noise band: the consistency of direction is the evidence, not any "
+             f"single dataset. A further recording, held for path validation and comprising the same "
+             f"traverses as one of these, agrees in direction and is excluded here to avoid counting "
+             f"it twice. Source: each dataset's committed line_fit_report.json.",
+             ha="center", fontsize=8, color="0.3", wrap=True)
+    fig.tight_layout()
+    out = _out("cmp_coverage_signs.png")
+    fig.savefig(out, bbox_inches="tight")
+    plt.close(fig)
+    return out
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--bags", nargs="+", default=["march", "april", "may", "june"])
-    ap.add_argument("--only", default=None, choices=["outputs", "contrast", "trend"])
+    ap.add_argument("--only", default=None, choices=["outputs", "contrast", "trend", "signs"])
+    ap.add_argument("--all-datasets", nargs="+",
+                    default=["march", "april", "may", "june", "july2023", "tue02sep"],
+                    help="every EVALUATED dataset, both sites (part2 excluded -- validation only, D055)")
     a = ap.parse_args()
     print(f"[figures_supplementary] bags = {a.bags}")
     if a.only in (None, "outputs"):
@@ -237,4 +337,6 @@ if __name__ == "__main__":
             print("  (skipped contrast: need one bare-vine and one canopy bag)")
     if a.only in (None, "trend"):
         print(f"  {fig_coverage_trend(a.bags).relative_to(PKG)}")
+    if a.only in (None, "signs"):
+        print(f"  {fig_coverage_signs(a.all_datasets).relative_to(PKG)}")
     print("done.")
