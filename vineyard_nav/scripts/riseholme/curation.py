@@ -72,7 +72,25 @@ def estimate_fn(bag="tue02sep"):
 
 
 def publishable(bag):
-    """The privacy allow-list. Raises if the screen has not been run — never silently permissive."""
+    """Returns the EXCLUDED frames, not the permitted ones -- read the name with care.
+
+    Despite being called `publishable`, this returns `(flagged, metadata)` where `flagged`
+    is the set of frames that must NOT be published because the privacy screen detected a
+    person in them. It is a deny-list. The name is kept for call-site stability and the
+    hazard is documented rather than renamed (D060).
+
+        flagged, meta = publishable(bag)
+        usable = [i for i in candidates if i not in flagged]     # correct
+        usable = [i for i in candidates if i in publishable(bag)]  # WRONG, twice over:
+                                                                   # unpacks nothing, and
+                                                                   # inverts the test
+
+    The inverted form fails closed rather than open -- membership in a 2-tuple is False for
+    any frame index, so every candidate is rejected and no figure is produced. That is the
+    safe direction, but it presents as "no publishable frames" rather than as a bug.
+
+    Raises if the screen has not been run -- never silently permissive.
+    """
     B = bag_config.resolve(bag)
     p = B["out_dir"].parent.parent / "diagnostics" / "privacy_screen.json"
     if not p.exists():
