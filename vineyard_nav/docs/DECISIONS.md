@@ -544,6 +544,21 @@ The CP-3 single-arm dry run (Phase C seed 42, all 4 708 val frames) locked the (
 
 **Sample frames.** 4107 (rescued single→two-row), 4223 (row extended along the full column, adjacent flagged "adj n=5"). `diagnostics/figures/rowfit_validation/far_ext/`.
 
+> **Naming correction (14 August 2026, additive — the method and every number are unchanged; only the label is wrong).** D036's title, `GEOMETRY_PIPELINE_SPEC.md` §4 step 5(b), the `fit_side_far` docstring and the inline comment at `row_model.py:15` all describe the per-side inlier selection as **"RANSAC"**. **It is not RANSAC**, and the write-up does not cite Fischler & Bolles (1981) for it.
+>
+> **What `row_model.fit_side_far` actually does**, in order:
+> 1. **Split** near (`X < NEAR = 5.0` m) from far (`NEAR ≤ X ≤ FARMAX = 10.0` m); require **≥ 2** near points to proceed (`too_few_near_seed`).
+> 2. **Density seed — a 1-D mode finder.** For each near point count neighbours within `WIN_HALF = 0.25` m; take the densest point's neighbourhood; `seed` = its median.
+> 3. **Deterministic grid sweep with consensus scoring.** Enumerate **13** candidate row *lateral positions* over `seed ± RSPAN = 0.30` m in `RSTEP = 0.05` m steps; score each by the number of near points within `RTOL = 0.25` m; keep the highest-scoring candidate. The swept parameter is a **Y-offset, not a slope**.
+> 4. **Median refine.** `nearY` = median of the near points within `RTOL` of the winner.
+> 5. **Far-field extension.** Far points within `FAR_TOL = 0.5` m of `nearY` join the inlier set — a wider band, because same-row structure at range projects to nearly the same lateral position while the adjacent corridor does not.
+> 6. **Sanity gates:** `MIN_TOTAL = 3` inliers, `|rowY| ≤ MAX_ABS_Y = 3.0` m, `x_span ≥ MIN_X_SPAN = 1.0` m over ≥ 3 distinct X.
+> 7. **Least-squares slope fit — a separate stage.** `centre_linefit` (`row_model.py:52`) fits `Y = mX + c` per side by `np.polyfit` on the surviving inliers; the centreline is the midline. Steps 2–6 select inliers under a **constant-Y hypothesis**; the sloped line is fitted only afterwards.
+>
+> **Why the label is wrong.** RANSAC's defining mechanism is *random* minimal-subset sampling with consensus scoring and a probabilistic stopping rule. This method **shares the consensus objective — maximise inlier count — but samples nothing**: the candidate set is enumerated exhaustively on a fixed grid, and `grep -E "random|rng|sample|shuffle|choice" scripts/geometric/row_model.py` returns nothing. It is a deterministic maximum-consensus estimator, and its determinism is a property relied on elsewhere (rule 7, D016, D049).
+>
+> **Scope of this correction.** Documentation only. **No identifier, filename or comment is renamed** — the term appears in committed artefact prose and in `superseded/` provenance, and renaming would break the correspondence those records depend on. Read "RANSAC" in this repository as "deterministic grid-search consensus with an inlier tolerance". Separately, note that `cp3_geometry.py`'s *"Y-constant row fit's median ± tol inlier test"* (`TOL = 0.5` m) describes the **superseded D035-era** model, not this one; the two are cousins but not the same mechanism, and quoting the former to describe the latter conflates them.
+
 **Cross-arm comparability.** Same extension and same ± 0.5 m gate for all arms; rescued frames are common across arms → paired differences unaffected. The coverage gain (and its added variance) is shared, so fairness holds.
 
 ---
@@ -1105,6 +1120,37 @@ March separates cleanly; april does **not** — a cross-session same-place tail 
 **Permitted differences, all declared and machine-checked.** (a) One `sys.path` token naming the tree a file lives in — hashing normalises it, so identity is still proven over every constant and every line of logic, and the gate prints where it applied. (b) `prep.py`'s CP-1 body, diffed function-by-function and verified to differ in **only two operator-facing error strings**. (c) Five input/output and calibration files: `bag_config.py` (presents the *identical* `resolve()` interface), `projection_calibration.py`, `prep.py`, `extract_frames.py`, `check_bag_complete.py`. Five further Ktima files are declared not-ported. **Any untriaged Ktima file fails the gate**, so a new script cannot slip in unclassified.
 
 **Cross-references.** D046f (the defect class this prevents), D049 (cuDNN preload), D055, D056.
+
+## D060 — `curation.publishable()` returns a deny-list; documented rather than renamed
+**Date:** 15 August 2026
+**Status:** LOCKED
+
+**The hazard.** `scripts/riseholme/curation.py::publishable(bag)` returns `(flagged, metadata)`, where `flagged` is the set of frames the privacy screen **excludes**. The name reads as an allow-list, so the natural call — `if frame in publishable(bag)` — is wrong twice over: it fails to unpack the tuple, and it inverts the test. This was hit in practice while building the blob-guard figure and caught only because the figure refused to render a frame that was in fact clean.
+
+**Decision.** **Do not rename.** Document the contract in the function's own docstring, with both the correct and the inverted call pattern spelled out, and record the naming here so it reads as a known hazard rather than an oversight.
+
+**Rationale.** A rename touches seven call sites across two directories, and `curation.py` is Riseholme-only with no Ktima counterpart — so renaming would create a gratuitous asymmetry between the two site trees at the point where the study's credibility depends on their being comparable (D058). The defect is a naming one, not a behavioural one; the cost of documenting it is a docstring, the cost of renaming it is churn in the figure-generating layer during write-up.
+
+**It fails closed, which is why it survived undetected.** Membership testing a frame index against a 2-tuple is always `False`, so the inverted form rejects every candidate and produces no figure at all. A privacy filter that errs toward publishing nothing is the right direction to err in — but it presents as "no publishable frames" rather than as a bug, which is what makes it worth recording.
+
+**Call-site audit (15 August 2026).** All **seven** sites verified correct — every one unpacks the tuple and excludes on `in flagged`:
+
+| site | pattern |
+|---|---|
+| `curation.py:97` (`select`) | `cand = [i for i in frames if i not in flagged]` |
+| `figures.py:56` | `if f["eligible"] and f["i"] not in flagged` |
+| `figures.py:246` | metadata only; filtering is done at `:56` |
+| `figures_verification.py:63` | `want = [i for i in frames if i not in flagged]` |
+| `figures_verification.py:177` | metadata only, for the printed summary |
+| `diagnostics/gt_line_sanity.py:74` | `if i in flagged or …: continue` |
+| `diagnostics/gt_line_combined_band.py:69` | `if i in flagged or …: continue` (line 77) |
+| `diagnostics/blob_guard_dropped.py:59` | `if b["frame"] in flagged: raise SystemExit` |
+
+**No committed figure or statistic is affected.** The audit found no inverted use, so no published Riseholme figure has ever been built from an unfiltered candidate set.
+
+**Cross-references.** D058 (site-tree parity — why renaming is not free), the privacy screen (`diagnostics/privacy_screen.py`), F031 and F030 (findings whose figures pass through this filter).
+
+---
 
 ## D059 — Riseholme reporting asymmetry: absolute caveated, paired primary
 **Date:** 7 August 2026
