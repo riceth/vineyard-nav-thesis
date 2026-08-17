@@ -424,6 +424,29 @@ O009 multi-seed pass across all three arms establishes the failure profile of th
 > **The guard did its job.** The detection exceeded the 15 % threshold and was dropped before base-point extraction, so it never entered `detections.csv` and no downstream metric is affected. This is the **first evidence the D035 guard actually fires on production footage** — it is load-bearing, not decorative.
 >
 > **Corrected bounded statement.** Across four bags and ~1.14 M detections (march 234k, april 236k, may 416k, june 253k), the perception-evaluation blob mode leaks into the geometric stream **once** — a rate of **~4 × 10⁻⁶**, four orders of magnitude below its perception-evaluation incidence (2/3 seeds on 6799). It is **canopy-linked** (the sole occurrence is on a canopy bag, and the mask is canopy), **seed-linked** (seed 42 only), and **guard-contained**. The march/april/may "no leak" result above stands exactly as measured; june replaces *"has not been shown to leak"* with *"leaks at a vanishingly low, guard-contained rate."* Artefacts: `results/geometric/june/cache/blob_audit.json`; rendered figure `results/geometric/june/diagnostics/blob_audit/blob_s42_f07460.png` (regenerable via `scripts/geometric/diagnostics/figure_blob_audit.py --bag june`).
+>
+> **The guard has now fired on genuine structure — and the structure survived anyway (15 August 2026, additive; the bounded statement above is unchanged).** On the Riseholme dataset the guard dropped one detection at **15.65 % of frame**, 0.65 pp over the threshold: `tue02sep` frame 3258, seed 42, class `pole`. Rendering it shows **a metal trellis post with visible bolt holes**, wrapped in vine foliage that inflated its box — not the whole-canopy mask the guard was built to catch. This is the case the margin note above anticipated ("a future bag with a genuine close-up structure > 15 % of frame would be wrongly dropped").
+>
+> **What actually happened is a redundancy result, not a loss.** The detector emitted **two overlapping boxes for the same post** on that frame, and the guard removed only the larger. Both are class `pole`, from one forward pass of one checkpoint — not different seeds, not an ensemble:
+>
+> | | conf | box | area |
+> |---|---|---|---|
+> | discarded | 0.791 | [535.0, 29.5, 640.0, 640.0] | 15.65 % |
+> | retained | 0.487 | [559.0, 70.0, 639.0, 640.0] | 11.13 % |
+>
+> The retained box lies **wholly inside** the discarded one (IoU **0.711**, intersection = 100 % of the smaller box). Their base points project to ground (2.437, −1.460) m and (2.435, −1.523) m — **64 mm apart laterally, 2 mm in range**, comfortably inside the row fit's 250 mm inlier tolerance, so both would have been inliers to the same row. **The post was never lost to the fit; its base point moved 64 mm.**
+>
+> **The redundancy was accidental, not designed.** Nothing in the pipeline guarantees a second, tighter detection of a structure whose primary detection the guard removes. On this occasion one existed; on another occasion it need not. The correct reading is that the guard's single firing on genuine structure **cost 64 mm on one frame of one seed**, not that the pipeline is robust to the guard misfiring.
+>
+> **Not measured: how often near-duplicate detections occur.** The blob audit records only detections above 15 % and the 10–15 % band, so overlapping pairs below that are invisible to it. This instance is therefore **a bound on what one misfire cost, not evidence that misfires are generally absorbed.**
+>
+> **Undetermined: why suppression kept both.** Their IoU (0.711) exceeds the framework's default non-maximum-suppression threshold (0.7), and `torchvision.ops.nms` on those coordinates at 0.7 does suppress the smaller box — yet both were returned. Re-running with tighter thresholds removes the duplicate (0.5 → 4 detections) and at 0.6 a *different* third candidate survives instead, so there is a cluster of proposals on that post rather than a pair. The returned coordinates are post-scaling and may differ from those suppression operated on, but **this was not established and no mechanism is asserted here.** It does not affect the finding: the outcome is the two boxes above, whatever produced them, and it reproduces exactly on re-run.
+>
+>
+> **The cited blob audits are build products, not shipped artefacts (15 August 2026, additive).** The margin note above cites `results/geometric/{march,april,may}/cache/blob_audit.json`. Those paths are **excluded from version control** by `.gitignore:81` (`vineyard_nav/results/geometric/*/cache/*`), under the same convention applied to the detection caches: anything regenerable from bag + checkpoints + manifest is a build product, and the repository states what must be *derived* rather than what happens to be on disk. A reader cloning the repository will find nothing at those paths; the audits are regenerated, together with `detections.csv`, by `python3 scripts/geometric/extract_detections.py --bag <bag>` at no extra inference cost, because the audit is computed at the guard's own site over the same predictions. The citation is therefore to a reproducible artefact, not a missing one — but it should be read that way, and cited that way in the write-up.
+>
+> **Seed scope of the two headline percentages (15 August 2026, additive).** Regenerating the march and april audits confirms both recorded figures and exposes one ambiguity worth stating. **March's 10.5 % is the seed-42 maximum**; across seeds 42/43/44 the maximum is **11.03 %**. **April's 13.99 % is both** its seed-42 maximum and its across-seed maximum, so no distinction arises there. The near-blob frame counts likewise reproduce (march 7, april 14, both seed 42 — as recorded). The ~1 pp headroom argument is unaffected, since it rests on april/may's 14.0 % against the 15 % limit, but "march max 10.5 %" should carry "on the reference seed" wherever it appears. Both regenerations returned `detections.csv` **byte-identical** to the committed cache (714,325 and 717,763 detections), so neither figure is re-run drift.
+> Artefacts: `results/riseholme/tue02sep/cache/blob_audit.json`; figure `results/riseholme/tue02sep/diagnostics/blob_guard_dropped.png` (regenerable via `scripts/riseholme/diagnostics/blob_guard_dropped.py --bag tue02sep`, which asserts its re-inferred box matches the committed audit before drawing).
 
 ---
 
@@ -1332,7 +1355,7 @@ Within abstaining frames the dominant cause stays `too_few_near_seed` (73.2 / 72
 
 ---
 
-### F030 — Coverage degradation out of distribution recurs across three independent OOD datasets (same checkpoints, differing conditions); the multiclass arm is lowest every time, the two binary arms are not separable
+### F030 — Coverage degradation out of distribution recurs across two independent OOD datasets (same checkpoints, differing conditions); the multiclass arm is lowest every time, the two binary arms are not separable
 
 **Claim.** The three arms degrade **unequally** out of distribution, and the ordering is the same every time it has been measured.
 
@@ -1342,7 +1365,7 @@ Within abstaining frames the dominant cause stays `too_few_near_seed` (73.2 / 72
 | **tue02sep (Riseholme)** | **site + camera hardware + viewing direction** | **26.2 ± 2.0%** | **25.3 ± 4.5%** | **21.6 ± 4.0%** |
 | part2 (Riseholme, path validation only) | as above | 31.5% | 31.4% | 26.9% |
 
-> **Correction (9 August 2026, additive — the coverage degradation is unchanged; the *arm ordering* is re-grounded and the A-vs-B component withdrawn).** Verified against `line_fit_report.json` for all seven evaluated datasets.
+> **Correction (9 August 2026, additive — the coverage degradation is unchanged; the *arm ordering* is re-grounded and the A-vs-B component withdrawn).** Verified against `line_fit_report.json` for all seven datasets carrying a committed report — the six evaluated ones plus part2, which is validation-only and not counted (see the recount below).
 >
 > **The separation test, applied symmetrically.** A gap counts as separated only if it exceeds the sum of the two arms' across-seed SDs. Applied to **both** contrasts, not just one:
 >
@@ -1354,23 +1377,31 @@ Within abstaining frames the dominant cause stays `too_few_near_seed` (73.2 / 72
 > | june | 64.9 | 61.5 | +3.40 | 5.04 | no | 67.8 | 64.9 | +2.90 | 5.35 | no |
 > | july2023 | 34.8 | 25.9 | +8.97 | 10.50 | no | 38.3 | 34.8 | +3.50 | 8.12 | no |
 > | tue02sep | 25.3 | 21.6 | +3.73 | 8.46 | no | 26.2 | 25.3 | +0.93 | 6.48 | no |
-> | part2 | 31.4 | 26.9 | +4.57 | 10.55 | no | 31.5 | 31.4 | +0.03 | 8.46 | no |
+> | part2 *(validation only — not counted)* | 31.4 | 26.9 | +4.57 | 10.55 | no | 31.5 | 31.4 | +0.03 | 8.46 | no |
 >
 > **B−C separates on april and nowhere else — one of seven.** The earlier reading of this entry disqualified A−B on this test while letting "C is lowest" pass on point estimates alone; that was two standards in one column pair, and a marker applying one test to both would find it. **No claim is made that any individual B−C coverage gap is separated, except april.**
 >
 > **The claim is therefore re-grounded on sign-consistency**, which is this project's own fallback when intervals are unavailable — F013 uses it across seeds, D059 falls back to it at Riseholme when D053 refuses intervals. Extending it across *datasets* is the same move one level up.
 >
-> - **B−C: `+ + + + + + +` — 7 of 7 positive.** C is lower on every dataset measured.
+> - **B−C: `+ + + + + + +` — 7 of 7 positive.** C is lower on every dataset measured. *(Recounted below: part2 is validation-only and is not a dataset; the count is **6 of 6**.)*
 > - **A−B: `− − + + + + +` — sign-inconsistent.** It reverses between the bare-vine and canopy bags.
 >
-> Under a two-sided sign test, 7/7 in one direction gives **p = 0.016**; restricted to the **six independent** datasets — part2 is 94.1% contained in tue02sep (D055) and is *not* an independent observation — **6/6 gives p = 0.031**. (One-sided values, if the direction is treated as predicted in advance, are 0.008 and 0.016.) "Independent" here means a distinct recording session, site or season; it does not assert statistical independence in a stronger sense.
+> *(Superseded — see the recount below: the evaluated set is six and the headline is p = 0.031.)* Under a two-sided sign test, 7/7 in one direction gives **p = 0.016**; restricted to the **six independent** datasets — part2 is 94.1% contained in tue02sep (D055) and is *not* an independent observation — **6/6 gives p = 0.031**. (One-sided values, if the direction is treated as predicted in advance, are 0.008 and 0.016.) "Independent" here means a distinct recording session, site or season; it does not assert statistical independence in a stronger sense.
 >
-> **Criterion-consistent statement.** *A and B are not separable on coverage on any dataset and the sign of their difference is not stable. C is lowest on all seven datasets measured; the individual gaps mostly sit within cross-seed noise, but the direction is consistent across seasons, years, sites and camera hardware — which no single dataset could establish.* The consistency, not any one gap, is what carries the evidence.
+> **Correction to the count above (16 August 2026, additive — the direction of the result is unchanged; the arithmetic and the headline p-value are not).** The sign test above counts **seven** datasets and reports **7/7, p = 0.016** as the headline, treating part2 as a seventh observation caveated for non-independence. **That is the wrong basis, and non-independence is the wrong objection.** D055 assigns `part2_2_9_2025` the role of **"path validation only"** — it is 94.1% contained within `tue02sep`, i.e. the same physical traverses re-measured, and D055 states the two are **"never pooled, because doing so would double-count the same physical traverses and spuriously shrink the CIs"**. This entry's own dataset table already labels it *"(path validation only)"*. Counting it as a dataset promotes it to a role the decision denies it and inflates the test with a duplicate.
 >
-> **Named limitation — pseudoreplication across datasets (9 August 2026).** The sign test above varies the *deployment conditions* and holds the *models fixed*. All seven datasets are scored by **the same nine checkpoints** (3 arms × seeds 42/43/44), trained once on the 2022 SemanticBLT corpus and never retrained — `line_fit_infer.py::MODELS` is byte-identical between the Ktima and Riseholme trees (the only textual difference between the two copies is one `sys.path` token, normalised by the parity gate), so Riseholme is scored by the same weights as march. The datasets are independent of each other; **the observations are not independent of the training run.**
+> **The evaluated set is six: march, april, may, june, july2023, tue02sep.** On those, **B−C is positive on 6 of 6** and the two-sided sign test gives **p = 0.031** (one-sided 0.016, if the direction is treated as predicted in advance). **Cite 6/6 and p = 0.031.** part2's rows are retained in the tables above as context — it agrees in direction — and are marked *not counted*.
 >
-> - **What the 7/7 consistency does establish:** that arm C's coverage deficit is **robust across deployment conditions** — two seasons, two years, two sites, two camera systems, two viewing directions, and coverage levels from 81% down to 22%. That is the generalisation claim this study is positioned to make, and it is a real one.
-> - **What it does not establish:** robustness **across independent training runs**. In principle the result could be a property of these three particular arm-C checkpoints rather than of multiclass training as such. Because the same three checkpoints recur in all seven observations, the nominal **p = 0.016 overstates the evidence for a training-level effect**; it is the correct p-value for the deployment-conditions claim and an optimistic one for any claim about multiclass training in general.
+> **The heading is also corrected, and that error predates this entry's earlier correction.** It read *"three independent OOD datasets"*. There are **two** — july2023 (season + year) and tue02sep (site + camera + viewing direction); part2 is neither independent of tue02sep nor a separate dataset, which the body already said (*"The two Riseholme rows are not independent"*). Heading now reads *two*.
+>
+> **What does not change.** C is lowest on every evaluated dataset; A−B remains sign-inconsistent and separable on none; B−C separates on april alone. The figure `results/geometric/comparison/figures/cmp_coverage_signs.png` is generated over the six evaluated datasets and states the exclusion in its caption.
+>
+> **Criterion-consistent statement.** *A and B are not separable on coverage on any dataset and the sign of their difference is not stable. C is lowest on all six evaluated datasets; the individual gaps mostly sit within cross-seed noise, but the direction is consistent across seasons, years, sites and camera hardware — which no single dataset could establish.* The consistency, not any one gap, is what carries the evidence.
+>
+> **Named limitation — pseudoreplication across datasets (9 August 2026).** The sign test above varies the *deployment conditions* and holds the *models fixed*. All evaluated datasets are scored by **the same nine checkpoints** (3 arms × seeds 42/43/44), trained once on the 2022 SemanticBLT corpus and never retrained — `line_fit_infer.py::MODELS` is byte-identical between the Ktima and Riseholme trees (the only textual difference between the two copies is one `sys.path` token, normalised by the parity gate), so Riseholme is scored by the same weights as march. The datasets are independent of each other; **the observations are not independent of the training run.**
+>
+> - **What the 6/6 consistency does establish:** that arm C's coverage deficit is **robust across deployment conditions** — two seasons, two years, two sites, two camera systems, two viewing directions, and coverage levels from 81% down to 22%. That is the generalisation claim this study is positioned to make, and it is a real one.
+> - **What it does not establish:** robustness **across independent training runs**. In principle the result could be a property of these three particular arm-C checkpoints rather than of multiclass training as such. Because the same three checkpoints recur in all six observations, the nominal **p = 0.031 overstates the evidence for a training-level effect**; it is the correct p-value for the deployment-conditions claim and an optimistic one for any claim about multiclass training in general.
 > - **Remedy, not performed here:** more seeds per arm, retrained from scratch, with the sign test taken over *training runs* as well as datasets. This work trained three seeds per arm and did not do this.
 >
 > **The three-seed spread is nonetheless carried in every reported figure.** All `per_arm` values in this entry are mean ± SD **across seeds 42/43/44**, and the separation test above is built on exactly that SD — so seed-to-seed variation is what the "not separable" verdicts are measured against, not something omitted. **Three seeds is a small basis for an inference about training**, and no claim here should be read as resting on more than that.
@@ -1386,9 +1417,9 @@ Within abstaining frames the dominant cause stays `too_few_near_seed` (73.2 / 72
 > | june | 67.8 ± 1.27 | 64.9 ± 4.08 | 61.5 ± 0.96 | + | + |
 > | july2023 | 38.3 ± 2.91 | 34.8 ± 5.21 | 25.9 ± 5.29 | + | + |
 > | tue02sep | 26.2 ± 1.99 | 25.3 ± 4.50 | 21.6 ± 3.96 | + | + |
-> | part2 | 31.5 ± 2.91 | 31.4 ± 5.55 | 26.9 ± 5.00 | + | + |
+> | part2 *(validation only — not counted)* | 31.5 ± 2.91 | 31.4 ± 5.55 | 26.9 ± 5.00 | + | + |
 >
-> **B−C is positive on 7 of 7; A−B changes sign between the bare-vine and canopy bags.** The separation verdicts for these same gaps are in the table above (B−C separates on april only; A−B on none). Note B's SD grows with difficulty — 0.93 (march) → 2.67 (may) → 4.08 (june) → 4.50 (tue02sep) → 5.21 (july2023) — which is why no A−B gap clears its noise band.
+> **B−C is positive on 6 of 6 evaluated datasets (part2 excluded, validation only); A−B changes sign between the bare-vine and canopy bags.** The separation verdicts for these same gaps are in the table above (B−C separates on april only; A−B on none). Note B's SD grows with difficulty — 0.93 (march) → 2.67 (may) → 4.08 (june) → 4.50 (tue02sep) → 5.21 (july2023) — which is why no A−B gap clears its noise band.
 >
 > **Unexplained observation, logged not explained.** Arm B yields **more base points per frame than arm A on all four Ktima bags** — march 31.5 vs 26.2, april 27.6 vs 24.7, may 16.8 vs 14.9, june 12.3 vs 10.5 — *including may, june and july2023, where A's two-row coverage is nonetheless higher*. More base points, less coverage. The relation **inverts on tue02sep** (A 11.8, B 8.0). Recorded here so it is not lost; **no mechanism is proposed** — a distribution effect (where the points fall relative to the near-seed window) and a count effect are both consistent with these numbers, and the data in hand cannot separate them. Artefacts: `line_fit_report.json` · `per_model[].mean_base` for each bag.
 
@@ -1461,3 +1492,28 @@ This is the strongest available statement that Riseholme's absolute error is **r
 **Cross-references.** F013 (arm-invariance, the same measurand at Ktima), D052 (july2023's withheld contrasts), D053 (the CI guard, which fired here), D056 (the assumed extrinsics and their 182 mm budget), D057 (the reference and its limits), D059 (reporting asymmetry), F030 (what *can* be concluded at Riseholme).
 
 **Citation map.** Ours: `results/riseholme/tue02sep/final/tue02sep_evaluation/paired_crossarm.json`, `line_fit_report.json`; `scripts/riseholme/projection_calibration.py::sensitivity()`. Polvara et al. 2024 §5 (3.8 cm RTK floor, used as the effect-size yardstick). No paper support for the finding itself (contribution).
+
+### F032 — Determinism holds end-to-end: four independent regenerations, byte-identical, none from a test written to check it
+
+**Finding.** The pipeline's inference and figure stages reproduce **exactly**. Four artefacts were regenerated from source during unrelated work and every one came back **byte-identical** to the committed version. None of the four was produced by a determinism test — each arose while doing something else, which is what makes the evidence unprompted rather than constructed.
+
+| # | artefact | scale | result | why it was regenerated |
+|---|---|---|---|---|
+| 1 | `results/riseholme/part2/cache/detections.csv` | 3 seeds × 1,733 frames = **42,517** detections | md5 `15526f7e…` unchanged | checking whether the Riseholme caches could safely be untracked |
+| 2 | `results/geometric/march/cache/detections.csv` | **714,325** detections | byte-identical | regenerating a missing blob audit to back a citation |
+| 3 | `results/geometric/april/cache/detections.csv` | **717,763** detections | byte-identical | as above |
+| 4 | `results/riseholme/tue02sep/diagnostics/blob_guard_dropped.png` | matplotlib render over a re-inference | md5 `7ab4ec24…` across runs | building a figure |
+
+**Evidence that the regenerations were genuine, not skipped.** For (1) the file's mtime advanced (15:00:48 → 15:02:57) while its content did not, and `git status` reported the tracked cache unchanged — a rewrite that produced identical bytes, not a no-op. (2) and (3) each logged per-seed completion lines and wrote both `detections.csv` and `blob_audit.json`. (4) was re-run twice in succession with the md5 compared each time.
+
+**What this demonstrates, and what it does not.** It demonstrates **inference-stage and rendering-stage determinism** on GPU, at scale, across both sites and both model families' consumers. It does **not** re-demonstrate *training* determinism — D016 asserts byte-identical within-seed training reproduction for Phase A, and that is a separate claim not re-tested here. Nor does it establish determinism across hardware or library versions: all four regenerations ran on the same machine, driver and pinned dependency set.
+
+**Why it is not automatic.** Three specific pieces of work stand behind it, each documented where it was done. **(i)** The Phase-A cross-entropy term is computed via one-hot + `log_softmax` rather than `nn.CrossEntropyLoss`, because *"the CUDA `nll_loss2d` kernel has no deterministic implementation in PyTorch 2.11 and was the sole source of same-seed run-to-run divergence"* (`losses.py:48-53`) — a mathematically equivalent reformulation adopted for reproducibility alone. **(ii)** `cuda_preload.py` guards cuDNN cold-initialisation and must import before torch (D049). **(iii)** `workers: 0` removes DataLoader worker ordering as a variable (forced by a 64 MB `/dev/shm`, but reproducibility-relevant regardless). Seed 42 is set across torch, numpy, random, CUDA and ultralytics (D016, CLAUDE.md rule 7).
+
+**Why it matters to the comparison.** Every cross-arm claim in this study is a difference between numbers produced by separate inference runs. If those runs were not reproducible, an observed difference could be run-to-run noise rather than an arm difference — and the differences at issue are millimetres. Determinism is therefore not housekeeping here; it is what licenses attributing a 2 mm paired difference to the arm rather than to the execution.
+
+**Cross-references.** D016 (reproducibility infrastructure), D049 (cuDNN cold-init guard), rule 7 (CLAUDE.md), F013 and F028 (the paired differences this underwrites), D058 (the parity gate, which assumes byte-level comparability).
+
+**Citation map.** Ours: the four artefacts above; `scripts/perception/segmentation/unet_binary/losses.py`, `scripts/geometric/cuda_preload.py`, `scripts/geometric/extract_detections.py`, `scripts/riseholme/diagnostics/blob_guard_dropped.py`. No paper support (engineering result).
+
+---
